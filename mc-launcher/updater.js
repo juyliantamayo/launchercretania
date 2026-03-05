@@ -25,7 +25,7 @@ const EventEmitter = require("events");
 // directamente desde my-modpack/mods/ al directorio del juego.
 const MANIFEST_URL =
   process.env.MANIFEST_URL ||
-  "";
+  "https://github.com/juyliantamayo/launchercretania/releases/download/modpack-v1.0.0/manifest.json";
 
 // Ruta a la carpeta local de mods del modpack
 // En desarrollo: ../my-modpack  |  En build: process.resourcesPath/my-modpack

@@ -21,19 +21,13 @@
   "build": {
     "appId": "com.cretania.launcher",
     "productName": "Cretania Launcher",
+    "asar": false,
     "directories": {
       "output": "dist"
     },
     "files": [
       "**/*",
       "!dist/**"
-    ],
-    "extraResources": [
-      {
-        "from": "../my-modpack",
-        "to": "my-modpack",
-        "filter": ["**/*"]
-      }
     ],
     "win": {
       "target": [

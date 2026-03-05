@@ -49,6 +49,7 @@
     {
       "id": "emi-create-schematics--1-0-1-fabric-1-20-1-",
       "file": "mods/EMI Create Schematics [1.0.1 Fabric 1.20.1].jar",
+      "url": "https://github.com/juyliantamayo/launchercretania/releases/download/modpack-v1.0.0/EMI-Create-Schematics.jar",
       "sha1": "a65f802c06d609c00d9c3ab100fb27dab219e930",
       "size": 51589
     },
@@ -355,6 +356,7 @@
     {
       "id": "create-zinc-craft-1-20-1--1-",
       "file": "mods/create-zinc-craft-1.20.1 (1).jar",
+      "url": "https://github.com/juyliantamayo/launchercretania/releases/download/modpack-v1.0.0/create-zinc-craft-1.20.1.1.jar",
       "sha1": "a8096290e65cda65b1f721b27b227543fb4d8e28",
       "size": 4367
     },
@@ -385,6 +387,7 @@
     {
       "id": "create_snt-2-0-no-apple-syrup",
       "file": "mods/create_snt-2.0 NO-APPLE-SYRUP.jar",
+      "url": "https://github.com/juyliantamayo/launchercretania/releases/download/modpack-v1.0.0/create_snt-2.0.NO-APPLE-SYRUP.jar",
       "sha1": "8205b3750da109534ff3a381488326fa3d20eacd",
       "size": 307348
     },
@@ -637,6 +640,7 @@
     {
       "id": "hold_my_items_v2-7-1_1-20---1-20-4",
       "file": "mods/hold_my_items_v2.7.1_1.20 - 1.20.4.jar",
+      "url": "https://github.com/juyliantamayo/launchercretania/releases/download/modpack-v1.0.0/hold_my_items_v2.7.1_1.20.-.1.20.4.jar",
       "sha1": "ee74d17a19c3ecce4c6c290475eb2240a395b3f7",
       "size": 16183
     },
