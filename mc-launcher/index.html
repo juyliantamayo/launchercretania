@@ -195,6 +195,37 @@
 
     .no-accounts { color:var(--steel); font-size:.75rem; text-align:center; padding:6px 0; opacity:.7; }
 
+    /* ── OFFLINE INPUT ── */
+    .offline-row {
+      display:flex; gap:6px; align-items:center;
+    }
+    .offline-input {
+      flex:1; padding:8px 10px; border-radius:3px;
+      background:rgba(212,135,78,.06); border:1px solid rgba(212,135,78,.15);
+      color:#e0ddd5; font-family:'Rajdhani',sans-serif; font-size:.82rem;
+      font-weight:600; outline:none; transition:border-color .2s;
+      letter-spacing:.5px;
+    }
+    .offline-input::placeholder { color:var(--steel); opacity:.5; }
+    .offline-input:focus { border-color:var(--copper); }
+    .btn-offline {
+      background:transparent; color:var(--steel);
+      border:1px dashed rgba(138,155,174,.2); border-radius:3px;
+      padding:8px 12px; font-family:'Rajdhani',sans-serif; font-size:.72rem;
+      font-weight:600; cursor:pointer; transition:all .2s;
+      letter-spacing:1px; white-space:nowrap;
+    }
+    .btn-offline:hover { border-color:var(--steel); color:var(--copper-light); background:rgba(138,155,174,.05); }
+    .btn-offline:disabled { opacity:.3; cursor:not-allowed; }
+
+    /* ── ACCOUNT BADGE ── */
+    .account-badge {
+      font-size:.55rem; font-weight:700; letter-spacing:1px; text-transform:uppercase;
+      padding:1px 5px; border-radius:2px; font-family:'Orbitron',monospace;
+    }
+    .badge-premium { background:rgba(76,175,80,.15); color:#81c784; }
+    .badge-offline { background:rgba(138,155,174,.12); color:var(--steel); }
+
     /* ── SECTION LABEL ── */
     .section-label {
       font-family:'Orbitron',monospace; font-size:.55rem; font-weight:700;
@@ -340,12 +371,16 @@
       <span class="rivet-br"></span>
 
       <!-- ACCOUNTS -->
-      <div class="section-label">CUENTAS MICROSOFT</div>
+      <div class="section-label">CUENTAS</div>
       <div class="account-section">
         <div class="account-list" id="accountList">
           <div class="no-accounts" id="noAccounts">Sin cuentas. Agrega una para jugar.</div>
         </div>
         <button class="btn-add-account" id="btnAddAccount">+ Agregar cuenta Microsoft</button>
+        <div class="offline-row">
+          <input type="text" class="offline-input" id="offlineUsername" placeholder="Nombre de jugador..." maxlength="16">
+          <button class="btn-offline" id="btnOffline">Entrar offline</button>
+        </div>
       </div>
 
       <div class="separator"></div>
@@ -409,6 +444,8 @@
 
     // ── REFS ─────────────────────────────────────────────────────────
     const btnAddAccount = document.getElementById("btnAddAccount");
+    const btnOffline = document.getElementById("btnOffline");
+    const offlineInput = document.getElementById("offlineUsername");
     const btnLaunch = document.getElementById("btnLaunch");
     const btnDownload = document.getElementById("btnDownload");
     const btnSettings = document.getElementById("btnSettings");
@@ -431,6 +468,7 @@
       btnLaunch.disabled = on || !selectedAccount;
       btnDownload.disabled = on;
       btnAddAccount.disabled = on;
+      btnOffline.disabled = on;
     }
 
     // ── WINDOW CONTROLS ──────────────────────────────────────────────
@@ -507,6 +545,10 @@
         name.className = "account-name";
         name.textContent = acc.name;
 
+        const badge = document.createElement("span");
+        badge.className = "account-badge " + (acc.offline ? "badge-offline" : "badge-premium");
+        badge.textContent = acc.offline ? "OFFLINE" : "PREMIUM";
+
         const removeBtn = document.createElement("button");
         removeBtn.className = "account-remove";
         removeBtn.textContent = "✕";
@@ -519,6 +561,7 @@
 
         el.appendChild(avatar);
         el.appendChild(name);
+        el.appendChild(badge);
         el.appendChild(removeBtn);
 
         el.addEventListener("click", () => {
@@ -551,7 +594,30 @@
       }
       btnAddAccount.disabled = false;
     });
+    // ── OFFLINE LOGIN ───────────────────────────────────────────────────
+    btnOffline.addEventListener("click", async () => {
+      const username = offlineInput.value.trim();
+      if (!username) {
+        setStatus("Escribe un nombre de jugador.");
+        offlineInput.focus();
+        return;
+      }
+      btnOffline.disabled = true;
+      setStatus("Creando sesión offline…");
+      try {
+        const result = await ipcRenderer.invoke("login-offline", username);
+        setStatus("Sesión offline: " + result.profile.name);
+        offlineInput.value = "";
+        await refreshAccounts();
+      } catch (err) {
+        setStatus("Error: " + err.message);
+      }
+      btnOffline.disabled = false;
+    });
 
+    offlineInput.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") btnOffline.click();
+    });
     // ── PROGRESS ─────────────────────────────────────────────────────
     ipcRenderer.on("progress", (_e, data) => {
       if (data.phase === "check") {

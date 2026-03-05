@@ -12,7 +12,7 @@
 
 const { app, BrowserWindow, ipcMain, dialog } = require("electron");
 const { Client } = require("minecraft-launcher-core");
-const { loginMicrosoft, getAccountList, getAccountAuth, removeAccount } = require("./auth");
+const { loginMicrosoft, getOfflineAuth, getAccountList, getAccountAuth, removeAccount } = require("./auth");
 const { syncMods } = require("./updater");
 const path = require("path");
 const fs = require("fs");
@@ -134,6 +134,26 @@ ipcMain.handle("login-microsoft", async () => {
   }
 });
 
+// ─── IPC: LOGIN OFFLINE (NO PREMIUM) ─────────────────────────────────────────
+ipcMain.handle("login-offline", async (_e, username) => {
+  if (!username || username.trim().length < 3) {
+    throw new Error("El nombre debe tener al menos 3 caracteres.");
+  }
+  if (username.trim().length > 16) {
+    throw new Error("El nombre no puede tener más de 16 caracteres.");
+  }
+  if (!/^[a-zA-Z0-9_]+$/.test(username.trim())) {
+    throw new Error("Solo se permiten letras, números y guión bajo.");
+  }
+  try {
+    const result = getOfflineAuth(username.trim());
+    return result;
+  } catch (err) {
+    console.error("[main] Offline login error:", err.message);
+    throw err;
+  }
+});
+
 // ─── IPC: DESCARGAR MODPACK (sin login) ──────────────────────────────────────
 ipcMain.handle("download-modpack", async () => {
   const { canceled, filePaths } = await dialog.showOpenDialog(win, {
@@ -157,7 +177,7 @@ ipcMain.handle("download-modpack", async () => {
 
 // ─── IPC: LANZAR JUEGO ──────────────────────────────────────────────────────
 ipcMain.handle("launch", async (_event, { authData, accountUuid }) => {
-  // 1. Auth — por token fresco o cuenta guardada
+  // 1. Auth — por token fresco, cuenta guardada, o offline
   let auth;
   if (authData) {
     auth = authData;
@@ -165,7 +185,7 @@ ipcMain.handle("launch", async (_event, { authData, accountUuid }) => {
     const account = getAccountAuth(accountUuid);
     auth = account.mclc;
   } else {
-    throw new Error("Se requiere autenticación con cuenta Microsoft.");
+    throw new Error("Se requiere una cuenta (Microsoft u offline).");
   }
 
   // 2. Sync mods

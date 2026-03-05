@@ -71,7 +71,7 @@ async function loginMicrosoft() {
 /**
  * Añade o actualiza una cuenta en el almacenamiento local
  */
-function addAccount(profile, mclcAuth) {
+function addAccount(profile, mclcAuth, offline = false) {
   const accounts = loadAccounts();
   const idx = accounts.findIndex((a) => a.uuid === profile.uuid);
 
@@ -79,6 +79,7 @@ function addAccount(profile, mclcAuth) {
     uuid: profile.uuid,
     name: profile.name,
     mclc: mclcAuth,
+    offline: offline,
     lastUsed: Date.now()
   };
 
@@ -107,6 +108,7 @@ function getAccountList() {
   return loadAccounts().map((a) => ({
     uuid: a.uuid,
     name: a.name,
+    offline: a.offline || false,
     lastUsed: a.lastUsed
   }));
 }
@@ -126,8 +128,31 @@ function getAccountAuth(uuid) {
   return { mclc: account.mclc, profile: { name: account.name, uuid: account.uuid } };
 }
 
+/**
+ * Genera autenticación offline (no-premium) para MCLC.
+ * Usa Authenticator.getAuth() de minecraft-launcher-core.
+ * @param {string} username — nombre de jugador offline
+ * @returns {object} { mclc, profile: { name, uuid } }
+ */
+function getOfflineAuth(username) {
+  const { Authenticator } = require("minecraft-launcher-core");
+  const auth = Authenticator.getAuth(username);
+  
+  // Guardar como cuenta offline
+  const profile = {
+    name: auth.name || username,
+    uuid: auth.uuid || `offline-${username.toLowerCase()}`
+  };
+
+  addAccount(profile, auth, true);
+
+  console.log("[auth] Sesión offline OK:", profile.name);
+  return { mclc: auth, profile };
+}
+
 module.exports = {
   loginMicrosoft,
+  getOfflineAuth,
   getAccountList,
   getAccountAuth,
   removeAccount,
