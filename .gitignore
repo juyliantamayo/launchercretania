@@ -1,0 +1,18 @@
+# Node
+node_modules/
+dist/
+
+# Minecraft
+.minecraft/
+*.log
+
+# Mod JAR files (distributed via GitHub Releases, not in repo)
+my-modpack/mods/*.jar
+
+# OS files
+Thumbs.db
+.DS_Store
+
+# IDE
+.vscode/
+*.swp

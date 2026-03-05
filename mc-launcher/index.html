@@ -1,0 +1,619 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>Cretania Launcher</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Rajdhani:wght@400;600;700&display=swap');
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --copper: #d4874e;
+      --copper-light: #e8a96e;
+      --copper-dark: #a85d2a;
+      --brass: #c9a84c;
+      --brass-light: #e0c56e;
+      --steel: #8a9bae;
+      --dark-bg: #0c0e14;
+      --panel-bg: rgba(15, 18, 28, 0.95);
+      --panel-border: rgba(212, 135, 78, 0.25);
+      --glow: rgba(212, 135, 78, 0.4);
+    }
+
+    body {
+      background: var(--dark-bg);
+      color: #e0ddd5;
+      font-family: 'Rajdhani', 'Segoe UI', sans-serif;
+      height: 100vh;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      user-select: none;
+      position: relative;
+    }
+
+    /* ── CUSTOM TITLE BAR ── */
+    .titlebar {
+      -webkit-app-region: drag;
+      height: 32px;
+      background: rgba(8,10,16,0.95);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 10px;
+      flex-shrink: 0;
+      border-bottom: 1px solid rgba(212,135,78,0.1);
+    }
+    .titlebar-label {
+      font-family: 'Orbitron', monospace;
+      font-size: 0.6rem;
+      color: var(--steel);
+      letter-spacing: 3px;
+    }
+    .titlebar-btns {
+      -webkit-app-region: no-drag;
+      display: flex; gap: 2px;
+    }
+    .titlebar-btns button {
+      background: none; border: none; color: var(--steel);
+      width: 32px; height: 28px; font-size: 1rem;
+      cursor: pointer; transition: background 0.15s;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .titlebar-btns button:hover { background: rgba(212,135,78,0.15); color: var(--copper-light); }
+    .titlebar-btns .close-btn:hover { background: #c43; color: #fff; }
+
+    /* ── MAIN CONTENT ── */
+    .main-content {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      gap: 12px;
+    }
+
+    /* ── BG GRID ── */
+    .main-content::before {
+      content: '';
+      position: absolute; inset: 0;
+      background:
+        repeating-linear-gradient(0deg, transparent, transparent 59px, rgba(212,135,78,0.03) 60px),
+        repeating-linear-gradient(90deg, transparent, transparent 59px, rgba(212,135,78,0.03) 60px);
+      animation: gridPulse 8s ease-in-out infinite;
+      pointer-events: none;
+    }
+    @keyframes gridPulse { 0%,100%{opacity:.4} 50%{opacity:1} }
+
+    /* ── PARTICLES ── */
+    .particle {
+      position: absolute; width: 2px; height: 2px;
+      background: var(--copper); border-radius: 50%;
+      opacity: 0; pointer-events: none;
+      animation: floatUp linear infinite;
+    }
+    @keyframes floatUp {
+      0%{opacity:0;transform:translateY(0) scale(1)}
+      10%{opacity:.5}
+      90%{opacity:.05}
+      100%{opacity:0;transform:translateY(-200px) scale(.3)}
+    }
+
+    /* ── GEARS BG ── */
+    .gears-container { position:absolute; inset:0; pointer-events:none; overflow:hidden; }
+    .gear { position:absolute; opacity:.05; fill:none; stroke:var(--copper); stroke-width:1.5; }
+    .gear-1{width:200px;top:-40px;left:-50px;animation:spinCW 30s linear infinite}
+    .gear-2{width:140px;top:0;left:90px;animation:spinCCW 24s linear infinite}
+    .gear-3{width:250px;bottom:-70px;right:-70px;animation:spinCW 40s linear infinite}
+    .gear-4{width:100px;bottom:40px;right:100px;animation:spinCCW 20s linear infinite}
+    @keyframes spinCW{to{transform:rotate(360deg)}}
+    @keyframes spinCCW{to{transform:rotate(-360deg)}}
+
+    /* ── HEADER ── */
+    .logo-section { text-align:center; animation:fadeSlideDown .7s ease-out both; z-index:1; }
+    @keyframes fadeSlideDown { from{opacity:0;transform:translateY(-20px)} to{opacity:1;transform:translateY(0)} }
+
+    .logo-icon { font-size:2.2rem; display:block; margin-bottom:2px;
+      filter:drop-shadow(0 0 10px var(--glow));
+      animation:gearBob 4s ease-in-out infinite;
+    }
+    @keyframes gearBob { 0%,100%{transform:translateY(0) rotate(0deg)} 50%{transform:translateY(-3px) rotate(3deg)} }
+
+    h1 {
+      font-family:'Orbitron',monospace; font-size:1.8rem; font-weight:900;
+      letter-spacing:5px; text-transform:uppercase;
+      background:linear-gradient(135deg,var(--copper-light),var(--brass),var(--copper));
+      -webkit-background-clip:text; -webkit-text-fill-color:transparent;
+      background-clip:text; filter:drop-shadow(0 2px 6px rgba(212,135,78,.3));
+    }
+    .subtitle { font-size:.72rem; font-weight:600; color:var(--steel); letter-spacing:3px; text-transform:uppercase; margin-top:2px; }
+
+    /* ── CARD ── */
+    .card {
+      background:var(--panel-bg); border:1px solid var(--panel-border);
+      border-radius:4px; padding:24px 32px; width:420px;
+      display:flex; flex-direction:column; gap:12px;
+      position:relative; overflow:hidden; z-index:1;
+      animation:fadeSlideUp .7s ease-out .15s both;
+      box-shadow:0 0 30px rgba(0,0,0,.5), inset 0 1px 0 rgba(212,135,78,.08);
+    }
+    @keyframes fadeSlideUp { from{opacity:0;transform:translateY(20px)} to{opacity:1;transform:translateY(0)} }
+
+    .card::before,.card::after {
+      content:''; position:absolute; width:6px; height:6px; border-radius:50%;
+      background:radial-gradient(circle,var(--copper-light) 30%,var(--copper-dark) 70%);
+      box-shadow:0 1px 2px rgba(0,0,0,.5);
+    }
+    .card::before{top:8px;left:8px} .card::after{top:8px;right:8px}
+    .rivet-bl,.rivet-br {
+      position:absolute; width:6px; height:6px; border-radius:50%;
+      background:radial-gradient(circle,var(--copper-light) 30%,var(--copper-dark) 70%);
+      box-shadow:0 1px 2px rgba(0,0,0,.5);
+    }
+    .rivet-bl{bottom:8px;left:8px} .rivet-br{bottom:8px;right:8px}
+
+    .separator { height:1px; background:linear-gradient(90deg,transparent,var(--copper-dark),transparent); opacity:.25; }
+
+    /* ── ACCOUNT SELECTOR ── */
+    .account-section { display:flex; flex-direction:column; gap:8px; }
+    .account-list { display:flex; flex-direction:column; gap:4px; max-height:90px; overflow-y:auto; }
+    .account-list::-webkit-scrollbar { width:3px; }
+    .account-list::-webkit-scrollbar-thumb { background:var(--copper-dark); border-radius:2px; }
+
+    .account-item {
+      display:flex; align-items:center; gap:10px;
+      padding:8px 12px; border-radius:3px;
+      background:rgba(212,135,78,.05); border:1px solid rgba(212,135,78,.1);
+      cursor:pointer; transition:all .2s;
+    }
+    .account-item:hover { background:rgba(212,135,78,.12); border-color:rgba(212,135,78,.3); }
+    .account-item.selected { background:rgba(212,135,78,.15); border-color:var(--copper); }
+
+    .account-avatar {
+      width:28px; height:28px; border-radius:3px;
+      background:var(--copper-dark); display:flex; align-items:center; justify-content:center;
+      font-family:'Orbitron',monospace; font-size:.7rem; font-weight:700; color:#fff;
+    }
+    .account-name { font-weight:700; font-size:.85rem; flex:1; }
+    .account-remove {
+      background:none; border:none; color:var(--steel); cursor:pointer;
+      font-size:.85rem; opacity:.4; transition:all .2s; padding:2px 6px;
+    }
+    .account-remove:hover { opacity:1; color:#c43; }
+
+    .btn-add-account {
+      background:transparent; color:var(--copper-light);
+      border:1px dashed rgba(212,135,78,.25); border-radius:3px;
+      padding:8px; font-family:'Rajdhani',sans-serif; font-size:.78rem;
+      font-weight:600; cursor:pointer; transition:all .2s;
+      letter-spacing:1px;
+    }
+    .btn-add-account:hover { border-color:var(--copper); background:rgba(212,135,78,.05); }
+    .btn-add-account:disabled { opacity:.3; cursor:not-allowed; }
+
+    .no-accounts { color:var(--steel); font-size:.75rem; text-align:center; padding:6px 0; opacity:.7; }
+
+    /* ── SECTION LABEL ── */
+    .section-label {
+      font-family:'Orbitron',monospace; font-size:.55rem; font-weight:700;
+      color:var(--steel); letter-spacing:3px; text-transform:uppercase; opacity:.6;
+    }
+
+    /* ── BUTTONS ── */
+    .btn {
+      padding:12px 20px; border:none; border-radius:3px;
+      font-family:'Orbitron',monospace; font-size:.78rem; font-weight:700;
+      letter-spacing:1.5px; text-transform:uppercase;
+      cursor:pointer; position:relative; overflow:hidden; transition:all .3s ease;
+    }
+    .btn:active{transform:scale(.97)}
+    .btn:disabled{opacity:.3;cursor:not-allowed;filter:grayscale(.5)}
+    .btn::after {
+      content:''; position:absolute; top:0; left:-100%;
+      width:100%; height:100%;
+      background:linear-gradient(90deg,transparent,rgba(255,255,255,.08),transparent);
+      transition:left .5s ease;
+    }
+    .btn:hover:not(:disabled)::after{left:100%}
+
+    .btn-launch {
+      background:linear-gradient(135deg,var(--copper),var(--copper-dark));
+      color:#fff; border:1px solid rgba(232,169,110,.3);
+      box-shadow:0 3px 16px rgba(212,135,78,.2), inset 0 1px 0 rgba(255,255,255,.1);
+    }
+    .btn-launch:hover:not(:disabled) {
+      background:linear-gradient(135deg,var(--copper-light),var(--copper));
+      box-shadow:0 4px 24px rgba(212,135,78,.4);
+      transform:translateY(-1px);
+    }
+
+    .btn-secondary {
+      background:transparent; color:var(--steel);
+      border:1px solid rgba(138,155,174,.15);
+      font-size:.68rem; padding:9px 14px; letter-spacing:2px;
+    }
+    .btn-secondary:hover:not(:disabled) {
+      border-color:var(--copper); color:var(--copper-light);
+      box-shadow:0 0 12px rgba(212,135,78,.1);
+    }
+
+    /* ── SETTINGS PANEL ── */
+    .settings-row {
+      display:flex; align-items:center; gap:12px;
+    }
+    .settings-row label {
+      font-size:.75rem; font-weight:600; color:var(--steel);
+      min-width:70px; letter-spacing:.5px;
+    }
+    .settings-row input[type="range"] {
+      flex:1; -webkit-appearance:none; appearance:none; height:4px;
+      background:rgba(212,135,78,.15); border-radius:2px; outline:none;
+    }
+    .settings-row input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance:none; width:14px; height:14px; border-radius:50%;
+      background:var(--copper); cursor:pointer;
+      box-shadow:0 0 6px var(--glow); transition:background .2s;
+    }
+    .settings-row input[type="range"]::-webkit-slider-thumb:hover { background:var(--copper-light); }
+    .ram-value {
+      font-family:'Orbitron',monospace; font-size:.72rem; font-weight:700;
+      color:var(--copper-light); min-width:32px; text-align:right;
+    }
+
+    /* ── PROGRESS ── */
+    #progressBar {
+      height:4px; background:rgba(212,135,78,.1);
+      border-radius:2px; overflow:hidden; display:none;
+    }
+    #progressFill {
+      height:100%; width:0%;
+      background:linear-gradient(90deg,var(--copper-dark),var(--copper-light),var(--brass));
+      transition:width .4s ease; border-radius:2px;
+      box-shadow:0 0 8px var(--glow); position:relative;
+    }
+
+    /* ── STATUS ── */
+    #status {
+      font-size:.75rem; font-weight:600; color:var(--steel);
+      text-align:center; min-height:16px; letter-spacing:.5px;
+      transition:color .3s;
+    }
+
+    /* ── FOOTER ── */
+    .footer-deco {
+      margin-top:8px; display:flex; align-items:center; gap:8px; opacity:.2;
+      z-index:1; animation:fadeSlideUp .7s ease-out .4s both;
+    }
+    .footer-line{width:35px;height:1px;background:var(--copper)}
+    .footer-dot{width:3px;height:3px;background:var(--copper);border-radius:50%;animation:pulse 3s ease-in-out infinite}
+    @keyframes pulse{0%,100%{opacity:.4;transform:scale(1)} 50%{opacity:1;transform:scale(1.5)}}
+
+    /* ── SETTINGS TOGGLE ── */
+    .settings-toggle {
+      position:absolute; top:8px; right:32px; z-index:2;
+      background:none; border:none; color:var(--steel);
+      font-size:1.1rem; cursor:pointer; transition:all .3s;
+      opacity:.5; padding:4px;
+    }
+    .settings-toggle:hover { color:var(--copper-light); opacity:1; transform:rotate(30deg); }
+
+    .settings-panel {
+      max-height:0; overflow:hidden; transition:max-height .4s ease, opacity .3s;
+      opacity:0;
+    }
+    .settings-panel.open { max-height:200px; opacity:1; }
+  </style>
+</head>
+<body>
+
+  <!-- TITLE BAR -->
+  <div class="titlebar">
+    <span class="titlebar-label">CRETANIA LAUNCHER</span>
+    <div class="titlebar-btns">
+      <button id="btnMin" title="Minimizar">&#x2500;</button>
+      <button id="btnClose" class="close-btn" title="Cerrar">&#x2715;</button>
+    </div>
+  </div>
+
+  <div class="main-content">
+    <!-- GEARS BG -->
+    <div class="gears-container">
+      <svg class="gear gear-1" viewBox="0 0 100 100"><path d="M50 15 L53 5 L58 5 L55 15 A35 35 0 0 1 68 20 L75 12 L80 16 L72 24 A35 35 0 0 1 78 35 L88 33 L90 38 L80 40 A35 35 0 0 1 80 50 L90 53 L88 58 L78 55 A35 35 0 0 1 72 68 L80 75 L75 80 L68 72 A35 35 0 0 1 55 78 L58 88 L53 90 L50 80 A35 35 0 0 1 40 78 L38 88 L33 90 L35 80 A35 35 0 0 1 24 72 L16 80 L12 75 L20 68 A35 35 0 0 1 15 55 L5 58 L5 53 L15 50 A35 35 0 0 1 15 40 L5 38 L5 33 L15 35 A35 35 0 0 1 20 24 L12 16 L16 12 L24 20 A35 35 0 0 1 35 15 L33 5 L38 5 L40 15 A35 35 0 0 1 50 15Z"/><circle cx="50" cy="50" r="18"/></svg>
+      <svg class="gear gear-2" viewBox="0 0 100 100"><path d="M50 15 L53 5 L58 5 L55 15 A35 35 0 0 1 68 20 L75 12 L80 16 L72 24 A35 35 0 0 1 78 35 L88 33 L90 38 L80 40 A35 35 0 0 1 80 50 L90 53 L88 58 L78 55 A35 35 0 0 1 72 68 L80 75 L75 80 L68 72 A35 35 0 0 1 55 78 L58 88 L53 90 L50 80 A35 35 0 0 1 40 78 L38 88 L33 90 L35 80 A35 35 0 0 1 24 72 L16 80 L12 75 L20 68 A35 35 0 0 1 15 55 L5 58 L5 53 L15 50 A35 35 0 0 1 15 40 L5 38 L5 33 L15 35 A35 35 0 0 1 20 24 L12 16 L16 12 L24 20 A35 35 0 0 1 35 15 L33 5 L38 5 L40 15 A35 35 0 0 1 50 15Z"/><circle cx="50" cy="50" r="18"/></svg>
+      <svg class="gear gear-3" viewBox="0 0 100 100"><path d="M50 15 L53 5 L58 5 L55 15 A35 35 0 0 1 68 20 L75 12 L80 16 L72 24 A35 35 0 0 1 78 35 L88 33 L90 38 L80 40 A35 35 0 0 1 80 50 L90 53 L88 58 L78 55 A35 35 0 0 1 72 68 L80 75 L75 80 L68 72 A35 35 0 0 1 55 78 L58 88 L53 90 L50 80 A35 35 0 0 1 40 78 L38 88 L33 90 L35 80 A35 35 0 0 1 24 72 L16 80 L12 75 L20 68 A35 35 0 0 1 15 55 L5 58 L5 53 L15 50 A35 35 0 0 1 15 40 L5 38 L5 33 L15 35 A35 35 0 0 1 20 24 L12 16 L16 12 L24 20 A35 35 0 0 1 35 15 L33 5 L38 5 L40 15 A35 35 0 0 1 50 15Z"/><circle cx="50" cy="50" r="18"/></svg>
+      <svg class="gear gear-4" viewBox="0 0 100 100"><path d="M50 15 L53 5 L58 5 L55 15 A35 35 0 0 1 68 20 L75 12 L80 16 L72 24 A35 35 0 0 1 78 35 L88 33 L90 38 L80 40 A35 35 0 0 1 80 50 L90 53 L88 58 L78 55 A35 35 0 0 1 72 68 L80 75 L75 80 L68 72 A35 35 0 0 1 55 78 L58 88 L53 90 L50 80 A35 35 0 0 1 40 78 L38 88 L33 90 L35 80 A35 35 0 0 1 24 72 L16 80 L12 75 L20 68 A35 35 0 0 1 15 55 L5 58 L5 53 L15 50 A35 35 0 0 1 15 40 L5 38 L5 33 L15 35 A35 35 0 0 1 20 24 L12 16 L16 12 L24 20 A35 35 0 0 1 35 15 L33 5 L38 5 L40 15 A35 35 0 0 1 50 15Z"/><circle cx="50" cy="50" r="18"/></svg>
+    </div>
+    <div id="particles"></div>
+
+    <!-- LOGO -->
+    <div class="logo-section">
+      <span class="logo-icon">&#9881;</span>
+      <h1>Cretania</h1>
+      <p class="subtitle">Mundo de Ingenieros</p>
+    </div>
+
+    <!-- MAIN CARD -->
+    <div class="card">
+      <span class="rivet-bl"></span>
+      <span class="rivet-br"></span>
+
+      <!-- ACCOUNTS -->
+      <div class="section-label">CUENTAS MICROSOFT</div>
+      <div class="account-section">
+        <div class="account-list" id="accountList">
+          <div class="no-accounts" id="noAccounts">Sin cuentas. Agrega una para jugar.</div>
+        </div>
+        <button class="btn-add-account" id="btnAddAccount">+ Agregar cuenta Microsoft</button>
+      </div>
+
+      <div class="separator"></div>
+
+      <!-- SETTINGS TOGGLE -->
+      <button class="settings-toggle" id="btnSettings" title="Configuración">&#9881;</button>
+
+      <!-- SETTINGS PANEL (collapsible) -->
+      <div class="settings-panel" id="settingsPanel">
+        <div class="section-label">CONFIGURACIÓN</div>
+        <div class="settings-row">
+          <label>RAM mín.</label>
+          <input type="range" id="ramMin" min="1" max="8" step="1" value="2">
+          <span class="ram-value" id="ramMinVal">2G</span>
+        </div>
+        <div class="settings-row">
+          <label>RAM máx.</label>
+          <input type="range" id="ramMax" min="2" max="16" step="1" value="4">
+          <span class="ram-value" id="ramMaxVal">4G</span>
+        </div>
+        <div class="separator" style="margin-top:8px"></div>
+      </div>
+
+      <!-- LAUNCH -->
+      <button class="btn btn-launch" id="btnLaunch" disabled>
+        &#9881; Jugar
+      </button>
+
+      <button class="btn btn-secondary" id="btnDownload">
+        &#8595; Descargar Modpack
+      </button>
+
+      <div id="progressBar"><div id="progressFill"></div></div>
+      <div id="status">Sistemas operativos.</div>
+    </div>
+
+    <div class="footer-deco">
+      <div class="footer-line"></div>
+      <div class="footer-dot"></div>
+      <div class="footer-line"></div>
+    </div>
+  </div>
+
+  <script>
+    const { ipcRenderer } = require("electron");
+
+    // ── PARTICLES ────────────────────────────────────────────────────
+    const particlesEl = document.getElementById("particles");
+    function spawnParticle() {
+      const p = document.createElement("div");
+      p.className = "particle";
+      p.style.left = Math.random() * 100 + "%";
+      p.style.bottom = "-5px";
+      p.style.width = (1 + Math.random() * 3) + "px";
+      p.style.height = p.style.width;
+      p.style.animationDuration = (4 + Math.random() * 6) + "s";
+      particlesEl.appendChild(p);
+      setTimeout(() => p.remove(), 10000);
+    }
+    setInterval(spawnParticle, 350);
+
+    // ── REFS ─────────────────────────────────────────────────────────
+    const btnAddAccount = document.getElementById("btnAddAccount");
+    const btnLaunch = document.getElementById("btnLaunch");
+    const btnDownload = document.getElementById("btnDownload");
+    const btnSettings = document.getElementById("btnSettings");
+    const settingsPanel = document.getElementById("settingsPanel");
+    const accountListEl = document.getElementById("accountList");
+    const noAccountsEl = document.getElementById("noAccounts");
+    const statusEl = document.getElementById("status");
+    const progressBar = document.getElementById("progressBar");
+    const progressFill = document.getElementById("progressFill");
+    const ramMinSlider = document.getElementById("ramMin");
+    const ramMaxSlider = document.getElementById("ramMax");
+    const ramMinVal = document.getElementById("ramMinVal");
+    const ramMaxVal = document.getElementById("ramMaxVal");
+
+    let selectedAccount = null;
+    let accounts = [];
+
+    function setStatus(msg) { statusEl.textContent = msg; }
+    function setLoading(on) {
+      btnLaunch.disabled = on || !selectedAccount;
+      btnDownload.disabled = on;
+      btnAddAccount.disabled = on;
+    }
+
+    // ── WINDOW CONTROLS ──────────────────────────────────────────────
+    document.getElementById("btnMin").addEventListener("click", () => ipcRenderer.send("win-minimize"));
+    document.getElementById("btnClose").addEventListener("click", () => ipcRenderer.send("win-close"));
+
+    // ── SETTINGS ─────────────────────────────────────────────────────
+    btnSettings.addEventListener("click", () => {
+      settingsPanel.classList.toggle("open");
+      btnSettings.style.transform = settingsPanel.classList.contains("open") ? "rotate(60deg)" : "";
+    });
+
+    async function loadSettings() {
+      const s = await ipcRenderer.invoke("get-settings");
+      ramMinSlider.value = s.ramMin || 2;
+      ramMaxSlider.value = s.ramMax || 4;
+      ramMinVal.textContent = ramMinSlider.value + "G";
+      ramMaxVal.textContent = ramMaxSlider.value + "G";
+    }
+
+    async function saveSettings() {
+      await ipcRenderer.invoke("save-settings", {
+        ramMin: parseInt(ramMinSlider.value),
+        ramMax: parseInt(ramMaxSlider.value),
+        width: 1280, height: 720
+      });
+    }
+
+    ramMinSlider.addEventListener("input", () => {
+      if (parseInt(ramMinSlider.value) > parseInt(ramMaxSlider.value)) {
+        ramMaxSlider.value = ramMinSlider.value;
+        ramMaxVal.textContent = ramMaxSlider.value + "G";
+      }
+      ramMinVal.textContent = ramMinSlider.value + "G";
+      saveSettings();
+    });
+    ramMaxSlider.addEventListener("input", () => {
+      if (parseInt(ramMaxSlider.value) < parseInt(ramMinSlider.value)) {
+        ramMinSlider.value = ramMaxSlider.value;
+        ramMinVal.textContent = ramMinSlider.value + "G";
+      }
+      ramMaxVal.textContent = ramMaxSlider.value + "G";
+      saveSettings();
+    });
+
+    // ── ACCOUNTS ─────────────────────────────────────────────────────
+    function renderAccounts() {
+      // Clear existing account items (not the noAccounts placeholder)
+      accountListEl.querySelectorAll(".account-item").forEach(el => el.remove());
+
+      if (accounts.length === 0) {
+        noAccountsEl.style.display = "block";
+        btnLaunch.disabled = true;
+        selectedAccount = null;
+        return;
+      }
+
+      noAccountsEl.style.display = "none";
+
+      // Auto-select first if none selected
+      if (!selectedAccount || !accounts.find(a => a.uuid === selectedAccount)) {
+        selectedAccount = accounts[0].uuid;
+      }
+
+      accounts.forEach(acc => {
+        const el = document.createElement("div");
+        el.className = "account-item" + (acc.uuid === selectedAccount ? " selected" : "");
+
+        const avatar = document.createElement("div");
+        avatar.className = "account-avatar";
+        avatar.textContent = acc.name.charAt(0).toUpperCase();
+
+        const name = document.createElement("div");
+        name.className = "account-name";
+        name.textContent = acc.name;
+
+        const removeBtn = document.createElement("button");
+        removeBtn.className = "account-remove";
+        removeBtn.textContent = "✕";
+        removeBtn.title = "Eliminar cuenta";
+        removeBtn.addEventListener("click", async (e) => {
+          e.stopPropagation();
+          await ipcRenderer.invoke("remove-account", acc.uuid);
+          await refreshAccounts();
+        });
+
+        el.appendChild(avatar);
+        el.appendChild(name);
+        el.appendChild(removeBtn);
+
+        el.addEventListener("click", () => {
+          selectedAccount = acc.uuid;
+          renderAccounts();
+          btnLaunch.disabled = false;
+        });
+
+        accountListEl.appendChild(el);
+      });
+
+      btnLaunch.disabled = !selectedAccount;
+    }
+
+    async function refreshAccounts() {
+      accounts = await ipcRenderer.invoke("get-accounts");
+      renderAccounts();
+    }
+
+    // ── ADD ACCOUNT ──────────────────────────────────────────────────
+    btnAddAccount.addEventListener("click", async () => {
+      btnAddAccount.disabled = true;
+      setStatus("Abriendo login de Microsoft…");
+      try {
+        const result = await ipcRenderer.invoke("login-microsoft");
+        setStatus("Cuenta agregada: " + result.profile.name);
+        await refreshAccounts();
+      } catch (err) {
+        setStatus("Error: " + err.message);
+      }
+      btnAddAccount.disabled = false;
+    });
+
+    // ── PROGRESS ─────────────────────────────────────────────────────
+    ipcRenderer.on("progress", (_e, data) => {
+      if (data.phase === "check") {
+        setStatus(`Verificando componentes… (${data.total} pendientes)`);
+        progressBar.style.display = data.total > 0 ? "block" : "none";
+        progressFill.style.width = "0%";
+      } else if (data.phase === "download" || data.phase === "copy") {
+        const pct = Math.round((data.current / data.total) * 100);
+        progressFill.style.width = pct + "%";
+        const action = data.phase === "copy" ? "Copiando" : "Descargando";
+        setStatus(`${action} ${data.mod} (${data.current}/${data.total})`);
+      } else if (data.phase === "status") {
+        setStatus(data.message);
+      } else if (data.phase === "done") {
+        progressFill.style.width = "100%";
+        setStatus("Encendiendo motores…");
+      }
+    });
+
+    ipcRenderer.on("log", (_e, msg) => console.log("[MC]", msg));
+
+    ipcRenderer.on("mc-closed", (_e, code) => {
+      setStatus(code === 0 ? "Minecraft cerrado." : "Minecraft cerrado (código " + code + ")");
+      setLoading(false);
+    });
+
+    // ── LAUNCH ───────────────────────────────────────────────────────
+    btnLaunch.addEventListener("click", async () => {
+      if (!selectedAccount) return;
+      setLoading(true);
+      setStatus("Preparando lanzamiento…");
+      try {
+        await ipcRenderer.invoke("launch", { accountUuid: selectedAccount });
+        setStatus("¡Buen viaje, ingeniero! ⚙");
+      } catch (err) {
+        setStatus("Error: " + err.message);
+        setLoading(false);
+      }
+    });
+
+    // ── DOWNLOAD MODPACK ─────────────────────────────────────────────
+    btnDownload.addEventListener("click", async () => {
+      setLoading(true);
+      setStatus("Selecciona destino…");
+      try {
+        const result = await ipcRenderer.invoke("download-modpack");
+        if (result.cancelled) {
+          setStatus("Descarga cancelada.");
+        } else {
+          setStatus("Modpack descargado → " + result.folder);
+        }
+      } catch (err) {
+        setStatus("Error: " + err.message);
+      }
+      setLoading(false);
+    });
+
+    // ── INIT ─────────────────────────────────────────────────────────
+    (async () => {
+      await loadSettings();
+      await refreshAccounts();
+    })();
+  </script>
+</body>
+</html>
