@@ -24,9 +24,24 @@
     "directories": {
       "output": "dist"
     },
+    "files": [
+      "**/*",
+      "!dist/**"
+    ],
+    "extraResources": [
+      {
+        "from": "../my-modpack",
+        "to": "my-modpack",
+        "filter": ["**/*"]
+      }
+    ],
     "win": {
-      "target": "portable",
-      "icon": "assets/icon.ico"
+      "target": [
+        {
+          "target": "portable",
+          "arch": ["x64"]
+        }
+      ]
     },
     "portable": {
       "artifactName": "CretaniaLauncher.exe"

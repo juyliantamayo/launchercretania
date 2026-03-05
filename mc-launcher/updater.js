@@ -27,8 +27,15 @@ const MANIFEST_URL =
   process.env.MANIFEST_URL ||
   "";
 
-// Ruta a la carpeta local de mods del modpack (relativa a mc-launcher/)
-const LOCAL_MODPACK_DIR = path.join(__dirname, "..", "my-modpack");
+// Ruta a la carpeta local de mods del modpack
+// En desarrollo: ../my-modpack  |  En build: process.resourcesPath/my-modpack
+const LOCAL_MODPACK_DIR = (() => {
+  // Cuando está empaquetado con electron-builder, los extraResources van a resourcesPath
+  const packed = path.join(process.resourcesPath || "", "my-modpack");
+  if (fs.existsSync(packed)) return packed;
+  // Desarrollo: carpeta hermana
+  return path.join(__dirname, "..", "my-modpack");
+})();
 
 const MAX_PARALLEL = 3;   // descargas/copias simultáneas máximas
 const MAX_RETRIES = 3;    // reintentos por archivo
