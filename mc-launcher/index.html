@@ -195,36 +195,12 @@
 
     .no-accounts { color:var(--steel); font-size:.75rem; text-align:center; padding:6px 0; opacity:.7; }
 
-    /* ── OFFLINE INPUT ── */
-    .offline-row {
-      display:flex; gap:6px; align-items:center;
-    }
-    .offline-input {
-      flex:1; padding:8px 10px; border-radius:3px;
-      background:rgba(212,135,78,.06); border:1px solid rgba(212,135,78,.15);
-      color:#e0ddd5; font-family:'Rajdhani',sans-serif; font-size:.82rem;
-      font-weight:600; outline:none; transition:border-color .2s;
-      letter-spacing:.5px;
-    }
-    .offline-input::placeholder { color:var(--steel); opacity:.5; }
-    .offline-input:focus { border-color:var(--copper); }
-    .btn-offline {
-      background:transparent; color:var(--steel);
-      border:1px dashed rgba(138,155,174,.2); border-radius:3px;
-      padding:8px 12px; font-family:'Rajdhani',sans-serif; font-size:.72rem;
-      font-weight:600; cursor:pointer; transition:all .2s;
-      letter-spacing:1px; white-space:nowrap;
-    }
-    .btn-offline:hover { border-color:var(--steel); color:var(--copper-light); background:rgba(138,155,174,.05); }
-    .btn-offline:disabled { opacity:.3; cursor:not-allowed; }
-
     /* ── ACCOUNT BADGE ── */
     .account-badge {
       font-size:.55rem; font-weight:700; letter-spacing:1px; text-transform:uppercase;
       padding:1px 5px; border-radius:2px; font-family:'Orbitron',monospace;
     }
     .badge-premium { background:rgba(76,175,80,.15); color:#81c784; }
-    .badge-offline { background:rgba(138,155,174,.12); color:var(--steel); }
 
     /* ── SECTION LABEL ── */
     .section-label {
@@ -334,7 +310,54 @@
       max-height:0; overflow:hidden; transition:max-height .4s ease, opacity .3s;
       opacity:0;
     }
-    .settings-panel.open { max-height:200px; opacity:1; }
+    .settings-panel.open { max-height:350px; opacity:1; }
+
+    /* ── INSTALL PATH ── */
+    .install-path-row {
+      display:flex; align-items:center; gap:8px;
+    }
+    .install-path-display {
+      flex:1; padding:6px 10px; border-radius:3px;
+      background:rgba(212,135,78,.06); border:1px solid rgba(212,135,78,.12);
+      color:var(--steel); font-family:'Rajdhani',sans-serif; font-size:.72rem;
+      font-weight:600; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+      min-width:0;
+    }
+    .btn-path {
+      background:transparent; color:var(--copper-light);
+      border:1px solid rgba(212,135,78,.2); border-radius:3px;
+      padding:5px 10px; font-family:'Rajdhani',sans-serif; font-size:.68rem;
+      font-weight:600; cursor:pointer; transition:all .2s;
+      white-space:nowrap; letter-spacing:.5px;
+    }
+    .btn-path:hover { border-color:var(--copper); background:rgba(212,135,78,.08); }
+
+    /* ── UPDATE BANNER ── */
+    .update-banner {
+      display:none; padding:8px 14px; border-radius:3px;
+      background:rgba(76,175,80,.1); border:1px solid rgba(76,175,80,.25);
+      color:#81c784; font-size:.72rem; font-weight:600;
+      letter-spacing:.5px; text-align:center;
+      animation:fadeSlideDown .5s ease-out;
+    }
+    .update-banner.warning {
+      background:rgba(255,167,38,.1); border-color:rgba(255,167,38,.25); color:#ffb74d;
+    }
+    .update-banner.error {
+      background:rgba(229,57,53,.1); border-color:rgba(229,57,53,.25); color:#ef5350;
+    }
+    .update-banner.visible { display:block; }
+
+    /* ── JAVA STATUS ── */
+    .java-row {
+      display:flex; align-items:center; gap:8px;
+    }
+    .java-status {
+      flex:1; font-size:.62rem; font-weight:600; letter-spacing:1px;
+      padding:2px 0; opacity:.6;
+    }
+    .java-ok { color:#81c784; opacity:1; }
+    .java-error { color:#ef5350; opacity:1; }
   </style>
 </head>
 <body>
@@ -374,14 +397,13 @@
       <div class="section-label">CUENTAS</div>
       <div class="account-section">
         <div class="account-list" id="accountList">
-          <div class="no-accounts" id="noAccounts">Sin cuentas. Agrega una para jugar.</div>
+          <div class="no-accounts" id="noAccounts">Sin cuentas. Agrega una cuenta Microsoft para jugar.</div>
         </div>
         <button class="btn-add-account" id="btnAddAccount">+ Agregar cuenta Microsoft</button>
-        <div class="offline-row">
-          <input type="text" class="offline-input" id="offlineUsername" placeholder="Nombre de jugador..." maxlength="16">
-          <button class="btn-offline" id="btnOffline">Entrar offline</button>
-        </div>
       </div>
+
+      <!-- UPDATE BANNER -->
+      <div class="update-banner" id="updateBanner"></div>
 
       <div class="separator"></div>
 
@@ -401,7 +423,27 @@
           <input type="range" id="ramMax" min="2" max="16" step="1" value="4">
           <span class="ram-value" id="ramMaxVal">4G</span>
         </div>
-        <div class="separator" style="margin-top:8px"></div>
+        <div class="separator" style="margin-top:6px;margin-bottom:6px"></div>
+        <div class="section-label">CARPETA DE INSTALACIÓN</div>
+        <div class="install-path-row">
+          <div class="install-path-display" id="installPathDisplay" title="Haz clic en Cambiar para elegir otra carpeta">Por defecto</div>
+          <button class="btn-path" id="btnChangePath">Cambiar</button>
+          <button class="btn-path" id="btnOpenPath" title="Abrir carpeta">&#128194;</button>
+          <button class="btn-path" id="btnResetPath" title="Restablecer ruta por defecto">&#8634;</button>
+        </div>
+        <div class="separator" style="margin-top:6px;margin-bottom:6px"></div>
+        <div class="section-label">JAVA</div>
+        <div class="java-row">
+          <div class="java-status" id="javaStatus">Verificando Java…</div>
+          <button class="btn-path" id="btnInstallJava" style="display:none">Instalar Java 17</button>
+        </div>
+        <div id="javaProgress" style="display:none">
+          <div id="javaProgressBar" style="height:3px;background:rgba(212,135,78,.1);border-radius:2px;overflow:hidden;margin-top:4px">
+            <div id="javaProgressFill" style="height:100%;width:0%;background:linear-gradient(90deg,var(--copper-dark),var(--copper-light));transition:width .3s;border-radius:2px"></div>
+          </div>
+          <div id="javaProgressText" style="font-size:.62rem;color:var(--steel);margin-top:2px;text-align:center"></div>
+        </div>
+        <div class="separator" style="margin-top:6px"></div>
       </div>
 
       <!-- LAUNCH -->
@@ -444,8 +486,6 @@
 
     // ── REFS ─────────────────────────────────────────────────────────
     const btnAddAccount = document.getElementById("btnAddAccount");
-    const btnOffline = document.getElementById("btnOffline");
-    const offlineInput = document.getElementById("offlineUsername");
     const btnLaunch = document.getElementById("btnLaunch");
     const btnDownload = document.getElementById("btnDownload");
     const btnSettings = document.getElementById("btnSettings");
@@ -459,6 +499,13 @@
     const ramMaxSlider = document.getElementById("ramMax");
     const ramMinVal = document.getElementById("ramMinVal");
     const ramMaxVal = document.getElementById("ramMaxVal");
+    const updateBanner = document.getElementById("updateBanner");
+    const installPathDisplay = document.getElementById("installPathDisplay");
+    const javaStatusEl = document.getElementById("javaStatus");
+    const btnInstallJava = document.getElementById("btnInstallJava");
+    const javaProgressEl = document.getElementById("javaProgress");
+    const javaProgressFill = document.getElementById("javaProgressFill");
+    const javaProgressText = document.getElementById("javaProgressText");
 
     let selectedAccount = null;
     let accounts = [];
@@ -468,7 +515,6 @@
       btnLaunch.disabled = on || !selectedAccount;
       btnDownload.disabled = on;
       btnAddAccount.disabled = on;
-      btnOffline.disabled = on;
     }
 
     // ── WINDOW CONTROLS ──────────────────────────────────────────────
@@ -487,13 +533,17 @@
       ramMaxSlider.value = s.ramMax || 4;
       ramMinVal.textContent = ramMinSlider.value + "G";
       ramMaxVal.textContent = ramMaxSlider.value + "G";
+      installPathDisplay.textContent = s.gameDir && s.gameDir.trim() ? s.gameDir : "Por defecto (%APPDATA%/.cretania-minecraft)";
+      installPathDisplay.title = s.gameDir && s.gameDir.trim() ? s.gameDir : "Carpeta por defecto";
     }
 
     async function saveSettings() {
+      const currentSettings = await ipcRenderer.invoke("get-settings");
       await ipcRenderer.invoke("save-settings", {
         ramMin: parseInt(ramMinSlider.value),
         ramMax: parseInt(ramMaxSlider.value),
-        width: 1280, height: 720
+        width: 1280, height: 720,
+        gameDir: currentSettings.gameDir || ""
       });
     }
 
@@ -514,9 +564,33 @@
       saveSettings();
     });
 
+    // ── INSTALL PATH ─────────────────────────────────────────────────
+    document.getElementById("btnChangePath").addEventListener("click", async () => {
+      const result = await ipcRenderer.invoke("select-game-dir");
+      if (result.cancelled) return;
+      const currentSettings = await ipcRenderer.invoke("get-settings");
+      currentSettings.gameDir = result.path;
+      await ipcRenderer.invoke("save-settings", currentSettings);
+      installPathDisplay.textContent = result.path;
+      installPathDisplay.title = result.path;
+      setStatus("Carpeta de instalación cambiada.");
+    });
+
+    document.getElementById("btnOpenPath").addEventListener("click", () => {
+      ipcRenderer.invoke("open-game-dir");
+    });
+
+    document.getElementById("btnResetPath").addEventListener("click", async () => {
+      const currentSettings = await ipcRenderer.invoke("get-settings");
+      currentSettings.gameDir = "";
+      await ipcRenderer.invoke("save-settings", currentSettings);
+      installPathDisplay.textContent = "Por defecto (%APPDATA%/.cretania-minecraft)";
+      installPathDisplay.title = "Carpeta por defecto";
+      setStatus("Carpeta restablecida al valor por defecto.");
+    });
+
     // ── ACCOUNTS ─────────────────────────────────────────────────────
     function renderAccounts() {
-      // Clear existing account items (not the noAccounts placeholder)
       accountListEl.querySelectorAll(".account-item").forEach(el => el.remove());
 
       if (accounts.length === 0) {
@@ -528,7 +602,6 @@
 
       noAccountsEl.style.display = "none";
 
-      // Auto-select first if none selected
       if (!selectedAccount || !accounts.find(a => a.uuid === selectedAccount)) {
         selectedAccount = accounts[0].uuid;
       }
@@ -546,12 +619,12 @@
         name.textContent = acc.name;
 
         const badge = document.createElement("span");
-        badge.className = "account-badge " + (acc.offline ? "badge-offline" : "badge-premium");
-        badge.textContent = acc.offline ? "OFFLINE" : "PREMIUM";
+        badge.className = "account-badge badge-premium";
+        badge.textContent = "PREMIUM";
 
         const removeBtn = document.createElement("button");
         removeBtn.className = "account-remove";
-        removeBtn.textContent = "✕";
+        removeBtn.textContent = "\u2715";
         removeBtn.title = "Eliminar cuenta";
         removeBtn.addEventListener("click", async (e) => {
           e.stopPropagation();
@@ -578,13 +651,15 @@
 
     async function refreshAccounts() {
       accounts = await ipcRenderer.invoke("get-accounts");
+      // Filtrar cuentas offline que pudieran existir de antes
+      accounts = accounts.filter(a => !a.offline);
       renderAccounts();
     }
 
     // ── ADD ACCOUNT ──────────────────────────────────────────────────
     btnAddAccount.addEventListener("click", async () => {
       btnAddAccount.disabled = true;
-      setStatus("Abriendo login de Microsoft…");
+      setStatus("Abriendo login de Microsoft\u2026");
       try {
         const result = await ipcRenderer.invoke("login-microsoft");
         setStatus("Cuenta agregada: " + result.profile.name);
@@ -594,53 +669,35 @@
       }
       btnAddAccount.disabled = false;
     });
-    // ── OFFLINE LOGIN ───────────────────────────────────────────────────
-    btnOffline.addEventListener("click", async () => {
-      const username = offlineInput.value.trim();
-      if (!username) {
-        setStatus("Escribe un nombre de jugador.");
-        offlineInput.focus();
-        return;
-      }
-      btnOffline.disabled = true;
-      setStatus("Creando sesión offline…");
-      try {
-        const result = await ipcRenderer.invoke("login-offline", username);
-        setStatus("Sesión offline: " + result.profile.name);
-        offlineInput.value = "";
-        await refreshAccounts();
-      } catch (err) {
-        setStatus("Error: " + err.message);
-      }
-      btnOffline.disabled = false;
-    });
 
-    offlineInput.addEventListener("keydown", (e) => {
-      if (e.key === "Enter") btnOffline.click();
-    });
     // ── PROGRESS ─────────────────────────────────────────────────────
     ipcRenderer.on("progress", (_e, data) => {
       if (data.phase === "check") {
-        setStatus(`Verificando componentes… (${data.total} pendientes)`);
+        setStatus("Verificando componentes\u2026 (" + data.total + " pendientes)");
         progressBar.style.display = data.total > 0 ? "block" : "none";
         progressFill.style.width = "0%";
       } else if (data.phase === "download" || data.phase === "copy") {
         const pct = Math.round((data.current / data.total) * 100);
         progressFill.style.width = pct + "%";
         const action = data.phase === "copy" ? "Copiando" : "Descargando";
-        setStatus(`${action} ${data.mod} (${data.current}/${data.total})`);
+        setStatus(action + " " + data.mod + " (" + data.current + "/" + data.total + ")");
       } else if (data.phase === "status") {
         setStatus(data.message);
       } else if (data.phase === "done") {
         progressFill.style.width = "100%";
-        setStatus("Encendiendo motores…");
+        setStatus("Encendiendo motores\u2026");
       }
     });
 
     ipcRenderer.on("log", (_e, msg) => console.log("[MC]", msg));
 
     ipcRenderer.on("mc-closed", (_e, code) => {
-      setStatus(code === 0 ? "Minecraft cerrado." : "Minecraft cerrado (código " + code + ")");
+      if (code === 0) {
+        setStatus("Minecraft cerrado correctamente.");
+      } else {
+        setStatus("Minecraft cerr\u00f3 con error (c\u00f3digo " + code + "). Revisa que tienes Java 17+ y suficiente RAM.");
+        showBanner("Minecraft cerr\u00f3 con error. Verifica Java 17+ y RAM en Configuraci\u00f3n.", "error");
+      }
       setLoading(false);
     });
 
@@ -648,12 +705,16 @@
     btnLaunch.addEventListener("click", async () => {
       if (!selectedAccount) return;
       setLoading(true);
-      setStatus("Preparando lanzamiento…");
+      setStatus("Preparando lanzamiento\u2026");
       try {
         await ipcRenderer.invoke("launch", { accountUuid: selectedAccount });
-        setStatus("¡Buen viaje, ingeniero! ⚙");
+        setStatus("\u00a1Buen viaje, ingeniero! \u2699");
       } catch (err) {
         setStatus("Error: " + err.message);
+        if (err.message.includes("Java") || err.message.includes("java")) {
+          showBanner("Error con Java: " + err.message, "error");
+          checkJava(); // Re-check to update UI status
+        }
         setLoading(false);
       }
     });
@@ -661,13 +722,13 @@
     // ── DOWNLOAD MODPACK ─────────────────────────────────────────────
     btnDownload.addEventListener("click", async () => {
       setLoading(true);
-      setStatus("Selecciona destino…");
+      setStatus("Selecciona destino\u2026");
       try {
         const result = await ipcRenderer.invoke("download-modpack");
         if (result.cancelled) {
           setStatus("Descarga cancelada.");
         } else {
-          setStatus("Modpack descargado → " + result.folder);
+          setStatus("Modpack descargado \u2192 " + result.folder);
         }
       } catch (err) {
         setStatus("Error: " + err.message);
@@ -675,10 +736,88 @@
       setLoading(false);
     });
 
+    // ── UPDATE BANNER ────────────────────────────────────────────────
+    function showBanner(msg, type = "info") {
+      updateBanner.textContent = msg;
+      updateBanner.className = "update-banner visible" + (type !== "info" ? " " + type : "");
+    }
+
+    async function checkForUpdates() {
+      try {
+        const result = await ipcRenderer.invoke("check-updates");
+        if (result.error) return;
+        if (result.hasUpdate) {
+          showBanner("\u26a0 Nueva versi\u00f3n del modpack disponible (v" + result.remoteVersion + "). Se actualizar\u00e1 al jugar.", "warning");
+        } else if (result.isFirstRun) {
+          showBanner("Modpack v" + result.remoteVersion + " \u2014 " + result.modCount + " mods. \u00a1Listo para jugar!");
+        }
+      } catch (err) {
+        console.warn("Update check failed:", err);
+      }
+    }
+
+    // ── JAVA CHECK & INSTALL ────────────────────────────────────────
+    async function checkJava() {
+      try {
+        const info = await ipcRenderer.invoke("check-java");
+        if (info.found) {
+          javaStatusEl.textContent = "\u2713 Java " + info.version + " detectado";
+          javaStatusEl.className = "java-status java-ok";
+          btnInstallJava.style.display = "none";
+          javaProgressEl.style.display = "none";
+        } else {
+          javaStatusEl.textContent = "\u2717 Java 17+ no encontrado";
+          javaStatusEl.className = "java-status java-error";
+          btnInstallJava.style.display = "inline-block";
+          showBanner("Java 17+ no detectado. Se instalar\u00e1 autom\u00e1ticamente al jugar, o puedes instalarlo desde Configuraci\u00f3n.", "warning");
+        }
+      } catch (err) {
+        javaStatusEl.textContent = "No se pudo verificar Java";
+        javaStatusEl.className = "java-status";
+        btnInstallJava.style.display = "inline-block";
+      }
+    }
+
+    btnInstallJava.addEventListener("click", async () => {
+      btnInstallJava.disabled = true;
+      btnInstallJava.textContent = "Instalando\u2026";
+      javaProgressEl.style.display = "block";
+      javaProgressFill.style.width = "0%";
+      // Open settings panel if not already open
+      if (!settingsPanel.classList.contains("open")) {
+        settingsPanel.classList.add("open");
+        btnSettings.style.transform = "rotate(60deg)";
+      }
+      try {
+        const result = await ipcRenderer.invoke("install-java");
+        javaStatusEl.textContent = "\u2713 Java " + result.version + " instalado correctamente";
+        javaStatusEl.className = "java-status java-ok";
+        btnInstallJava.style.display = "none";
+        javaProgressEl.style.display = "none";
+        showBanner("\u2713 Java " + result.version + " instalado correctamente. \u00a1Listo para jugar!");
+        updateBanner.className = "update-banner visible"; // green (default)
+      } catch (err) {
+        javaStatusEl.textContent = "\u2717 Error: " + err.message;
+        javaStatusEl.className = "java-status java-error";
+        btnInstallJava.disabled = false;
+        btnInstallJava.textContent = "Reintentar";
+        showBanner("Error instalando Java: " + err.message, "error");
+      }
+    });
+
+    ipcRenderer.on("java-install-progress", (_e, data) => {
+      javaProgressEl.style.display = "block";
+      javaProgressFill.style.width = data.percent + "%";
+      javaProgressText.textContent = data.message;
+      setStatus(data.message);
+    });
+
     // ── INIT ─────────────────────────────────────────────────────────
     (async () => {
       await loadSettings();
       await refreshAccounts();
+      checkForUpdates();
+      checkJava();
     })();
   </script>
 </body>

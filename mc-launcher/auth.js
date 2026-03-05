@@ -1,9 +1,10 @@
 /**
  * auth.js — Autenticación Microsoft con multicuenta
- * Compatible con msmc v5
+ * Compatible con msmc v5 — usa OAuth manual para compatibilidad con builds empaquetados
  */
 
 const { Auth } = require("msmc");
+const { BrowserWindow } = require("electron");
 const fs = require("fs-extra");
 const path = require("path");
 
@@ -35,19 +36,74 @@ function saveAccounts(accounts) {
 
 /**
  * Login con cuenta Microsoft (premium).
- * Abre ventana de Microsoft OAuth en Electron con timeout.
+ * Abre manualmente una BrowserWindow para OAuth (compatible con builds empaquetados).
  * @returns {object} { mclc, profile: { name, uuid } }
  */
 async function loginMicrosoft() {
   const authManager = new Auth("select_account");
 
-  // Timeout de 120s para evitar que se quede colgado
+  // Timeout de 120s
   const timeout = new Promise((_, reject) =>
     setTimeout(() => reject(new Error("Tiempo de espera agotado. Inténtalo de nuevo.")), 120_000)
   );
 
   const login = (async () => {
-    const xboxManager = await authManager.launch("electron");
+    // Crear el link OAuth manualmente
+    const redirect = authManager.createLink();
+
+    // Abrir ventana OAuth manualmente (no depende de msmc dynamic imports)
+    const authCode = await new Promise((resolve, reject) => {
+      const authWindow = new BrowserWindow({
+        width: 500,
+        height: 650,
+        resizable: false,
+        title: "Iniciar sesión — Microsoft",
+        webPreferences: {
+          nodeIntegration: false,
+          contextIsolation: true
+        }
+      });
+
+      authWindow.setMenu(null);
+      authWindow.loadURL(redirect);
+
+      let resolved = false;
+
+      authWindow.on("close", () => {
+        if (!resolved) {
+          reject(new Error("Ventana cerrada sin completar login."));
+        }
+      });
+
+      authWindow.webContents.on("did-finish-load", () => {
+        const loc = authWindow.webContents.getURL();
+        if (loc.startsWith(authManager.token.redirect)) {
+          const urlParams = new URLSearchParams(loc.substring(loc.indexOf("?") + 1));
+          const code = urlParams.get("code");
+          if (code) {
+            resolved = true;
+            resolve(code);
+            try { authWindow.close(); } catch {}
+          }
+        }
+      });
+
+      // También capturar redirects sin full load
+      authWindow.webContents.on("will-redirect", (_event, url) => {
+        if (url.startsWith(authManager.token.redirect)) {
+          const urlParams = new URLSearchParams(url.substring(url.indexOf("?") + 1));
+          const code = urlParams.get("code");
+          if (code) {
+            resolved = true;
+            resolve(code);
+            try { authWindow.close(); } catch {}
+          }
+        }
+      });
+    });
+
+    // Pasar el code a msmc para obtener el token de Minecraft
+    const xboxManager = await authManager.login(authCode);
     const token = await xboxManager.getMinecraft();
     return token;
   })();
@@ -128,31 +184,8 @@ function getAccountAuth(uuid) {
   return { mclc: account.mclc, profile: { name: account.name, uuid: account.uuid } };
 }
 
-/**
- * Genera autenticación offline (no-premium) para MCLC.
- * Usa Authenticator.getAuth() de minecraft-launcher-core.
- * @param {string} username — nombre de jugador offline
- * @returns {object} { mclc, profile: { name, uuid } }
- */
-function getOfflineAuth(username) {
-  const { Authenticator } = require("minecraft-launcher-core");
-  const auth = Authenticator.getAuth(username);
-  
-  // Guardar como cuenta offline
-  const profile = {
-    name: auth.name || username,
-    uuid: auth.uuid || `offline-${username.toLowerCase()}`
-  };
-
-  addAccount(profile, auth, true);
-
-  console.log("[auth] Sesión offline OK:", profile.name);
-  return { mclc: auth, profile };
-}
-
 module.exports = {
   loginMicrosoft,
-  getOfflineAuth,
   getAccountList,
   getAccountAuth,
   removeAccount,

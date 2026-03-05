@@ -10,18 +10,25 @@
  *  6. minecraft-launcher-core lanza el juego
  */
 
-const { app, BrowserWindow, ipcMain, dialog } = require("electron");
+const { app, BrowserWindow, ipcMain, dialog, shell } = require("electron");
 const { Client } = require("minecraft-launcher-core");
-const { loginMicrosoft, getOfflineAuth, getAccountList, getAccountAuth, removeAccount } = require("./auth");
+const { loginMicrosoft, getAccountList, getAccountAuth, removeAccount } = require("./auth");
 const { syncMods } = require("./updater");
 const path = require("path");
 const fs = require("fs");
 const fsExtra = require("fs-extra");
 const axios = require("axios");
 const EventEmitter = require("events");
+const { execSync, execFile } = require("child_process");
 
-const GAME_DIR = path.join(app.getPath("appData"), ".cretania-minecraft");
+const DEFAULT_GAME_DIR = path.join(app.getPath("appData"), ".cretania-minecraft");
 const SETTINGS_FILE = path.join(app.getPath("userData"), "settings.json");
+const MANIFEST_CHECK_URL = "https://github.com/juyliantamayo/launchercretania/releases/download/modpack-v1.0.0/manifest.json";
+
+// Adoptium JDK 17 para Windows x64 (portable zip)
+const JAVA_VERSION = "17";
+const JAVA_DOWNLOAD_URL = "https://api.adoptium.net/v3/binary/latest/17/ga/windows/x64/jdk/hotspot/normal/eclipse?project=jdk";
+const JAVA_INSTALL_DIR_NAME = "java-runtime";
 
 process.on("uncaughtException", (err) => {
   console.error("[main] Error no capturado:", err);
@@ -38,12 +45,231 @@ function loadSettings() {
   } catch (e) {
     console.warn("[main] Error leyendo settings:", e.message);
   }
-  return { ramMin: 2, ramMax: 4, width: 1280, height: 720 };
+  return { ramMin: 2, ramMax: 4, width: 1280, height: 720, gameDir: "" };
 }
 
 function saveSettings(settings) {
   fsExtra.ensureDirSync(path.dirname(SETTINGS_FILE));
   fs.writeFileSync(SETTINGS_FILE, JSON.stringify(settings, null, 2));
+}
+
+/** Obtiene el directorio de juego efectivo */
+function getGameDir() {
+  const settings = loadSettings();
+  return (settings.gameDir && settings.gameDir.trim()) ? settings.gameDir.trim() : DEFAULT_GAME_DIR;
+}
+
+// ─── JAVA DETECTION ───────────────────────────────────────────────────────────
+/**
+ * Busca Java 17+ en el sistema.
+ * Retorna { found, version, path } o { found: false, error }
+ */
+function detectJava() {
+  // 0. Primero verificar Java instalado por el launcher
+  const launcherJavaDir = path.join(app.getPath("userData"), JAVA_INSTALL_DIR_NAME);
+  if (fs.existsSync(launcherJavaDir)) {
+    const localJava = findJavaExeIn(launcherJavaDir);
+    if (localJava) {
+      const check = detectJavaAt(localJava);
+      if (check && check.found) return check;
+    }
+  }
+
+  // 1. Intentar "java -version" del PATH
+  const tryJava = (cmd) => {
+    try {
+      const output = execSync(`"${cmd}" -version 2>&1`, { encoding: "utf-8", timeout: 10_000 });
+      const match = output.match(/version "(\d+)(?:\.(\d+))?/);
+      if (match) {
+        const major = parseInt(match[1]);
+        if (major >= 17) return { found: true, version: major, path: cmd };
+      }
+    } catch {}
+    return null;
+  };
+
+  // Intentar java del PATH
+  const fromPath = tryJava("java");
+  if (fromPath) return fromPath;
+
+  // 2. Buscar en rutas comunes de Windows
+  const programFiles = [
+    process.env.PROGRAMFILES || "C:\\Program Files",
+    process.env["PROGRAMFILES(X86)"] || "C:\\Program Files (x86)",
+    path.join(process.env.LOCALAPPDATA || "", "Programs")
+  ];
+
+  const javaDirs = [];
+  for (const pf of programFiles) {
+    for (const sub of ["Java", "Eclipse Adoptium", "AdoptOpenJDK", "Microsoft", "Zulu", "BellSoft"]) {
+      const dir = path.join(pf, sub);
+      if (fs.existsSync(dir)) {
+        try {
+          const entries = fs.readdirSync(dir);
+          for (const e of entries) {
+            const javaBin = path.join(dir, e, "bin", "java.exe");
+            if (fs.existsSync(javaBin)) javaDirs.push(javaBin);
+          }
+        } catch {}
+      }
+    }
+  }
+
+  // Buscar también en el Minecraft runtime
+  const mcRuntimeDir = path.join(getGameDir(), "runtime");
+  if (fs.existsSync(mcRuntimeDir)) {
+    try {
+      const walkRuntime = (dir) => {
+        const items = fs.readdirSync(dir, { withFileTypes: true });
+        for (const item of items) {
+          const full = path.join(dir, item.name);
+          if (item.isFile() && item.name === "java.exe") javaDirs.push(full);
+          else if (item.isDirectory()) walkRuntime(full);
+        }
+      };
+      walkRuntime(mcRuntimeDir);
+    } catch {}
+  }
+
+  for (const jp of javaDirs) {
+    const result = tryJava(jp);
+    if (result) return result;
+  }
+
+  return { found: false, error: "Java 17 o superior no encontrado." };
+}
+
+// ─── JAVA AUTO-INSTALLER ──────────────────────────────────────────────────────
+/**
+ * Descarga e instala Java 17 (Adoptium Temurin) como portable en la carpeta del launcher.
+ * Usa la API de Adoptium para obtener el .zip, lo extrae sin necesidad de permisos admin.
+ *
+ * @param {Function} onProgress — callback(percentage, message) para informar progreso
+ * @returns {object} { found: true, version: 17, path: "...java.exe" }
+ */
+async function installJava(onProgress = () => {}) {
+  const javaBaseDir = path.join(app.getPath("userData"), JAVA_INSTALL_DIR_NAME);
+  const zipPath = path.join(app.getPath("temp"), "adoptium-jdk17.zip");
+
+  // Si ya hay una instalación local previa, verificar
+  if (fs.existsSync(javaBaseDir)) {
+    const localJava = findJavaExeIn(javaBaseDir);
+    if (localJava) {
+      const check = detectJavaAt(localJava);
+      if (check && check.found) {
+        console.log("[java-installer] Java local ya existe:", localJava);
+        return check;
+      }
+    }
+  }
+
+  onProgress(0, "Descargando Java 17 (Adoptium Temurin)…");
+  console.log("[java-installer] Descargando desde Adoptium API…");
+
+  // Descargar el .zip con progreso
+  const response = await axios.get(JAVA_DOWNLOAD_URL, {
+    responseType: "stream",
+    timeout: 300_000, // 5 min timeout
+    maxRedirects: 5
+  });
+
+  const totalBytes = parseInt(response.headers["content-length"] || "0", 10);
+  let downloadedBytes = 0;
+
+  await fsExtra.ensureDir(path.dirname(zipPath));
+  const writer = fs.createWriteStream(zipPath);
+
+  await new Promise((resolve, reject) => {
+    response.data.on("data", (chunk) => {
+      downloadedBytes += chunk.length;
+      if (totalBytes > 0) {
+        const pct = Math.round((downloadedBytes / totalBytes) * 70); // 0-70% for download
+        const mb = (downloadedBytes / 1024 / 1024).toFixed(1);
+        const totalMb = (totalBytes / 1024 / 1024).toFixed(0);
+        onProgress(pct, `Descargando Java 17… ${mb}/${totalMb} MB`);
+      }
+    });
+    response.data.pipe(writer);
+    writer.on("finish", resolve);
+    writer.on("error", reject);
+    response.data.on("error", reject);
+  });
+
+  console.log(`[java-installer] Descargado: ${(downloadedBytes / 1024 / 1024).toFixed(1)} MB`);
+  onProgress(70, "Extrayendo Java 17…");
+
+  // Extraer con PowerShell (disponible en Windows 10+)
+  await fsExtra.ensureDir(javaBaseDir);
+
+  // Limpiar instalación anterior si existe
+  try {
+    const existing = fs.readdirSync(javaBaseDir);
+    for (const item of existing) {
+      await fsExtra.remove(path.join(javaBaseDir, item));
+    }
+  } catch {}
+
+  try {
+    execSync(
+      `powershell -NoProfile -Command "Expand-Archive -Path '${zipPath}' -DestinationPath '${javaBaseDir}' -Force"`,
+      { timeout: 120_000, windowsHide: true }
+    );
+  } catch (err) {
+    throw new Error("Error al extraer Java: " + err.message);
+  }
+
+  onProgress(90, "Verificando instalación de Java…");
+
+  // Limpiar zip descargado
+  try { fs.unlinkSync(zipPath); } catch {}
+
+  // Buscar java.exe dentro de la carpeta extraída
+  const javaExe = findJavaExeIn(javaBaseDir);
+  if (!javaExe) {
+    throw new Error("No se encontró java.exe después de la extracción.");
+  }
+
+  // Verificar que funciona
+  const result = detectJavaAt(javaExe);
+  if (!result || !result.found) {
+    throw new Error("Java instalado pero no responde correctamente.");
+  }
+
+  onProgress(100, `Java ${result.version} instalado correctamente.`);
+  console.log(`[java-installer] Java ${result.version} instalado en: ${javaExe}`);
+  return result;
+}
+
+/** Busca java.exe recursivamente dentro de un directorio */
+function findJavaExeIn(baseDir) {
+  try {
+    const items = fs.readdirSync(baseDir, { withFileTypes: true });
+    for (const item of items) {
+      const full = path.join(baseDir, item.name);
+      if (item.isDirectory()) {
+        // Buscar en bin/java.exe directamente
+        const javaBin = path.join(full, "bin", "java.exe");
+        if (fs.existsSync(javaBin)) return javaBin;
+        // Recursivo un nivel más
+        const deeper = findJavaExeIn(full);
+        if (deeper) return deeper;
+      }
+    }
+  } catch {}
+  return null;
+}
+
+/** Verifica una ruta específica de java */
+function detectJavaAt(javaPath) {
+  try {
+    const output = execSync(`"${javaPath}" -version 2>&1`, { encoding: "utf-8", timeout: 10_000 });
+    const match = output.match(/version "(\d+)(?:\.(\d+))?/);
+    if (match) {
+      const major = parseInt(match[1]);
+      if (major >= 17) return { found: true, version: major, path: javaPath };
+    }
+  } catch {}
+  return null;
 }
 
 // ─── FABRIC INSTALLER ─────────────────────────────────────────────────────────
@@ -120,6 +346,73 @@ ipcMain.handle("save-settings", (_e, settings) => {
   return { ok: true };
 });
 
+// ─── IPC: GAME DIRECTORY ─────────────────────────────────────────────────────
+ipcMain.handle("select-game-dir", async () => {
+  const { canceled, filePaths } = await dialog.showOpenDialog(win, {
+    title: "Selecciona la carpeta de instalación del modpack",
+    properties: ["openDirectory", "createDirectory"],
+    buttonLabel: "Seleccionar carpeta"
+  });
+  if (canceled || !filePaths.length) return { cancelled: true };
+  return { cancelled: false, path: filePaths[0] };
+});
+
+ipcMain.handle("open-game-dir", () => {
+  const dir = getGameDir();
+  fsExtra.ensureDirSync(dir);
+  shell.openPath(dir);
+  return { ok: true };
+});
+
+// ─── IPC: JAVA DETECTION ────────────────────────────────────────────────────
+ipcMain.handle("check-java", () => {
+  return detectJava();
+});
+
+// ─── IPC: JAVA INSTALL ──────────────────────────────────────────────────────
+ipcMain.handle("install-java", async () => {
+  try {
+    const result = await installJava((pct, msg) => {
+      if (win && !win.isDestroyed()) {
+        win.webContents.send("java-install-progress", { percent: pct, message: msg });
+      }
+    });
+    return result;
+  } catch (err) {
+    console.error("[main] Error instalando Java:", err.message);
+    throw err;
+  }
+});
+
+// ─── IPC: CHECK FOR UPDATES ─────────────────────────────────────────────────
+ipcMain.handle("check-updates", async () => {
+  try {
+    const { data } = await axios.get(MANIFEST_CHECK_URL, { timeout: 10_000 });
+    const localVersionFile = path.join(app.getPath("userData"), "modpack-version.txt");
+    let localVer = "";
+    if (fs.existsSync(localVersionFile)) {
+      localVer = fs.readFileSync(localVersionFile, "utf-8").trim();
+    }
+    const remoteVer = data.version || "1.0.0";
+    const hasUpdate = localVer !== "" && localVer !== remoteVer;
+    const isFirstRun = localVer === "";
+
+    // Guardar versión conocida
+    fs.writeFileSync(localVersionFile, remoteVer);
+
+    return {
+      currentVersion: localVer || remoteVer,
+      remoteVersion: remoteVer,
+      hasUpdate,
+      isFirstRun,
+      modCount: data.mods ? data.mods.length : 0
+    };
+  } catch (err) {
+    console.warn("[update-check] Error:", err.message);
+    return { error: err.message, hasUpdate: false };
+  }
+});
+
 // ─── IPC: ACCOUNTS ───────────────────────────────────────────────────────────
 ipcMain.handle("get-accounts", () => getAccountList());
 ipcMain.handle("remove-account", (_e, uuid) => removeAccount(uuid));
@@ -130,26 +423,6 @@ ipcMain.handle("login-microsoft", async () => {
     return result;
   } catch (err) {
     console.error("[main] Login error:", err.message);
-    throw err;
-  }
-});
-
-// ─── IPC: LOGIN OFFLINE (NO PREMIUM) ─────────────────────────────────────────
-ipcMain.handle("login-offline", async (_e, username) => {
-  if (!username || username.trim().length < 3) {
-    throw new Error("El nombre debe tener al menos 3 caracteres.");
-  }
-  if (username.trim().length > 16) {
-    throw new Error("El nombre no puede tener más de 16 caracteres.");
-  }
-  if (!/^[a-zA-Z0-9_]+$/.test(username.trim())) {
-    throw new Error("Solo se permiten letras, números y guión bajo.");
-  }
-  try {
-    const result = getOfflineAuth(username.trim());
-    return result;
-  } catch (err) {
-    console.error("[main] Offline login error:", err.message);
     throw err;
   }
 });
@@ -177,7 +450,10 @@ ipcMain.handle("download-modpack", async () => {
 
 // ─── IPC: LANZAR JUEGO ──────────────────────────────────────────────────────
 ipcMain.handle("launch", async (_event, { authData, accountUuid }) => {
-  // 1. Auth — por token fresco, cuenta guardada, o offline
+  // 0. Obtener directorio de juego
+  const GAME_DIR = getGameDir();
+
+  // 1. Auth — por token fresco o cuenta guardada
   let auth;
   if (authData) {
     auth = authData;
@@ -185,8 +461,29 @@ ipcMain.handle("launch", async (_event, { authData, accountUuid }) => {
     const account = getAccountAuth(accountUuid);
     auth = account.mclc;
   } else {
-    throw new Error("Se requiere una cuenta (Microsoft u offline).");
+    throw new Error("Se requiere una cuenta Microsoft para jugar.");
   }
+
+  // 1.5 Detectar Java 17+ — si no existe, instalarlo automáticamente
+  setStatus(win, "Verificando Java…");
+  let javaInfo = detectJava();
+  if (!javaInfo.found) {
+    console.log("[main] Java no encontrado, instalando automáticamente…");
+    setStatus(win, "Java 17 no encontrado. Instalando automáticamente…");
+    try {
+      javaInfo = await installJava((pct, msg) => {
+        if (win && !win.isDestroyed()) {
+          win.webContents.send("java-install-progress", { percent: pct, message: msg });
+        }
+      });
+    } catch (err) {
+      throw new Error(
+        "No se pudo instalar Java 17 automáticamente: " + err.message +
+        "\nInstálalo manualmente desde https://adoptium.net/"
+      );
+    }
+  }
+  console.log(`[main] Java ${javaInfo.version} encontrado: ${javaInfo.path}`);
 
   // 2. Sync mods
   const emitter = new EventEmitter();
@@ -251,6 +548,7 @@ ipcMain.handle("launch", async (_event, { authData, accountUuid }) => {
   const launchOpts = {
     authorization: auth,
     root: GAME_DIR,
+    javaPath: javaInfo.path !== "java" ? javaInfo.path : undefined,
     version: {
       number: mcVersion,
       type: "release"
@@ -262,6 +560,9 @@ ipcMain.handle("launch", async (_event, { authData, accountUuid }) => {
     window: {
       width: settings.width || 1280,
       height: settings.height || 720
+    },
+    overrides: {
+      gameDirectory: GAME_DIR
     }
   };
 
