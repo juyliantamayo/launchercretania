@@ -26,8 +26,8 @@ const SETTINGS_FILE = path.join(app.getPath("userData"), "settings.json");
 const MANIFEST_CHECK_URL = "https://github.com/juyliantamayo/launchercretania/releases/download/modpack-v1.0.0/manifest.json";
 
 // Adoptium JDK 17 para Windows x64 (portable zip)
-const JAVA_VERSION = "17";
-const JAVA_DOWNLOAD_URL = "https://api.adoptium.net/v3/binary/latest/17/ga/windows/x64/jdk/hotspot/normal/eclipse?project=jdk";
+const JAVA_VERSION = "21";
+const JAVA_DOWNLOAD_URL = "https://api.adoptium.net/v3/binary/latest/21/ga/windows/x64/jdk/hotspot/normal/eclipse?project=jdk";
 const JAVA_INSTALL_DIR_NAME = "java-runtime";
 
 process.on("uncaughtException", (err) => {
@@ -61,7 +61,7 @@ function getGameDir() {
 
 // ─── JAVA DETECTION ───────────────────────────────────────────────────────────
 /**
- * Busca Java 17+ en el sistema.
+ * Busca Java 21+ en el sistema.
  * Retorna { found, version, path } o { found: false, error }
  */
 function detectJava() {
@@ -82,7 +82,7 @@ function detectJava() {
       const match = output.match(/version "(\d+)(?:\.(\d+))?/);
       if (match) {
         const major = parseInt(match[1]);
-        if (major >= 17) return { found: true, version: major, path: cmd };
+        if (major >= 21) return { found: true, version: major, path: cmd };
       }
     } catch {}
     return null;
@@ -136,12 +136,12 @@ function detectJava() {
     if (result) return result;
   }
 
-  return { found: false, error: "Java 17 o superior no encontrado." };
+  return { found: false, error: "Java 21 o superior no encontrado." };
 }
 
 // ─── JAVA AUTO-INSTALLER ──────────────────────────────────────────────────────
 /**
- * Descarga e instala Java 17 (Adoptium Temurin) como portable en la carpeta del launcher.
+ * Descarga e instala Java 21 (Adoptium Temurin) como portable en la carpeta del launcher.
  * Usa la API de Adoptium para obtener el .zip, lo extrae sin necesidad de permisos admin.
  *
  * @param {Function} onProgress — callback(percentage, message) para informar progreso
@@ -163,7 +163,7 @@ async function installJava(onProgress = () => {}) {
     }
   }
 
-  onProgress(0, "Descargando Java 17 (Adoptium Temurin)…");
+  onProgress(0, "Descargando Java 21 (Adoptium Temurin)…");
   console.log("[java-installer] Descargando desde Adoptium API…");
 
   // Descargar el .zip con progreso
@@ -186,7 +186,7 @@ async function installJava(onProgress = () => {}) {
         const pct = Math.round((downloadedBytes / totalBytes) * 70); // 0-70% for download
         const mb = (downloadedBytes / 1024 / 1024).toFixed(1);
         const totalMb = (totalBytes / 1024 / 1024).toFixed(0);
-        onProgress(pct, `Descargando Java 17… ${mb}/${totalMb} MB`);
+        onProgress(pct, `Descargando Java 21… ${mb}/${totalMb} MB`);
       }
     });
     response.data.pipe(writer);
@@ -196,7 +196,7 @@ async function installJava(onProgress = () => {}) {
   });
 
   console.log(`[java-installer] Descargado: ${(downloadedBytes / 1024 / 1024).toFixed(1)} MB`);
-  onProgress(70, "Extrayendo Java 17…");
+  onProgress(70, "Extrayendo Java 21…");
 
   // Extraer con PowerShell (disponible en Windows 10+)
   await fsExtra.ensureDir(javaBaseDir);
@@ -266,7 +266,7 @@ function detectJavaAt(javaPath) {
     const match = output.match(/version "(\d+)(?:\.(\d+))?/);
     if (match) {
       const major = parseInt(match[1]);
-      if (major >= 17) return { found: true, version: major, path: javaPath };
+      if (major >= 21) return { found: true, version: major, path: javaPath };
     }
   } catch {}
   return null;
@@ -312,9 +312,11 @@ function createWindow() {
   const iconPath = path.join(__dirname, "assets", "icon.ico");
 
   win = new BrowserWindow({
-    width: 820,
-    height: 600,
-    resizable: false,
+    width: 860,
+    height: 750,
+    resizable: true,
+    minWidth: 700,
+    minHeight: 550,
     title: "Cretania Launcher",
     frame: false,
     transparent: false,
@@ -464,12 +466,12 @@ ipcMain.handle("launch", async (_event, { authData, accountUuid }) => {
     throw new Error("Se requiere una cuenta Microsoft para jugar.");
   }
 
-  // 1.5 Detectar Java 17+ — si no existe, instalarlo automáticamente
+  // 1.5 Detectar Java 21+ — si no existe, instalarlo automáticamente
   setStatus(win, "Verificando Java…");
   let javaInfo = detectJava();
   if (!javaInfo.found) {
     console.log("[main] Java no encontrado, instalando automáticamente…");
-    setStatus(win, "Java 17 no encontrado. Instalando automáticamente…");
+    setStatus(win, "Java 21 no encontrado. Instalando automáticamente…");
     try {
       javaInfo = await installJava((pct, msg) => {
         if (win && !win.isDestroyed()) {
@@ -478,7 +480,7 @@ ipcMain.handle("launch", async (_event, { authData, accountUuid }) => {
       });
     } catch (err) {
       throw new Error(
-        "No se pudo instalar Java 17 automáticamente: " + err.message +
+        "No se pudo instalar Java 21 automáticamente: " + err.message +
         "\nInstálalo manualmente desde https://adoptium.net/"
       );
     }

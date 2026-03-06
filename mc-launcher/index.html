@@ -358,6 +358,50 @@
     }
     .java-ok { color:#81c784; opacity:1; }
     .java-error { color:#ef5350; opacity:1; }
+
+    /* ── MC CONSOLE PANEL ── */
+    .console-toggle {
+      position:absolute; top:8px; right:60px; z-index:2;
+      background:none; border:none; color:var(--steel);
+      font-size:.72rem; cursor:pointer; transition:all .3s;
+      opacity:.5; padding:4px 6px; font-family:'Orbitron',monospace;
+      letter-spacing:1px;
+    }
+    .console-toggle:hover { color:var(--copper-light); opacity:1; }
+    .console-toggle.active { color:var(--copper-light); opacity:1; }
+
+    .console-panel {
+      max-height:0; overflow:hidden; transition:max-height .4s ease, opacity .3s;
+      opacity:0; margin-top:4px;
+    }
+    .console-panel.open { max-height:220px; opacity:1; }
+
+    .console-header {
+      display:flex; align-items:center; justify-content:space-between;
+      margin-bottom:4px;
+    }
+    .console-header .section-label { margin:0; }
+    .console-clear {
+      background:none; border:none; color:var(--steel); cursor:pointer;
+      font-size:.62rem; font-family:'Orbitron',monospace; letter-spacing:1px;
+      opacity:.5; transition:all .2s; padding:2px 6px;
+    }
+    .console-clear:hover { opacity:1; color:var(--copper-light); }
+
+    .console-output {
+      background:rgba(0,0,0,.4); border:1px solid rgba(212,135,78,.1);
+      border-radius:3px; padding:8px 10px;
+      font-family:'Consolas','Courier New',monospace; font-size:.65rem;
+      color:#a0a8b0; line-height:1.5;
+      height:170px; overflow-y:auto; white-space:pre-wrap; word-break:break-all;
+    }
+    .console-output::-webkit-scrollbar { width:4px; }
+    .console-output::-webkit-scrollbar-thumb { background:var(--copper-dark); border-radius:2px; }
+    .console-output .log-info { color:#a0a8b0; }
+    .console-output .log-warn { color:#ffb74d; }
+    .console-output .log-error { color:#ef5350; }
+    .console-output .log-debug { color:#78909c; }
+    .console-output .log-system { color:var(--copper-light); font-weight:600; }
   </style>
 </head>
 <body>
@@ -409,6 +453,8 @@
 
       <!-- SETTINGS TOGGLE -->
       <button class="settings-toggle" id="btnSettings" title="Configuración">&#9881;</button>
+      <!-- CONSOLE TOGGLE -->
+      <button class="console-toggle" id="btnConsole" title="Consola de Minecraft">&#9002; LOG</button>
 
       <!-- SETTINGS PANEL (collapsible) -->
       <div class="settings-panel" id="settingsPanel">
@@ -435,7 +481,7 @@
         <div class="section-label">JAVA</div>
         <div class="java-row">
           <div class="java-status" id="javaStatus">Verificando Java…</div>
-          <button class="btn-path" id="btnInstallJava" style="display:none">Instalar Java 17</button>
+          <button class="btn-path" id="btnInstallJava" style="display:none">Instalar Java 21</button>
         </div>
         <div id="javaProgress" style="display:none">
           <div id="javaProgressBar" style="height:3px;background:rgba(212,135,78,.1);border-radius:2px;overflow:hidden;margin-top:4px">
@@ -457,6 +503,15 @@
 
       <div id="progressBar"><div id="progressFill"></div></div>
       <div id="status">Sistemas operativos.</div>
+
+      <!-- MC CONSOLE -->
+      <div class="console-panel" id="consolePanel">
+        <div class="console-header">
+          <span class="section-label">CONSOLA DE MINECRAFT</span>
+          <button class="console-clear" id="btnConsoleClear">LIMPIAR</button>
+        </div>
+        <div class="console-output" id="consoleOutput"></div>
+      </div>
     </div>
 
     <div class="footer-deco">
@@ -689,14 +744,19 @@
       }
     });
 
-    ipcRenderer.on("log", (_e, msg) => console.log("[MC]", msg));
+    ipcRenderer.on("log", (_e, msg) => {
+      console.log("[MC]", msg);
+      appendConsole(msg, "info");
+    });
 
     ipcRenderer.on("mc-closed", (_e, code) => {
       if (code === 0) {
         setStatus("Minecraft cerrado correctamente.");
+        appendConsole("[LAUNCHER] Minecraft cerrado correctamente.", "system");
       } else {
-        setStatus("Minecraft cerr\u00f3 con error (c\u00f3digo " + code + "). Revisa que tienes Java 17+ y suficiente RAM.");
-        showBanner("Minecraft cerr\u00f3 con error. Verifica Java 17+ y RAM en Configuraci\u00f3n.", "error");
+        setStatus("Minecraft cerr\u00f3 con error (c\u00f3digo " + code + "). Revisa que tienes Java 21+ y suficiente RAM.");
+        showBanner("Minecraft cerr\u00f3 con error. Verifica Java 21+ y RAM en Configuraci\u00f3n.", "error");
+        appendConsole("[LAUNCHER] Minecraft cerr\u00f3 con c\u00f3digo " + code, "error");
       }
       setLoading(false);
     });
@@ -706,14 +766,17 @@
       if (!selectedAccount) return;
       setLoading(true);
       setStatus("Preparando lanzamiento\u2026");
+      appendConsole("[LAUNCHER] Preparando lanzamiento\u2026", "system");
       try {
         await ipcRenderer.invoke("launch", { accountUuid: selectedAccount });
         setStatus("\u00a1Buen viaje, ingeniero! \u2699");
+        appendConsole("[LAUNCHER] Minecraft iniciado.", "system");
       } catch (err) {
         setStatus("Error: " + err.message);
+        appendConsole("[LAUNCHER] ERROR: " + err.message, "error");
         if (err.message.includes("Java") || err.message.includes("java")) {
           showBanner("Error con Java: " + err.message, "error");
-          checkJava(); // Re-check to update UI status
+          checkJava();
         }
         setLoading(false);
       }
@@ -766,10 +829,10 @@
           btnInstallJava.style.display = "none";
           javaProgressEl.style.display = "none";
         } else {
-          javaStatusEl.textContent = "\u2717 Java 17+ no encontrado";
+          javaStatusEl.textContent = "\u2717 Java 21+ no encontrado";
           javaStatusEl.className = "java-status java-error";
           btnInstallJava.style.display = "inline-block";
-          showBanner("Java 17+ no detectado. Se instalar\u00e1 autom\u00e1ticamente al jugar, o puedes instalarlo desde Configuraci\u00f3n.", "warning");
+          showBanner("Java 21+ no detectado. Se instalar\u00e1 autom\u00e1ticamente al jugar, o puedes instalarlo desde Configuraci\u00f3n.", "warning");
         }
       } catch (err) {
         javaStatusEl.textContent = "No se pudo verificar Java";
@@ -811,6 +874,54 @@
       javaProgressText.textContent = data.message;
       setStatus(data.message);
     });
+
+    // ── MC CONSOLE ────────────────────────────────────────────────────
+    const btnConsole = document.getElementById("btnConsole");
+    const consolePanel = document.getElementById("consolePanel");
+    const consoleOutput = document.getElementById("consoleOutput");
+    const btnConsoleClear = document.getElementById("btnConsoleClear");
+    const MAX_CONSOLE_LINES = 500;
+    let consoleLineCount = 0;
+
+    btnConsole.addEventListener("click", () => {
+      consolePanel.classList.toggle("open");
+      btnConsole.classList.toggle("active");
+    });
+
+    btnConsoleClear.addEventListener("click", () => {
+      consoleOutput.innerHTML = "";
+      consoleLineCount = 0;
+    });
+
+    function appendConsole(text, type) {
+      const line = document.createElement("div");
+      line.className = "log-" + classifyLog(text, type);
+      line.textContent = text;
+      consoleOutput.appendChild(line);
+      consoleLineCount++;
+      // Trim old lines if too many
+      while (consoleLineCount > MAX_CONSOLE_LINES) {
+        if (consoleOutput.firstChild) consoleOutput.removeChild(consoleOutput.firstChild);
+        consoleLineCount--;
+      }
+      // Auto-scroll to bottom
+      consoleOutput.scrollTop = consoleOutput.scrollHeight;
+      // Auto-open console on first log
+      if (!consolePanel.classList.contains("open") && consoleLineCount === 1) {
+        consolePanel.classList.add("open");
+        btnConsole.classList.add("active");
+      }
+    }
+
+    function classifyLog(text, defaultType) {
+      if (defaultType === "system") return "system";
+      if (defaultType === "error") return "error";
+      const lower = text.toLowerCase();
+      if (lower.includes("error") || lower.includes("exception") || lower.includes("crash")) return "error";
+      if (lower.includes("warn")) return "warn";
+      if (lower.includes("debug") || lower.includes("[debug]")) return "debug";
+      return "info";
+    }
 
     // ── INIT ─────────────────────────────────────────────────────────
     (async () => {
