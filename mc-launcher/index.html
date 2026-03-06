@@ -3,8 +3,10 @@
 <head>
   <meta charset="UTF-8" />
   <title>Cretania Launcher</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Rajdhani:wght@400;600;700&display=swap" rel="stylesheet">
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Rajdhani:wght@400;600;700&display=swap');
 
     * { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -115,19 +117,14 @@
     .logo-section { text-align:center; animation:fadeSlideDown .7s ease-out both; z-index:1; }
     @keyframes fadeSlideDown { from{opacity:0;transform:translateY(-20px)} to{opacity:1;transform:translateY(0)} }
 
-    .logo-icon { font-size:2.2rem; display:block; margin-bottom:2px;
-      filter:drop-shadow(0 0 10px var(--glow));
-      animation:gearBob 4s ease-in-out infinite;
+    .logo-icon {
+      display:block; margin-bottom:4px;
+      width:220px; height:auto;
+      filter:drop-shadow(0 0 14px var(--glow));
+      animation:logoBob 4s ease-in-out infinite;
     }
-    @keyframes gearBob { 0%,100%{transform:translateY(0) rotate(0deg)} 50%{transform:translateY(-3px) rotate(3deg)} }
+    @keyframes logoBob { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-4px)} }
 
-    h1 {
-      font-family:'Orbitron',monospace; font-size:1.8rem; font-weight:900;
-      letter-spacing:5px; text-transform:uppercase;
-      background:linear-gradient(135deg,var(--copper-light),var(--brass),var(--copper));
-      -webkit-background-clip:text; -webkit-text-fill-color:transparent;
-      background-clip:text; filter:drop-shadow(0 2px 6px rgba(212,135,78,.3));
-    }
     .subtitle { font-size:.72rem; font-weight:600; color:var(--steel); letter-spacing:3px; text-transform:uppercase; margin-top:2px; }
 
     /* ── CARD ── */
@@ -395,6 +392,7 @@
       color:#a0a8b0; line-height:1.5;
       height:170px; overflow-y:auto; white-space:pre-wrap; word-break:break-all;
     }
+    .console-output { user-select:text; -webkit-user-select:text; cursor:text; }
     .console-output::-webkit-scrollbar { width:4px; }
     .console-output::-webkit-scrollbar-thumb { background:var(--copper-dark); border-radius:2px; }
     .console-output .log-info { color:#a0a8b0; }
@@ -427,8 +425,7 @@
 
     <!-- LOGO -->
     <div class="logo-section">
-      <span class="logo-icon">&#9881;</span>
-      <h1>Cretania</h1>
+      <img class="logo-icon" src="LOGO_CRETANIA_2.png" alt="Cretania" draggable="false" />
       <p class="subtitle">Mundo de Ingenieros</p>
     </div>
 
@@ -727,8 +724,21 @@
 
     // ── PROGRESS ─────────────────────────────────────────────────────
     ipcRenderer.on("progress", (_e, data) => {
-      if (data.phase === "check") {
-        setStatus("Verificando componentes\u2026 (" + data.total + " pendientes)");
+      if (data.phase === "verify") {
+        const pct = Math.round((data.current / data.total) * 100);
+        progressBar.style.display = "block";
+        progressFill.style.width = pct + "%";
+        const pendingText = data.pending > 0 ? " (" + data.pending + " pendientes)" : "";
+        setStatus("Verificando mods\u2026 " + data.current + "/" + data.total + pendingText);
+        appendConsole("[UPDATER] Verificando " + data.current + "/" + data.total + (data.mod ? " — " + data.mod : "") + pendingText, "system");
+      } else if (data.phase === "check") {
+        if (data.total === 0) {
+          setStatus("\u2713 Todos los mods est\u00e1n actualizados.");
+          appendConsole("[UPDATER] \u2713 Todos los mods verificados. Sin cambios necesarios.", "system");
+        } else {
+          setStatus("Actualizando componentes\u2026 (" + data.total + " pendientes)");
+          appendConsole("[UPDATER] " + data.total + " mod(s) necesitan descarga.", "system");
+        }
         progressBar.style.display = data.total > 0 ? "block" : "none";
         progressFill.style.width = "0%";
       } else if (data.phase === "download" || data.phase === "copy") {
@@ -736,11 +746,14 @@
         progressFill.style.width = pct + "%";
         const action = data.phase === "copy" ? "Copiando" : "Descargando";
         setStatus(action + " " + data.mod + " (" + data.current + "/" + data.total + ")");
+        appendConsole("[UPDATER] " + action + " " + data.mod + " (" + data.current + "/" + data.total + ")", "info");
       } else if (data.phase === "status") {
         setStatus(data.message);
+        appendConsole("[UPDATER] " + data.message, "system");
       } else if (data.phase === "done") {
         progressFill.style.width = "100%";
         setStatus("Encendiendo motores\u2026");
+        appendConsole("[UPDATER] Sincronizaci\u00f3n completa.", "system");
       }
     });
 

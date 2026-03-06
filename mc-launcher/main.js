@@ -309,7 +309,7 @@ async function installFabric(gameDir, mcVersion, loaderVersion) {
 
 // ─── VENTANA PRINCIPAL ────────────────────────────────────────────────────────
 function createWindow() {
-  const iconPath = path.join(__dirname, "assets", "icon.ico");
+  const iconPath = path.join(__dirname, "icon.ico");
 
   win = new BrowserWindow({
     width: 860,
@@ -317,6 +317,7 @@ function createWindow() {
     resizable: true,
     minWidth: 700,
     minHeight: 550,
+    show: false,
     title: "Cretania Launcher",
     frame: false,
     transparent: false,
@@ -327,6 +328,7 @@ function createWindow() {
     }
   });
 
+  win.once("ready-to-show", () => win.show());
   win.loadFile("index.html");
   // win.webContents.openDevTools();
 }
@@ -500,8 +502,26 @@ ipcMain.handle("launch", async (_event, { authData, accountUuid }) => {
     console.warn("[main] Error al actualizar mods:", err.message);
     if (win && !win.isDestroyed()) {
       win.webContents.send("progress", { phase: "done", current: 0, total: 0 });
+      win.webContents.send("log", "[UPDATER] Error sincronizando mods: " + err.message);
     }
+    // Use default manifest so the game can still launch with whatever mods are on disk
     manifest = { minecraft: "1.20.1", loader: "fabric", loaderVersion: "0.18.4", mods: [] };
+  }
+
+  // Report failed mods to user (syncMods now continues past individual failures)
+  if (manifest._failedMods && manifest._failedMods.length > 0) {
+    const failedNames = manifest._failedMods.map(f => f.mod).join(", ");
+    console.warn("[main] Mods que fallaron:", failedNames);
+    if (win && !win.isDestroyed()) {
+      win.webContents.send("log",
+        `[UPDATER] ⚠ ${manifest._failedMods.length} mod(s) no se pudieron descargar: ${failedNames}`);
+      win.webContents.send("log",
+        "[UPDATER] Se reintentará en el próximo lanzamiento. El juego iniciará con los mods disponibles.");
+      win.webContents.send("progress", {
+        phase: "status",
+        message: `⚠ ${manifest._failedMods.length} mod(s) fallaron. Se reintentará luego.`
+      });
+    }
   }
 
   // 3. Crear directorio

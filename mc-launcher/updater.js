@@ -71,16 +71,21 @@ async function downloadWithRetry(url, destPath, retries = MAX_RETRIES) {
   throw new Error(`No se pudo descargar ${url}: ${lastError.message}`);
 }
 
-/** Limita concurrencia a N promesas simultáneas */
+/** Limita concurrencia a N promesas simultáneas (tolerante a fallos individuales) */
 async function limitedParallel(tasks, limit) {
   const results = [];
   const running = new Set();
 
   for (const task of tasks) {
-    const p = task().then((res) => {
-      running.delete(p);
-      return res;
-    });
+    const p = task()
+      .then((res) => {
+        running.delete(p);
+        return { status: "fulfilled", value: res };
+      })
+      .catch((err) => {
+        running.delete(p);
+        return { status: "rejected", reason: err };
+      });
     running.add(p);
     results.push(p);
 
@@ -152,8 +157,17 @@ async function syncMods(gameDir, emitter = new EventEmitter()) {
     (m) => m.sha1 && !m.sha1.includes("PUT_REAL") && m.sha1 !== ""
   );
 
+  // Emit verification start
+  emitter.emit("progress", {
+    phase: "verify",
+    current: 0,
+    total: validMods.length,
+    mod: ""
+  });
+
   const toSync = [];
-  for (const mod of validMods) {
+  for (let i = 0; i < validMods.length; i++) {
+    const mod = validMods[i];
     const destPath = path.join(modsDir, path.basename(mod.file));
     let needsSync = true;
 
@@ -163,6 +177,17 @@ async function syncMods(gameDir, emitter = new EventEmitter()) {
     }
 
     if (needsSync) toSync.push(mod);
+
+    // Emit verification progress every 5 mods (or on last one) to avoid flooding
+    if ((i + 1) % 5 === 0 || i === validMods.length - 1) {
+      emitter.emit("progress", {
+        phase: "verify",
+        current: i + 1,
+        total: validMods.length,
+        mod: mod.id,
+        pending: toSync.length
+      });
+    }
   }
 
   emitter.emit("progress", {
@@ -181,44 +206,59 @@ async function syncMods(gameDir, emitter = new EventEmitter()) {
 
   // 5. Sincronizar: copiar localmente O descargar desde remoto
   let synced = 0;
-  await limitedParallel(
+  const failed = [];
+
+  const results = await limitedParallel(
     toSync.map((mod) => async () => {
       const destPath = path.join(modsDir, path.basename(mod.file));
 
-      if (isRemote) {
-        // ── MODO REMOTO: descargar desde URL ──
-        const baseUrl = MANIFEST_URL.replace(/\/manifest\.json$/, "");
-        const url = mod.url || `${baseUrl}/${path.basename(mod.file)}`;
-        console.log("[updater] Descargando:", mod.id, "→", url);
-        await downloadWithRetry(url, destPath);
-      } else {
-        // ── MODO LOCAL: copiar desde my-modpack/mods/ ──
-        const sourcePath = path.join(LOCAL_MODPACK_DIR, mod.file);
-        if (!fs.existsSync(sourcePath)) {
-          throw new Error(`Mod no encontrado localmente: ${sourcePath}`);
+      try {
+        if (isRemote) {
+          // ── MODO REMOTO: descargar desde URL ──
+          const baseUrl = MANIFEST_URL.replace(/\/manifest\.json$/, "");
+          const url = mod.url || `${baseUrl}/${path.basename(mod.file)}`;
+          console.log("[updater] Descargando:", mod.id, "→", url);
+          await downloadWithRetry(url, destPath);
+        } else {
+          // ── MODO LOCAL: copiar desde my-modpack/mods/ ──
+          const sourcePath = path.join(LOCAL_MODPACK_DIR, mod.file);
+          if (!fs.existsSync(sourcePath)) {
+            throw new Error(`Mod no encontrado localmente: ${sourcePath}`);
+          }
+          console.log("[updater] Copiando:", mod.id, "→", destPath);
+          await fs.ensureDir(path.dirname(destPath));
+          await fs.copy(sourcePath, destPath, { overwrite: true });
         }
-        console.log("[updater] Copiando:", mod.id, "→", destPath);
-        await fs.ensureDir(path.dirname(destPath));
-        await fs.copy(sourcePath, destPath, { overwrite: true });
-      }
 
-      // 6. Validar SHA1 post-copia/descarga
-      const resultHash = sha1File(destPath);
-      if (resultHash.toLowerCase() !== mod.sha1.toLowerCase()) {
-        await fs.remove(destPath);
-        throw new Error(
-          `SHA1 inválido para ${mod.id}: esperado ${mod.sha1}, obtenido ${resultHash}`
-        );
-      }
+        // 6. Validar SHA1 post-copia/descarga
+        const resultHash = sha1File(destPath);
+        if (resultHash.toLowerCase() !== mod.sha1.toLowerCase()) {
+          await fs.remove(destPath);
+          throw new Error(
+            `SHA1 inválido para ${mod.id}: esperado ${mod.sha1}, obtenido ${resultHash}`
+          );
+        }
 
-      synced++;
-      console.log(`[updater] ✓ ${mod.id} (${synced}/${toSync.length})`);
-      emitter.emit("progress", {
-        phase: isRemote ? "download" : "copy",
-        current: synced,
-        total: toSync.length,
-        mod: mod.id
-      });
+        synced++;
+        console.log(`[updater] ✓ ${mod.id} (${synced}/${toSync.length})`);
+        emitter.emit("progress", {
+          phase: isRemote ? "download" : "copy",
+          current: synced,
+          total: toSync.length,
+          mod: mod.id
+        });
+      } catch (err) {
+        console.error(`[updater] ✗ Error con ${mod.id}: ${err.message}`);
+        failed.push({ mod: mod.id, error: err.message });
+        // Emit progress for this one too (so the counter advances)
+        synced++;
+        emitter.emit("progress", {
+          phase: isRemote ? "download" : "copy",
+          current: synced,
+          total: toSync.length,
+          mod: mod.id + " (ERROR)"
+        });
+      }
     }),
     MAX_PARALLEL
   );
@@ -229,7 +269,13 @@ async function syncMods(gameDir, emitter = new EventEmitter()) {
     total: toSync.length
   });
 
-  console.log("[updater] Sincronización completa.");
+  if (failed.length > 0) {
+    console.warn(`[updater] ${failed.length} mod(s) fallaron:`, failed.map(f => f.mod).join(", "));
+    // Attach failed list to manifest so the caller can report it
+    manifest._failedMods = failed;
+  }
+
+  console.log(`[updater] Sincronización completa. OK: ${toSync.length - failed.length}, Fallidos: ${failed.length}`);
   return manifest;
 }
 
