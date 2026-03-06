@@ -105,10 +105,10 @@ async function loginMicrosoft() {
     // Pasar el code a msmc para obtener el token de Minecraft
     const xboxManager = await authManager.login(authCode);
     const token = await xboxManager.getMinecraft();
-    return token;
+    return { token, xboxManager };
   })();
 
-  const token = await Promise.race([login, timeout]);
+  const { token, xboxManager } = await Promise.race([login, timeout]);
 
   const mclcAuth = token.mclc();
   const profile = {
@@ -118,8 +118,15 @@ async function loginMicrosoft() {
 
   console.log("[auth] Sesión premium OK:", profile.name);
 
-  // Guardar cuenta en la lista
-  addAccount(profile, mclcAuth);
+  // Guardar cuenta en la lista — incluir datos msmc para poder refrescar el token
+  let msmcData = null;
+  try {
+    msmcData = xboxManager.save();
+  } catch (e) {
+    console.warn("[auth] No se pudo guardar datos msmc para refresh:", e.message);
+  }
+
+  addAccount(profile, mclcAuth, false, msmcData);
 
   return { mclc: mclcAuth, profile };
 }
@@ -127,7 +134,7 @@ async function loginMicrosoft() {
 /**
  * Añade o actualiza una cuenta en el almacenamiento local
  */
-function addAccount(profile, mclcAuth, offline = false) {
+function addAccount(profile, mclcAuth, offline = false, msmcData = null) {
   const accounts = loadAccounts();
   const idx = accounts.findIndex((a) => a.uuid === profile.uuid);
 
@@ -135,6 +142,7 @@ function addAccount(profile, mclcAuth, offline = false) {
     uuid: profile.uuid,
     name: profile.name,
     mclc: mclcAuth,
+    msmcData: msmcData || (idx >= 0 ? accounts[idx].msmcData : null),
     offline: offline,
     lastUsed: Date.now()
   };
@@ -170,14 +178,42 @@ function getAccountList() {
 }
 
 /**
- * Obtiene los datos mclc de una cuenta guardada para relanzar
+ * Obtiene los datos mclc de una cuenta guardada para relanzar.
+ * Intenta refrescar el token automáticamente si hay datos msmc guardados.
  */
-function getAccountAuth(uuid) {
+async function getAccountAuth(uuid) {
   const accounts = loadAccounts();
   const account = accounts.find((a) => a.uuid === uuid);
   if (!account) throw new Error("Cuenta no encontrada");
 
-  // Actualizar lastUsed
+  // Intentar refrescar el token con datos msmc guardados
+  if (account.msmcData) {
+    try {
+      console.log("[auth] Refrescando token para:", account.name);
+      const authManager = new Auth("select_account");
+      const xboxManager = await authManager.refresh(account.msmcData);
+      const token = await xboxManager.getMinecraft();
+      const freshMclc = token.mclc();
+
+      // Guardar datos actualizados
+      let newMsmcData = null;
+      try { newMsmcData = xboxManager.save(); } catch {}
+
+      account.mclc = freshMclc;
+      account.msmcData = newMsmcData || account.msmcData;
+      account.lastUsed = Date.now();
+      saveAccounts(accounts);
+
+      console.log("[auth] Token refrescado OK para:", account.name);
+      return { mclc: freshMclc, profile: { name: account.name, uuid: account.uuid } };
+    } catch (err) {
+      console.warn("[auth] No se pudo refrescar token:", err.message);
+      // Fall through to use cached token
+    }
+  }
+
+  // Usar token cacheado (puede haber expirado)
+  console.log("[auth] Usando token cacheado para:", account.name);
   account.lastUsed = Date.now();
   saveAccounts(accounts);
 

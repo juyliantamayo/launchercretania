@@ -108,6 +108,7 @@ async function limitedParallel(tasks, limit) {
  */
 async function syncMods(gameDir, emitter = new EventEmitter()) {
   const isRemote = MANIFEST_URL && !MANIFEST_URL.includes("TU_USUARIO");
+  const cachedManifestPath = path.join(gameDir, "manifest-cache.json");
 
   // 1. Descargar manifest (remoto o local)
   let manifest;
@@ -115,10 +116,26 @@ async function syncMods(gameDir, emitter = new EventEmitter()) {
   if (isRemote) {
     try {
       console.log("[updater] Descargando manifest remoto...");
-      const { data } = await axios.get(MANIFEST_URL, { timeout: 10_000 });
+      emitter.emit("progress", { phase: "status", message: "Descargando lista de mods…" });
+      const { data } = await axios.get(MANIFEST_URL, { timeout: 15_000 });
       manifest = data;
+      // Cache manifest locally for offline use
+      try {
+        await fs.ensureDir(gameDir);
+        fs.writeFileSync(cachedManifestPath, JSON.stringify(data, null, 2));
+        console.log("[updater] Manifest cacheado localmente.");
+      } catch (cacheErr) {
+        console.warn("[updater] No se pudo cachear manifest:", cacheErr.message);
+      }
     } catch (err) {
       console.warn("[updater] No se pudo descargar manifest remoto:", err.message);
+      emitter.emit("progress", { phase: "status", message: "⚠ Error descargando manifest: " + err.message });
+      // Try cached manifest
+      if (fs.existsSync(cachedManifestPath)) {
+        console.log("[updater] Usando manifest cacheado.");
+        emitter.emit("progress", { phase: "status", message: "Usando manifest cacheado…" });
+        manifest = JSON.parse(fs.readFileSync(cachedManifestPath, "utf-8"));
+      }
     }
   }
 
@@ -127,11 +144,13 @@ async function syncMods(gameDir, emitter = new EventEmitter()) {
     const localManifest = path.join(LOCAL_MODPACK_DIR, "manifest.json");
     if (fs.existsSync(localManifest)) {
       console.log("[updater] Usando manifest local:", localManifest);
+      emitter.emit("progress", { phase: "status", message: "Usando manifest local…" });
       manifest = JSON.parse(fs.readFileSync(localManifest, "utf-8"));
     } else {
       console.warn("[updater] Sin manifest disponible. Lanzando sin mods.");
+      emitter.emit("progress", { phase: "status", message: "⚠ No se pudo obtener la lista de mods. Verifica tu conexión a internet." });
       emitter.emit("progress", { phase: "done", current: 0, total: 0 });
-      return { minecraft: "1.20.1", loader: "fabric", loaderVersion: "0.18.4", mods: [] };
+      return { minecraft: "1.20.1", loader: "fabric", loaderVersion: "0.18.4", mods: [], _noManifest: true };
     }
   }
 

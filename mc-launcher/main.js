@@ -462,7 +462,8 @@ ipcMain.handle("launch", async (_event, { authData, accountUuid }) => {
   if (authData) {
     auth = authData;
   } else if (accountUuid) {
-    const account = getAccountAuth(accountUuid);
+    setStatus(win, "Refrescando sesión…");
+    const account = await getAccountAuth(accountUuid);
     auth = account.mclc;
   } else {
     throw new Error("Se requiere una cuenta Microsoft para jugar.");
@@ -508,6 +509,14 @@ ipcMain.handle("launch", async (_event, { authData, accountUuid }) => {
     manifest = { minecraft: "1.20.1", loader: "fabric", loaderVersion: "0.18.4", mods: [] };
   }
 
+  // Report if manifest was unavailable
+  if (manifest._noManifest) {
+    if (win && !win.isDestroyed()) {
+      win.webContents.send("log",
+        "[UPDATER] ⚠ No se pudo obtener la lista de mods. Los mods existentes se mantendrán pero no se verificará ni descargará nada nuevo.");
+    }
+  }
+
   // Report failed mods to user (syncMods now continues past individual failures)
   if (manifest._failedMods && manifest._failedMods.length > 0) {
     const failedNames = manifest._failedMods.map(f => f.mod).join(", ");
@@ -537,16 +546,10 @@ ipcMain.handle("launch", async (_event, { authData, accountUuid }) => {
 
   if (manifest.loader === "fabric" && loaderVersion) {
     try {
-      if (win && !win.isDestroyed()) {
-        win.webContents.send("progress", { phase: "check", current: 0, total: 0 });
-      }
       setStatus(win, "Verificando Fabric Loader…");
       fabricProfileName = await installFabric(GAME_DIR, mcVersion, loaderVersion);
     } catch (err) {
       console.error("[main] Error instalando Fabric:", err.message);
-      if (win && !win.isDestroyed()) {
-        win.webContents.send("progress", { phase: "done", current: 0, total: 0 });
-      }
       throw new Error("No se pudo instalar Fabric Loader: " + err.message);
     }
   }
