@@ -7,7 +7,6 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Rajdhani:wght@400;600;700&display=swap" rel="stylesheet">
   <style>
-
     * { box-sizing: border-box; margin: 0; padding: 0; }
 
     :root {
@@ -35,17 +34,23 @@
       position: relative;
     }
 
-    /* ── CUSTOM TITLE BAR ── */
+    /* ── GLOBAL SCROLLBAR ── */
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: rgba(0,0,0,.2); border-radius: 3px; }
+    ::-webkit-scrollbar-thumb { background: var(--copper-dark); border-radius: 3px; transition: background .2s; }
+    ::-webkit-scrollbar-thumb:hover { background: var(--copper); }
+
+    /* ── TITLE BAR ── */
     .titlebar {
       -webkit-app-region: drag;
-      height: 32px;
-      background: rgba(8,10,16,0.95);
+      height: 36px;
+      background: rgba(8,10,16,0.97);
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 0 10px;
+      padding: 0 12px;
       flex-shrink: 0;
-      border-bottom: 1px solid rgba(212,135,78,0.1);
+      border-bottom: 1px solid rgba(212,135,78,0.12);
     }
     .titlebar-label {
       font-family: 'Orbitron', monospace;
@@ -59,22 +64,24 @@
     }
     .titlebar-btns button {
       background: none; border: none; color: var(--steel);
-      width: 32px; height: 28px; font-size: 1rem;
+      width: 36px; height: 32px; font-size: 1rem;
       cursor: pointer; transition: background 0.15s;
       display: flex; align-items: center; justify-content: center;
+      border-radius: 3px;
     }
     .titlebar-btns button:hover { background: rgba(212,135,78,0.15); color: var(--copper-light); }
     .titlebar-btns .close-btn:hover { background: #c43; color: #fff; }
 
-    /* ── MAIN CONTENT ── */
+    /* ── MAIN LAYOUT ── */
     .main-content {
       flex: 1;
       display: flex;
       flex-direction: column;
       align-items: center;
-      justify-content: center;
+      padding: 14px 20px 10px;
       position: relative;
-      gap: 12px;
+      gap: 10px;
+      overflow: hidden;
     }
 
     /* ── BG GRID ── */
@@ -105,7 +112,7 @@
 
     /* ── GEARS BG ── */
     .gears-container { position:absolute; inset:0; pointer-events:none; overflow:hidden; }
-    .gear { position:absolute; opacity:.05; fill:none; stroke:var(--copper); stroke-width:1.5; }
+    .gear { position:absolute; opacity:.04; fill:none; stroke:var(--copper); stroke-width:1.5; }
     .gear-1{width:200px;top:-40px;left:-50px;animation:spinCW 30s linear infinite}
     .gear-2{width:140px;top:0;left:90px;animation:spinCCW 24s linear infinite}
     .gear-3{width:250px;bottom:-70px;right:-70px;animation:spinCW 40s linear infinite}
@@ -113,293 +120,355 @@
     @keyframes spinCW{to{transform:rotate(360deg)}}
     @keyframes spinCCW{to{transform:rotate(-360deg)}}
 
-    /* ── HEADER ── */
-    .logo-section { text-align:center; animation:fadeSlideDown .7s ease-out both; z-index:1; }
-    @keyframes fadeSlideDown { from{opacity:0;transform:translateY(-20px)} to{opacity:1;transform:translateY(0)} }
+    /* ── HERO ── */
+    .hero-section {
+      text-align: center;
+      flex-shrink: 0;
+      z-index: 1;
+      animation: fadeSlideDown .7s ease-out both;
+    }
+    @keyframes fadeSlideDown { from{opacity:0;transform:translateY(-15px)} to{opacity:1;transform:translateY(0)} }
 
     .logo-icon {
-      display:block; margin-bottom:4px;
-      width:220px; height:auto;
-      filter:drop-shadow(0 0 14px var(--glow));
-      animation:logoBob 4s ease-in-out infinite;
+      display: block; margin: 0 auto 2px;
+      width: 170px; height: auto;
+      filter: drop-shadow(0 0 14px var(--glow));
+      animation: logoBob 4s ease-in-out infinite;
     }
-    @keyframes logoBob { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-4px)} }
+    @keyframes logoBob { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-3px)} }
 
-    .subtitle { font-size:.72rem; font-weight:600; color:var(--steel); letter-spacing:3px; text-transform:uppercase; margin-top:2px; }
-
-    /* ── CARD ── */
-    .card {
-      background:var(--panel-bg); border:1px solid var(--panel-border);
-      border-radius:4px; padding:24px 32px; width:420px;
-      display:flex; flex-direction:column; gap:12px;
-      position:relative; overflow:hidden; z-index:1;
-      animation:fadeSlideUp .7s ease-out .15s both;
-      box-shadow:0 0 30px rgba(0,0,0,.5), inset 0 1px 0 rgba(212,135,78,.08);
+    .subtitle {
+      font-size: .66rem; font-weight: 600; color: var(--steel);
+      letter-spacing: 3px; text-transform: uppercase;
     }
-    @keyframes fadeSlideUp { from{opacity:0;transform:translateY(20px)} to{opacity:1;transform:translateY(0)} }
 
-    .card::before,.card::after {
-      content:''; position:absolute; width:6px; height:6px; border-radius:50%;
-      background:radial-gradient(circle,var(--copper-light) 30%,var(--copper-dark) 70%);
-      box-shadow:0 1px 2px rgba(0,0,0,.5);
+    /* ── MAIN PANEL ── */
+    .panel {
+      background: var(--panel-bg);
+      border: 1px solid var(--panel-border);
+      border-radius: 6px;
+      width: 100%;
+      max-width: 640px;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      z-index: 1;
+      animation: fadeSlideUp .7s ease-out .15s both;
+      box-shadow: 0 0 40px rgba(0,0,0,.5), inset 0 1px 0 rgba(212,135,78,.08);
+      flex: 1;
+      min-height: 0;
+      overflow: hidden;
     }
-    .card::before{top:8px;left:8px} .card::after{top:8px;right:8px}
-    .rivet-bl,.rivet-br {
-      position:absolute; width:6px; height:6px; border-radius:50%;
-      background:radial-gradient(circle,var(--copper-light) 30%,var(--copper-dark) 70%);
-      box-shadow:0 1px 2px rgba(0,0,0,.5);
+    @keyframes fadeSlideUp { from{opacity:0;transform:translateY(15px)} to{opacity:1;transform:translateY(0)} }
+
+    /* ── TAB BAR ── */
+    .tab-bar {
+      display: flex;
+      flex-shrink: 0;
+      background: rgba(0,0,0,.25);
+      border-bottom: 1px solid rgba(212,135,78,.1);
     }
-    .rivet-bl{bottom:8px;left:8px} .rivet-br{bottom:8px;right:8px}
-
-    .separator { height:1px; background:linear-gradient(90deg,transparent,var(--copper-dark),transparent); opacity:.25; }
-
-    /* ── ACCOUNT SELECTOR ── */
-    .account-section { display:flex; flex-direction:column; gap:8px; }
-    .account-list { display:flex; flex-direction:column; gap:4px; max-height:90px; overflow-y:auto; }
-    .account-list::-webkit-scrollbar { width:3px; }
-    .account-list::-webkit-scrollbar-thumb { background:var(--copper-dark); border-radius:2px; }
-
-    .account-item {
-      display:flex; align-items:center; gap:10px;
-      padding:8px 12px; border-radius:3px;
-      background:rgba(212,135,78,.05); border:1px solid rgba(212,135,78,.1);
-      cursor:pointer; transition:all .2s;
+    .tab-btn {
+      flex: 1;
+      padding: 11px 16px;
+      background: none;
+      border: none;
+      border-bottom: 2px solid transparent;
+      color: var(--steel);
+      font-family: 'Orbitron', monospace;
+      font-size: .58rem;
+      font-weight: 700;
+      letter-spacing: 2px;
+      cursor: pointer;
+      transition: all .25s;
+      opacity: .45;
+      position: relative;
     }
-    .account-item:hover { background:rgba(212,135,78,.12); border-color:rgba(212,135,78,.3); }
-    .account-item.selected { background:rgba(212,135,78,.15); border-color:var(--copper); }
-
-    .account-avatar {
-      width:28px; height:28px; border-radius:3px;
-      background:var(--copper-dark); display:flex; align-items:center; justify-content:center;
-      font-family:'Orbitron',monospace; font-size:.7rem; font-weight:700; color:#fff;
+    .tab-btn:hover { opacity: .75; color: var(--copper-light); background: rgba(212,135,78,.03); }
+    .tab-btn.active {
+      opacity: 1;
+      color: var(--copper-light);
+      border-bottom-color: var(--copper);
+      background: rgba(212,135,78,.05);
     }
-    .account-name { font-weight:700; font-size:.85rem; flex:1; }
-    .account-remove {
-      background:none; border:none; color:var(--steel); cursor:pointer;
-      font-size:.85rem; opacity:.4; transition:all .2s; padding:2px 6px;
+    .tab-dot {
+      display: inline-block;
+      width: 5px; height: 5px;
+      background: var(--copper-light);
+      border-radius: 50%;
+      margin-left: 6px;
+      vertical-align: middle;
+      animation: dotPulse 1.5s ease-in-out infinite;
+      visibility: hidden;
     }
-    .account-remove:hover { opacity:1; color:#c43; }
+    .tab-dot.visible { visibility: visible; }
+    @keyframes dotPulse { 0%,100%{opacity:.4;transform:scale(1)} 50%{opacity:1;transform:scale(1.5)} }
 
-    .btn-add-account {
-      background:transparent; color:var(--copper-light);
-      border:1px dashed rgba(212,135,78,.25); border-radius:3px;
-      padding:8px; font-family:'Rajdhani',sans-serif; font-size:.78rem;
-      font-weight:600; cursor:pointer; transition:all .2s;
-      letter-spacing:1px;
+    /* ── TAB CONTENT ── */
+    .tab-content {
+      flex: 1;
+      min-height: 0;
+      overflow: hidden;
+      position: relative;
     }
-    .btn-add-account:hover { border-color:var(--copper); background:rgba(212,135,78,.05); }
-    .btn-add-account:disabled { opacity:.3; cursor:not-allowed; }
-
-    .no-accounts { color:var(--steel); font-size:.75rem; text-align:center; padding:6px 0; opacity:.7; }
-
-    /* ── ACCOUNT BADGE ── */
-    .account-badge {
-      font-size:.55rem; font-weight:700; letter-spacing:1px; text-transform:uppercase;
-      padding:1px 5px; border-radius:2px; font-family:'Orbitron',monospace;
+    .tab-panel {
+      display: none;
+      flex-direction: column;
+      gap: 14px;
+      padding: 18px 24px;
+      height: 100%;
+      overflow-y: auto;
+      overflow-x: hidden;
     }
-    .badge-premium { background:rgba(76,175,80,.15); color:#81c784; }
+    .tab-panel.active {
+      display: flex;
+    }
+
+    /* ── ACTION BAR ── */
+    .action-bar {
+      flex-shrink: 0;
+      padding: 10px 24px 14px;
+      border-top: 1px solid rgba(212,135,78,.12);
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      background: rgba(8,10,16,.5);
+    }
+    .action-buttons {
+      display: flex;
+      gap: 10px;
+    }
+    .action-buttons .btn-launch { flex: 1; }
+    .action-buttons .btn-secondary { white-space: nowrap; }
+
+    /* ── SEPARATOR ── */
+    .separator { height: 1px; background: linear-gradient(90deg,transparent,var(--copper-dark),transparent); opacity: .2; }
 
     /* ── SECTION LABEL ── */
     .section-label {
-      font-family:'Orbitron',monospace; font-size:.55rem; font-weight:700;
-      color:var(--steel); letter-spacing:3px; text-transform:uppercase; opacity:.6;
+      font-family: 'Orbitron', monospace; font-size: .58rem; font-weight: 700;
+      color: var(--steel); letter-spacing: 3px; text-transform: uppercase; opacity: .55;
+      margin-bottom: 2px;
     }
+
+    /* ── ACCOUNT SECTION ── */
+    .account-section { display: flex; flex-direction: column; gap: 8px; }
+    .account-list {
+      display: flex; flex-direction: column; gap: 5px;
+      max-height: 210px; overflow-y: auto;
+      padding-right: 4px;
+    }
+
+    .account-item {
+      display: flex; align-items: center; gap: 10px;
+      padding: 10px 14px; border-radius: 5px;
+      background: rgba(212,135,78,.04); border: 1px solid rgba(212,135,78,.08);
+      cursor: pointer; transition: all .2s;
+    }
+    .account-item:hover { background: rgba(212,135,78,.1); border-color: rgba(212,135,78,.25); }
+    .account-item.selected {
+      background: rgba(212,135,78,.12); border-color: var(--copper);
+      box-shadow: 0 0 12px rgba(212,135,78,.08);
+    }
+
+    .account-avatar {
+      width: 34px; height: 34px; border-radius: 4px;
+      background: var(--copper-dark); display: flex; align-items: center; justify-content: center;
+      font-family: 'Orbitron', monospace; font-size: .8rem; font-weight: 700; color: #fff;
+      flex-shrink: 0;
+    }
+    .account-name { font-weight: 700; font-size: .9rem; flex: 1; }
+    .account-remove {
+      background: none; border: none; color: var(--steel); cursor: pointer;
+      font-size: .9rem; opacity: .3; transition: all .2s; padding: 4px 8px;
+      border-radius: 3px;
+    }
+    .account-remove:hover { opacity: 1; color: #c43; background: rgba(204,68,51,.08); }
+
+    .btn-add-account {
+      background: transparent; color: var(--copper-light);
+      border: 1px dashed rgba(212,135,78,.2); border-radius: 5px;
+      padding: 11px; font-family: 'Rajdhani', sans-serif; font-size: .82rem;
+      font-weight: 600; cursor: pointer; transition: all .25s;
+      letter-spacing: 1px;
+    }
+    .btn-add-account:hover { border-color: var(--copper); background: rgba(212,135,78,.05); }
+    .btn-add-account:disabled { opacity: .3; cursor: not-allowed; }
+
+    .no-accounts { color: var(--steel); font-size: .78rem; text-align: center; padding: 12px 0; opacity: .55; }
+
+    /* ── ACCOUNT BADGE ── */
+    .account-badge {
+      font-size: .55rem; font-weight: 700; letter-spacing: 1px; text-transform: uppercase;
+      padding: 2px 6px; border-radius: 2px; font-family: 'Orbitron', monospace;
+    }
+    .badge-premium { background: rgba(76,175,80,.12); color: #81c784; }
 
     /* ── BUTTONS ── */
     .btn {
-      padding:12px 20px; border:none; border-radius:3px;
-      font-family:'Orbitron',monospace; font-size:.78rem; font-weight:700;
-      letter-spacing:1.5px; text-transform:uppercase;
-      cursor:pointer; position:relative; overflow:hidden; transition:all .3s ease;
+      padding: 13px 20px; border: none; border-radius: 5px;
+      font-family: 'Orbitron', monospace; font-size: .78rem; font-weight: 700;
+      letter-spacing: 1.5px; text-transform: uppercase;
+      cursor: pointer; position: relative; overflow: hidden; transition: all .3s ease;
     }
-    .btn:active{transform:scale(.97)}
-    .btn:disabled{opacity:.3;cursor:not-allowed;filter:grayscale(.5)}
+    .btn:active { transform: scale(.97); }
+    .btn:disabled { opacity: .3; cursor: not-allowed; filter: grayscale(.5); }
     .btn::after {
-      content:''; position:absolute; top:0; left:-100%;
-      width:100%; height:100%;
-      background:linear-gradient(90deg,transparent,rgba(255,255,255,.08),transparent);
-      transition:left .5s ease;
+      content: ''; position: absolute; top: 0; left: -100%;
+      width: 100%; height: 100%;
+      background: linear-gradient(90deg,transparent,rgba(255,255,255,.08),transparent);
+      transition: left .5s ease;
     }
-    .btn:hover:not(:disabled)::after{left:100%}
+    .btn:hover:not(:disabled)::after { left: 100%; }
 
     .btn-launch {
-      background:linear-gradient(135deg,var(--copper),var(--copper-dark));
-      color:#fff; border:1px solid rgba(232,169,110,.3);
-      box-shadow:0 3px 16px rgba(212,135,78,.2), inset 0 1px 0 rgba(255,255,255,.1);
+      background: linear-gradient(135deg, var(--copper), var(--copper-dark));
+      color: #fff; border: 1px solid rgba(232,169,110,.3);
+      box-shadow: 0 3px 16px rgba(212,135,78,.2), inset 0 1px 0 rgba(255,255,255,.1);
     }
     .btn-launch:hover:not(:disabled) {
-      background:linear-gradient(135deg,var(--copper-light),var(--copper));
-      box-shadow:0 4px 24px rgba(212,135,78,.4);
-      transform:translateY(-1px);
+      background: linear-gradient(135deg, var(--copper-light), var(--copper));
+      box-shadow: 0 4px 24px rgba(212,135,78,.4);
+      transform: translateY(-1px);
     }
 
     .btn-secondary {
-      background:transparent; color:var(--steel);
-      border:1px solid rgba(138,155,174,.15);
-      font-size:.68rem; padding:9px 14px; letter-spacing:2px;
+      background: transparent; color: var(--steel);
+      border: 1px solid rgba(138,155,174,.15);
+      font-size: .68rem; padding: 11px 16px; letter-spacing: 2px;
     }
     .btn-secondary:hover:not(:disabled) {
-      border-color:var(--copper); color:var(--copper-light);
-      box-shadow:0 0 12px rgba(212,135,78,.1);
+      border-color: var(--copper); color: var(--copper-light);
+      box-shadow: 0 0 12px rgba(212,135,78,.1);
     }
 
-    /* ── SETTINGS PANEL ── */
+    /* ── SETTINGS ── */
+    .settings-group {
+      display: flex; flex-direction: column; gap: 12px;
+    }
     .settings-row {
-      display:flex; align-items:center; gap:12px;
+      display: flex; align-items: center; gap: 12px;
     }
     .settings-row label {
-      font-size:.75rem; font-weight:600; color:var(--steel);
-      min-width:70px; letter-spacing:.5px;
+      font-size: .8rem; font-weight: 600; color: var(--steel);
+      min-width: 78px; letter-spacing: .5px;
     }
     .settings-row input[type="range"] {
-      flex:1; -webkit-appearance:none; appearance:none; height:4px;
-      background:rgba(212,135,78,.15); border-radius:2px; outline:none;
+      flex: 1; -webkit-appearance: none; appearance: none; height: 5px;
+      background: rgba(212,135,78,.12); border-radius: 3px; outline: none;
     }
     .settings-row input[type="range"]::-webkit-slider-thumb {
-      -webkit-appearance:none; width:14px; height:14px; border-radius:50%;
-      background:var(--copper); cursor:pointer;
-      box-shadow:0 0 6px var(--glow); transition:background .2s;
+      -webkit-appearance: none; width: 16px; height: 16px; border-radius: 50%;
+      background: var(--copper); cursor: pointer;
+      box-shadow: 0 0 8px var(--glow); transition: background .2s;
     }
-    .settings-row input[type="range"]::-webkit-slider-thumb:hover { background:var(--copper-light); }
+    .settings-row input[type="range"]::-webkit-slider-thumb:hover { background: var(--copper-light); }
     .ram-value {
-      font-family:'Orbitron',monospace; font-size:.72rem; font-weight:700;
-      color:var(--copper-light); min-width:32px; text-align:right;
+      font-family: 'Orbitron', monospace; font-size: .78rem; font-weight: 700;
+      color: var(--copper-light); min-width: 36px; text-align: right;
     }
+
+    /* ── INSTALL PATH ── */
+    .install-path-row {
+      display: flex; align-items: center; gap: 8px;
+    }
+    .install-path-display {
+      flex: 1; padding: 9px 12px; border-radius: 4px;
+      background: rgba(212,135,78,.04); border: 1px solid rgba(212,135,78,.1);
+      color: var(--steel); font-family: 'Rajdhani', sans-serif; font-size: .76rem;
+      font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+      min-width: 0;
+    }
+    .btn-path {
+      background: transparent; color: var(--copper-light);
+      border: 1px solid rgba(212,135,78,.18); border-radius: 4px;
+      padding: 8px 12px; font-family: 'Rajdhani', sans-serif; font-size: .74rem;
+      font-weight: 600; cursor: pointer; transition: all .2s;
+      white-space: nowrap; letter-spacing: .5px;
+    }
+    .btn-path:hover { border-color: var(--copper); background: rgba(212,135,78,.06); }
+
+    /* ── JAVA ── */
+    .java-row {
+      display: flex; align-items: center; gap: 10px;
+    }
+    .java-status {
+      flex: 1; font-size: .7rem; font-weight: 600; letter-spacing: .8px;
+      padding: 2px 0; opacity: .6;
+    }
+    .java-ok { color: #81c784; opacity: 1; }
+    .java-error { color: #ef5350; opacity: 1; }
 
     /* ── PROGRESS ── */
     #progressBar {
-      height:4px; background:rgba(212,135,78,.1);
-      border-radius:2px; overflow:hidden; display:none;
+      height: 4px; background: rgba(212,135,78,.08);
+      border-radius: 3px; overflow: hidden; display: none;
     }
     #progressFill {
-      height:100%; width:0%;
-      background:linear-gradient(90deg,var(--copper-dark),var(--copper-light),var(--brass));
-      transition:width .4s ease; border-radius:2px;
-      box-shadow:0 0 8px var(--glow); position:relative;
+      height: 100%; width: 0%;
+      background: linear-gradient(90deg, var(--copper-dark), var(--copper-light), var(--brass));
+      transition: width .4s ease; border-radius: 3px;
+      box-shadow: 0 0 8px var(--glow); position: relative;
     }
 
     /* ── STATUS ── */
     #status {
-      font-size:.75rem; font-weight:600; color:var(--steel);
-      text-align:center; min-height:16px; letter-spacing:.5px;
-      transition:color .3s;
+      font-size: .72rem; font-weight: 600; color: var(--steel);
+      text-align: center; min-height: 16px; letter-spacing: .5px;
+      transition: color .3s;
     }
-
-    /* ── FOOTER ── */
-    .footer-deco {
-      margin-top:8px; display:flex; align-items:center; gap:8px; opacity:.2;
-      z-index:1; animation:fadeSlideUp .7s ease-out .4s both;
-    }
-    .footer-line{width:35px;height:1px;background:var(--copper)}
-    .footer-dot{width:3px;height:3px;background:var(--copper);border-radius:50%;animation:pulse 3s ease-in-out infinite}
-    @keyframes pulse{0%,100%{opacity:.4;transform:scale(1)} 50%{opacity:1;transform:scale(1.5)}}
-
-    /* ── SETTINGS TOGGLE ── */
-    .settings-toggle {
-      position:absolute; top:8px; right:32px; z-index:2;
-      background:none; border:none; color:var(--steel);
-      font-size:1.1rem; cursor:pointer; transition:all .3s;
-      opacity:.5; padding:4px;
-    }
-    .settings-toggle:hover { color:var(--copper-light); opacity:1; transform:rotate(30deg); }
-
-    .settings-panel {
-      max-height:0; overflow:hidden; transition:max-height .4s ease, opacity .3s;
-      opacity:0;
-    }
-    .settings-panel.open { max-height:350px; opacity:1; }
-
-    /* ── INSTALL PATH ── */
-    .install-path-row {
-      display:flex; align-items:center; gap:8px;
-    }
-    .install-path-display {
-      flex:1; padding:6px 10px; border-radius:3px;
-      background:rgba(212,135,78,.06); border:1px solid rgba(212,135,78,.12);
-      color:var(--steel); font-family:'Rajdhani',sans-serif; font-size:.72rem;
-      font-weight:600; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
-      min-width:0;
-    }
-    .btn-path {
-      background:transparent; color:var(--copper-light);
-      border:1px solid rgba(212,135,78,.2); border-radius:3px;
-      padding:5px 10px; font-family:'Rajdhani',sans-serif; font-size:.68rem;
-      font-weight:600; cursor:pointer; transition:all .2s;
-      white-space:nowrap; letter-spacing:.5px;
-    }
-    .btn-path:hover { border-color:var(--copper); background:rgba(212,135,78,.08); }
 
     /* ── UPDATE BANNER ── */
     .update-banner {
-      display:none; padding:8px 14px; border-radius:3px;
-      background:rgba(76,175,80,.1); border:1px solid rgba(76,175,80,.25);
-      color:#81c784; font-size:.72rem; font-weight:600;
-      letter-spacing:.5px; text-align:center;
-      animation:fadeSlideDown .5s ease-out;
+      display: none; padding: 10px 16px; border-radius: 5px;
+      background: rgba(76,175,80,.08); border: 1px solid rgba(76,175,80,.2);
+      color: #81c784; font-size: .76rem; font-weight: 600;
+      letter-spacing: .5px; text-align: center;
+      animation: fadeSlideDown .5s ease-out;
     }
     .update-banner.warning {
-      background:rgba(255,167,38,.1); border-color:rgba(255,167,38,.25); color:#ffb74d;
+      background: rgba(255,167,38,.08); border-color: rgba(255,167,38,.2); color: #ffb74d;
     }
     .update-banner.error {
-      background:rgba(229,57,53,.1); border-color:rgba(229,57,53,.25); color:#ef5350;
+      background: rgba(229,57,53,.08); border-color: rgba(229,57,53,.2); color: #ef5350;
     }
-    .update-banner.visible { display:block; }
+    .update-banner.visible { display: block; }
 
-    /* ── JAVA STATUS ── */
-    .java-row {
-      display:flex; align-items:center; gap:8px;
-    }
-    .java-status {
-      flex:1; font-size:.62rem; font-weight:600; letter-spacing:1px;
-      padding:2px 0; opacity:.6;
-    }
-    .java-ok { color:#81c784; opacity:1; }
-    .java-error { color:#ef5350; opacity:1; }
-
-    /* ── MC CONSOLE PANEL ── */
-    .console-toggle {
-      position:absolute; top:8px; right:60px; z-index:2;
-      background:none; border:none; color:var(--steel);
-      font-size:.72rem; cursor:pointer; transition:all .3s;
-      opacity:.5; padding:4px 6px; font-family:'Orbitron',monospace;
-      letter-spacing:1px;
-    }
-    .console-toggle:hover { color:var(--copper-light); opacity:1; }
-    .console-toggle.active { color:var(--copper-light); opacity:1; }
-
-    .console-panel {
-      max-height:0; overflow:hidden; transition:max-height .4s ease, opacity .3s;
-      opacity:0; margin-top:4px;
-    }
-    .console-panel.open { max-height:220px; opacity:1; }
-
+    /* ── CONSOLE ── */
     .console-header {
-      display:flex; align-items:center; justify-content:space-between;
-      margin-bottom:4px;
+      display: flex; align-items: center; justify-content: space-between;
+      flex-shrink: 0;
     }
-    .console-header .section-label { margin:0; }
     .console-clear {
-      background:none; border:none; color:var(--steel); cursor:pointer;
-      font-size:.62rem; font-family:'Orbitron',monospace; letter-spacing:1px;
-      opacity:.5; transition:all .2s; padding:2px 6px;
+      background: none; border: 1px solid rgba(212,135,78,.12); color: var(--steel); cursor: pointer;
+      font-size: .6rem; font-family: 'Orbitron', monospace; letter-spacing: 1px;
+      opacity: .5; transition: all .2s; padding: 5px 12px; border-radius: 3px;
     }
-    .console-clear:hover { opacity:1; color:var(--copper-light); }
+    .console-clear:hover { opacity: 1; color: var(--copper-light); border-color: var(--copper); }
 
     .console-output {
-      background:rgba(0,0,0,.4); border:1px solid rgba(212,135,78,.1);
-      border-radius:3px; padding:8px 10px;
-      font-family:'Consolas','Courier New',monospace; font-size:.65rem;
-      color:#a0a8b0; line-height:1.5;
-      height:170px; overflow-y:auto; white-space:pre-wrap; word-break:break-all;
+      flex: 1;
+      background: rgba(0,0,0,.35); border: 1px solid rgba(212,135,78,.08);
+      border-radius: 4px; padding: 10px 12px;
+      font-family: 'Consolas', 'Courier New', monospace; font-size: .68rem;
+      color: #a0a8b0; line-height: 1.6;
+      overflow-y: auto; white-space: pre-wrap; word-break: break-all;
+      min-height: 0;
     }
-    .console-output { user-select:text; -webkit-user-select:text; cursor:text; }
-    .console-output::-webkit-scrollbar { width:4px; }
-    .console-output::-webkit-scrollbar-thumb { background:var(--copper-dark); border-radius:2px; }
-    .console-output .log-info { color:#a0a8b0; }
-    .console-output .log-warn { color:#ffb74d; }
-    .console-output .log-error { color:#ef5350; }
-    .console-output .log-debug { color:#78909c; }
-    .console-output .log-system { color:var(--copper-light); font-weight:600; }
+    .console-output { user-select: text; -webkit-user-select: text; cursor: text; }
+    .console-output .log-info { color: #a0a8b0; }
+    .console-output .log-warn { color: #ffb74d; }
+    .console-output .log-error { color: #ef5350; }
+    .console-output .log-debug { color: #78909c; }
+    .console-output .log-system { color: var(--copper-light); font-weight: 600; }
+
+    /* ── FOOTER ── */
+    .footer-deco {
+      display: flex; align-items: center; gap: 8px; opacity: .15;
+      z-index: 1; flex-shrink: 0; justify-content: center; padding-top: 2px;
+    }
+    .footer-line { width: 30px; height: 1px; background: var(--copper); }
+    .footer-dot { width: 3px; height: 3px; background: var(--copper); border-radius: 50%; }
   </style>
 </head>
 <body>
@@ -423,91 +492,96 @@
     </div>
     <div id="particles"></div>
 
-    <!-- LOGO -->
-    <div class="logo-section">
+    <!-- HERO -->
+    <div class="hero-section">
       <img class="logo-icon" src="LOGO_CRETANIA_2.png" alt="Cretania" draggable="false" />
       <p class="subtitle">Mundo de Ingenieros</p>
     </div>
 
-    <!-- MAIN CARD -->
-    <div class="card">
-      <span class="rivet-bl"></span>
-      <span class="rivet-br"></span>
-
-      <!-- ACCOUNTS -->
-      <div class="section-label">CUENTAS</div>
-      <div class="account-section">
-        <div class="account-list" id="accountList">
-          <div class="no-accounts" id="noAccounts">Sin cuentas. Agrega una cuenta Microsoft para jugar.</div>
-        </div>
-        <button class="btn-add-account" id="btnAddAccount">+ Agregar cuenta Microsoft</button>
+    <!-- MAIN PANEL -->
+    <div class="panel">
+      <!-- TAB BAR -->
+      <div class="tab-bar">
+        <button class="tab-btn active" data-tab="home">&#9881; INICIO</button>
+        <button class="tab-btn" data-tab="settings">&#9881; AJUSTES</button>
+        <button class="tab-btn" data-tab="console">&#9002; CONSOLA <span class="tab-dot" id="consoleDot"></span></button>
       </div>
 
-      <!-- UPDATE BANNER -->
-      <div class="update-banner" id="updateBanner"></div>
-
-      <div class="separator"></div>
-
-      <!-- SETTINGS TOGGLE -->
-      <button class="settings-toggle" id="btnSettings" title="Configuración">&#9881;</button>
-      <!-- CONSOLE TOGGLE -->
-      <button class="console-toggle" id="btnConsole" title="Consola de Minecraft">&#9002; LOG</button>
-
-      <!-- SETTINGS PANEL (collapsible) -->
-      <div class="settings-panel" id="settingsPanel">
-        <div class="section-label">CONFIGURACIÓN</div>
-        <div class="settings-row">
-          <label>RAM mín.</label>
-          <input type="range" id="ramMin" min="1" max="8" step="1" value="2">
-          <span class="ram-value" id="ramMinVal">2G</span>
-        </div>
-        <div class="settings-row">
-          <label>RAM máx.</label>
-          <input type="range" id="ramMax" min="2" max="16" step="1" value="4">
-          <span class="ram-value" id="ramMaxVal">4G</span>
-        </div>
-        <div class="separator" style="margin-top:6px;margin-bottom:6px"></div>
-        <div class="section-label">CARPETA DE INSTALACIÓN</div>
-        <div class="install-path-row">
-          <div class="install-path-display" id="installPathDisplay" title="Haz clic en Cambiar para elegir otra carpeta">Por defecto</div>
-          <button class="btn-path" id="btnChangePath">Cambiar</button>
-          <button class="btn-path" id="btnOpenPath" title="Abrir carpeta">&#128194;</button>
-          <button class="btn-path" id="btnResetPath" title="Restablecer ruta por defecto">&#8634;</button>
-        </div>
-        <div class="separator" style="margin-top:6px;margin-bottom:6px"></div>
-        <div class="section-label">JAVA</div>
-        <div class="java-row">
-          <div class="java-status" id="javaStatus">Verificando Java…</div>
-          <button class="btn-path" id="btnInstallJava" style="display:none">Instalar Java 21</button>
-        </div>
-        <div id="javaProgress" style="display:none">
-          <div id="javaProgressBar" style="height:3px;background:rgba(212,135,78,.1);border-radius:2px;overflow:hidden;margin-top:4px">
-            <div id="javaProgressFill" style="height:100%;width:0%;background:linear-gradient(90deg,var(--copper-dark),var(--copper-light));transition:width .3s;border-radius:2px"></div>
+      <!-- TAB CONTENT -->
+      <div class="tab-content">
+        <!-- HOME TAB -->
+        <div class="tab-panel active" data-tab-panel="home">
+          <div class="section-label">CUENTAS</div>
+          <div class="account-section">
+            <div class="account-list" id="accountList">
+              <div class="no-accounts" id="noAccounts">Sin cuentas. Agrega una cuenta Microsoft para jugar.</div>
+            </div>
+            <button class="btn-add-account" id="btnAddAccount">+ Agregar cuenta Microsoft</button>
           </div>
-          <div id="javaProgressText" style="font-size:.62rem;color:var(--steel);margin-top:2px;text-align:center"></div>
+
+          <!-- UPDATE BANNER -->
+          <div class="update-banner" id="updateBanner"></div>
         </div>
-        <div class="separator" style="margin-top:6px"></div>
+
+        <!-- SETTINGS TAB -->
+        <div class="tab-panel" data-tab-panel="settings" id="settingsPanel">
+          <div class="section-label">MEMORIA RAM</div>
+          <div class="settings-group">
+            <div class="settings-row">
+              <label>RAM mín.</label>
+              <input type="range" id="ramMin" min="1" max="8" step="1" value="2">
+              <span class="ram-value" id="ramMinVal">2G</span>
+            </div>
+            <div class="settings-row">
+              <label>RAM máx.</label>
+              <input type="range" id="ramMax" min="2" max="16" step="1" value="4">
+              <span class="ram-value" id="ramMaxVal">4G</span>
+            </div>
+          </div>
+
+          <div class="separator"></div>
+
+          <div class="section-label">CARPETA DE INSTALACIÓN</div>
+          <div class="install-path-row">
+            <div class="install-path-display" id="installPathDisplay" title="Haz clic en Cambiar para elegir otra carpeta">Por defecto</div>
+            <button class="btn-path" id="btnChangePath">Cambiar</button>
+            <button class="btn-path" id="btnOpenPath" title="Abrir carpeta">&#128194;</button>
+            <button class="btn-path" id="btnResetPath" title="Restablecer ruta por defecto">&#8634;</button>
+          </div>
+
+          <div class="separator"></div>
+
+          <div class="section-label">JAVA</div>
+          <div class="java-row">
+            <div class="java-status" id="javaStatus">Verificando Java…</div>
+            <button class="btn-path" id="btnInstallJava" style="display:none">Instalar Java 21</button>
+          </div>
+          <div id="javaProgress" style="display:none">
+            <div id="javaProgressBar" style="height:4px;background:rgba(212,135,78,.08);border-radius:3px;overflow:hidden;margin-top:6px">
+              <div id="javaProgressFill" style="height:100%;width:0%;background:linear-gradient(90deg,var(--copper-dark),var(--copper-light));transition:width .3s;border-radius:3px"></div>
+            </div>
+            <div id="javaProgressText" style="font-size:.66rem;color:var(--steel);margin-top:4px;text-align:center"></div>
+          </div>
+        </div>
+
+        <!-- CONSOLE TAB -->
+        <div class="tab-panel" data-tab-panel="console" id="consolePanel">
+          <div class="console-header">
+            <span class="section-label">CONSOLA DE MINECRAFT</span>
+            <button class="console-clear" id="btnConsoleClear">&#x2715; LIMPIAR</button>
+          </div>
+          <div class="console-output" id="consoleOutput"></div>
+        </div>
       </div>
 
-      <!-- LAUNCH -->
-      <button class="btn btn-launch" id="btnLaunch" disabled>
-        &#9881; Jugar
-      </button>
-
-      <button class="btn btn-secondary" id="btnDownload">
-        &#8595; Descargar Modpack
-      </button>
-
-      <div id="progressBar"><div id="progressFill"></div></div>
-      <div id="status">Sistemas operativos.</div>
-
-      <!-- MC CONSOLE -->
-      <div class="console-panel" id="consolePanel">
-        <div class="console-header">
-          <span class="section-label">CONSOLA DE MINECRAFT</span>
-          <button class="console-clear" id="btnConsoleClear">LIMPIAR</button>
+      <!-- ACTION BAR (always visible) -->
+      <div class="action-bar">
+        <div class="action-buttons">
+          <button class="btn btn-launch" id="btnLaunch" disabled>&#9654; JUGAR</button>
+          <button class="btn btn-secondary" id="btnDownload">&#8595; Modpack</button>
         </div>
-        <div class="console-output" id="consoleOutput"></div>
+        <div id="progressBar"><div id="progressFill"></div></div>
+        <div id="status">Sistemas operativos.</div>
       </div>
     </div>
 
@@ -540,8 +614,6 @@
     const btnAddAccount = document.getElementById("btnAddAccount");
     const btnLaunch = document.getElementById("btnLaunch");
     const btnDownload = document.getElementById("btnDownload");
-    const btnSettings = document.getElementById("btnSettings");
-    const settingsPanel = document.getElementById("settingsPanel");
     const accountListEl = document.getElementById("accountList");
     const noAccountsEl = document.getElementById("noAccounts");
     const statusEl = document.getElementById("status");
@@ -558,6 +630,7 @@
     const javaProgressEl = document.getElementById("javaProgress");
     const javaProgressFill = document.getElementById("javaProgressFill");
     const javaProgressText = document.getElementById("javaProgressText");
+    const consoleDot = document.getElementById("consoleDot");
 
     let selectedAccount = null;
     let accounts = [];
@@ -573,12 +646,27 @@
     document.getElementById("btnMin").addEventListener("click", () => ipcRenderer.send("win-minimize"));
     document.getElementById("btnClose").addEventListener("click", () => ipcRenderer.send("win-close"));
 
-    // ── SETTINGS ─────────────────────────────────────────────────────
-    btnSettings.addEventListener("click", () => {
-      settingsPanel.classList.toggle("open");
-      btnSettings.style.transform = settingsPanel.classList.contains("open") ? "rotate(60deg)" : "";
+    // ── TAB NAVIGATION ───────────────────────────────────────────────
+    const tabBtns = document.querySelectorAll(".tab-btn");
+    const tabPanels = document.querySelectorAll(".tab-panel");
+
+    function switchTab(tabName) {
+      tabBtns.forEach(btn => {
+        btn.classList.toggle("active", btn.dataset.tab === tabName);
+      });
+      tabPanels.forEach(panel => {
+        panel.classList.toggle("active", panel.dataset.tabPanel === tabName);
+      });
+      if (tabName === "console") {
+        consoleDot.classList.remove("visible");
+      }
+    }
+
+    tabBtns.forEach(btn => {
+      btn.addEventListener("click", () => switchTab(btn.dataset.tab));
     });
 
+    // ── SETTINGS ─────────────────────────────────────────────────────
     async function loadSettings() {
       const s = await ipcRenderer.invoke("get-settings");
       ramMinSlider.value = s.ramMin || 2;
@@ -703,7 +791,6 @@
 
     async function refreshAccounts() {
       accounts = await ipcRenderer.invoke("get-accounts");
-      // Filtrar cuentas offline que pudieran existir de antes
       accounts = accounts.filter(a => !a.offline);
       renderAccounts();
     }
@@ -730,7 +817,7 @@
         progressFill.style.width = pct + "%";
         const pendingText = data.pending > 0 ? " (" + data.pending + " pendientes)" : "";
         setStatus("Verificando mods\u2026 " + data.current + "/" + data.total + pendingText);
-        appendConsole("[UPDATER] Verificando " + data.current + "/" + data.total + (data.mod ? " — " + data.mod : "") + pendingText, "system");
+        appendConsole("[UPDATER] Verificando " + data.current + "/" + data.total + (data.mod ? " \u2014 " + data.mod : "") + pendingText, "system");
       } else if (data.phase === "check") {
         if (data.total === 0) {
           setStatus("\u2713 Todos los mods est\u00e1n actualizados.");
@@ -768,7 +855,7 @@
         appendConsole("[LAUNCHER] Minecraft cerrado correctamente.", "system");
       } else {
         setStatus("Minecraft cerr\u00f3 con error (c\u00f3digo " + code + "). Revisa que tienes Java 21+ y suficiente RAM.");
-        showBanner("Minecraft cerr\u00f3 con error. Verifica Java 21+ y RAM en Configuraci\u00f3n.", "error");
+        showBanner("Minecraft cerr\u00f3 con error. Verifica Java 21+ y RAM en Ajustes.", "error");
         appendConsole("[LAUNCHER] Minecraft cerr\u00f3 con c\u00f3digo " + code, "error");
       }
       setLoading(false);
@@ -790,6 +877,7 @@
         if (err.message.includes("Java") || err.message.includes("java")) {
           showBanner("Error con Java: " + err.message, "error");
           checkJava();
+          switchTab("settings");
         }
         setLoading(false);
       }
@@ -816,6 +904,8 @@
     function showBanner(msg, type = "info") {
       updateBanner.textContent = msg;
       updateBanner.className = "update-banner visible" + (type !== "info" ? " " + type : "");
+      // Ensure home tab is active to see the banner
+      switchTab("home");
     }
 
     async function checkForUpdates() {
@@ -845,7 +935,7 @@
           javaStatusEl.textContent = "\u2717 Java 21+ no encontrado";
           javaStatusEl.className = "java-status java-error";
           btnInstallJava.style.display = "inline-block";
-          showBanner("Java 21+ no detectado. Se instalar\u00e1 autom\u00e1ticamente al jugar, o puedes instalarlo desde Configuraci\u00f3n.", "warning");
+          showBanner("Java 21+ no detectado. Se instalar\u00e1 autom\u00e1ticamente al jugar, o puedes instalarlo desde Ajustes.", "warning");
         }
       } catch (err) {
         javaStatusEl.textContent = "No se pudo verificar Java";
@@ -859,11 +949,8 @@
       btnInstallJava.textContent = "Instalando\u2026";
       javaProgressEl.style.display = "block";
       javaProgressFill.style.width = "0%";
-      // Open settings panel if not already open
-      if (!settingsPanel.classList.contains("open")) {
-        settingsPanel.classList.add("open");
-        btnSettings.style.transform = "rotate(60deg)";
-      }
+      // Switch to settings tab to show progress
+      switchTab("settings");
       try {
         const result = await ipcRenderer.invoke("install-java");
         javaStatusEl.textContent = "\u2713 Java " + result.version + " instalado correctamente";
@@ -871,7 +958,7 @@
         btnInstallJava.style.display = "none";
         javaProgressEl.style.display = "none";
         showBanner("\u2713 Java " + result.version + " instalado correctamente. \u00a1Listo para jugar!");
-        updateBanner.className = "update-banner visible"; // green (default)
+        updateBanner.className = "update-banner visible";
       } catch (err) {
         javaStatusEl.textContent = "\u2717 Error: " + err.message;
         javaStatusEl.className = "java-status java-error";
@@ -889,17 +976,10 @@
     });
 
     // ── MC CONSOLE ────────────────────────────────────────────────────
-    const btnConsole = document.getElementById("btnConsole");
-    const consolePanel = document.getElementById("consolePanel");
     const consoleOutput = document.getElementById("consoleOutput");
     const btnConsoleClear = document.getElementById("btnConsoleClear");
     const MAX_CONSOLE_LINES = 500;
     let consoleLineCount = 0;
-
-    btnConsole.addEventListener("click", () => {
-      consolePanel.classList.toggle("open");
-      btnConsole.classList.toggle("active");
-    });
 
     btnConsoleClear.addEventListener("click", () => {
       consoleOutput.innerHTML = "";
@@ -919,10 +999,10 @@
       }
       // Auto-scroll to bottom
       consoleOutput.scrollTop = consoleOutput.scrollHeight;
-      // Auto-open console on first log
-      if (!consolePanel.classList.contains("open") && consoleLineCount === 1) {
-        consolePanel.classList.add("open");
-        btnConsole.classList.add("active");
+      // Show notification dot on console tab if not currently active
+      const consoleTabPanel = document.querySelector('[data-tab-panel="console"]');
+      if (!consoleTabPanel.classList.contains("active") && consoleDot) {
+        consoleDot.classList.add("visible");
       }
     }
 

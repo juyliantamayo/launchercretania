@@ -312,11 +312,11 @@ function createWindow() {
   const iconPath = path.join(__dirname, "icon.ico");
 
   win = new BrowserWindow({
-    width: 860,
-    height: 750,
+    width: 920,
+    height: 780,
     resizable: true,
-    minWidth: 700,
-    minHeight: 550,
+    minWidth: 750,
+    minHeight: 600,
     show: false,
     title: "Cretania Launcher",
     frame: false,
