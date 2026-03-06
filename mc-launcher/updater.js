@@ -117,7 +117,12 @@ async function syncMods(gameDir, emitter = new EventEmitter()) {
     try {
       console.log("[updater] Descargando manifest remoto...");
       emitter.emit("progress", { phase: "status", message: "Descargando lista de mods…" });
-      const { data } = await axios.get(MANIFEST_URL, { timeout: 15_000 });
+      // Cache-busting: GitHub CDN puede cachear assets viejos por varios minutos
+      const manifestUrl = `${MANIFEST_URL}${MANIFEST_URL.includes("?") ? "&" : "?"}t=${Date.now()}`;
+      const { data } = await axios.get(manifestUrl, {
+        timeout: 15_000,
+        headers: { "Cache-Control": "no-cache" }
+      });
       manifest = data;
       // Cache manifest locally for offline use
       try {
