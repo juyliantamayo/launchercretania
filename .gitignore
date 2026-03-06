@@ -7,7 +7,7 @@ dist/
 *.log
 
 # Mod JAR files (distributed via GitHub Releases, not in repo)
-my-modpack/mods/*.jar
+
 
 # OS files
 Thumbs.db
