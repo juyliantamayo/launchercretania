@@ -3,6 +3,66 @@
   "minecraft": "1.20.1",
   "loader": "fabric",
   "loaderVersion": "0.18.4",
+  "patchNotes": [
+    {
+      "version": "1.0.1",
+      "date": "6 de Marzo, 2026",
+      "categories": [
+        {
+          "type": "added",
+          "title": "Nuevos",
+          "icon": "+",
+          "entries": [
+            { "text": "23 mods nuevos añadidos al modpack", "detail": "Xaero's Minimap, Bobby, C2ME, Dynamic FPS, Alternate Current y más" },
+            { "text": "Interfaz rediseñada con pestañas", "detail": "Inicio, Ajustes y Consola separados para mejor navegación" },
+            { "text": "Badge de notas de parche" },
+            { "text": "Notificación en pestaña Consola", "detail": "Punto naranja cuando hay nuevos logs sin ver" }
+          ]
+        },
+        {
+          "type": "changed",
+          "title": "Mejoras",
+          "icon": "\u2191",
+          "entries": [
+            { "text": "Panel principal más ancho y scrollable" },
+            { "text": "Botón Jugar siempre visible en barra inferior" },
+            { "text": "Cuentas con más espacio para múltiples cuentas" },
+            { "text": "Elementos más grandes y fáciles de usar" }
+          ]
+        },
+        {
+          "type": "fixed",
+          "title": "Correcciones",
+          "icon": "\u2713",
+          "entries": [
+            { "text": "Cache-busting en manifest", "detail": "GitHub CDN ya no sirve versiones viejas del manifest" },
+            { "text": "Mods no se actualizaban al subir nuevas versiones" },
+            { "text": "Refresh de token Microsoft al iniciar" }
+          ]
+        }
+      ]
+    },
+    {
+      "version": "1.0.0",
+      "date": "Lanzamiento inicial",
+      "categories": [
+        {
+          "type": "added",
+          "title": "Nuevos",
+          "icon": "+",
+          "entries": [
+            { "text": "Launcher Cretania con tema steampunk" },
+            { "text": "Autenticación Microsoft con multicuenta" },
+            { "text": "180 mods Fabric 1.20.1 con descarga remota" },
+            { "text": "Instalación automática de Java 21" },
+            { "text": "Sincronización diferencial con SHA1" },
+            { "text": "Consola de Minecraft integrada" },
+            { "text": "Configuración de RAM y carpeta personalizable" }
+          ]
+        }
+      ]
+    }
+  ],
   "mods": [
     {
       "id": "advancementplaques-1-20-1-fabric-1-6-7",

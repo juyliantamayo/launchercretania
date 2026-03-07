@@ -388,10 +388,31 @@ ipcMain.handle("install-java", async () => {
   }
 });
 
+// ─── IPC: PATCH NOTES (from manifest) ────────────────────────────────────────
+ipcMain.handle("get-patch-notes", async () => {
+  try {
+    const url = `${MANIFEST_CHECK_URL}${MANIFEST_CHECK_URL.includes("?") ? "&" : "?"}t=${Date.now()}`;
+    const { data } = await axios.get(url, { timeout: 10_000, headers: { "Cache-Control": "no-cache" } });
+    return { version: data.version || "1.0.0", patchNotes: data.patchNotes || [] };
+  } catch (err) {
+    // Try cached manifest
+    const gameDir = getGameDir();
+    const cached = path.join(gameDir, "manifest-cache.json");
+    if (fs.existsSync(cached)) {
+      try {
+        const data = JSON.parse(fs.readFileSync(cached, "utf-8"));
+        return { version: data.version || "1.0.0", patchNotes: data.patchNotes || [] };
+      } catch (_) {}
+    }
+    return { version: "", patchNotes: [], error: err.message };
+  }
+});
+
 // ─── IPC: CHECK FOR UPDATES ─────────────────────────────────────────────────
 ipcMain.handle("check-updates", async () => {
   try {
-    const { data } = await axios.get(MANIFEST_CHECK_URL, { timeout: 10_000 });
+    const url = `${MANIFEST_CHECK_URL}${MANIFEST_CHECK_URL.includes("?") ? "&" : "?"}t=${Date.now()}`;
+    const { data } = await axios.get(url, { timeout: 10_000, headers: { "Cache-Control": "no-cache" } });
     const localVersionFile = path.join(app.getPath("userData"), "modpack-version.txt");
     let localVer = "";
     if (fs.existsSync(localVersionFile)) {
