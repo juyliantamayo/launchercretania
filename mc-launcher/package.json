@@ -5,6 +5,8 @@
   "main": "main.js",
   "scripts": {
     "start": "electron .",
+    "test": "jest --verbose",
+    "test:watch": "jest --watch --verbose",
     "build:win": "electron-builder --win portable",
     "build:all": "electron-builder --win --mac --linux"
   },
@@ -17,6 +19,7 @@
   "devDependencies": {
     "electron": "^28.0.0",
     "electron-builder": "^24.9.0",
+    "jest": "^30.2.0",
     "png-to-ico": "^3.0.1",
     "rcedit": "^5.0.2",
     "sharp": "^0.34.5"
@@ -30,7 +33,10 @@
     },
     "files": [
       "**/*",
-      "!dist/**"
+      "!dist/**",
+      "!__tests__/**",
+      "!test-tmp-*/**",
+      "!jest.config.*"
     ],
     "win": {
       "icon": "icon.ico",
