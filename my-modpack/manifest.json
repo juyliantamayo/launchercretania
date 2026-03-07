@@ -1,9 +1,26 @@
 {
-    "version": "1.0.3",
+    "version": "1.0.4",
     "minecraft": "1.20.1",
     "loader": "fabric",
     "loaderVersion": "0.18.4",
     "patchNotes": [
+        {
+            "version": "1.0.4",
+            "date": "6 de Marzo, 2026",
+            "categories": [
+                {
+                    "type": "fixed",
+                    "title": "Correcciones",
+                    "icon": "\u2713",
+                    "entries": [
+                        {
+                            "text": "Corregida descarga de 4 mods con espacios en el nombre",
+                            "detail": "GitHub Releases no permite espacios en nombres de archivos. Se renombraron: create_snt, create-zinc-craft, EMI Create Schematics y hold_my_items"
+                        }
+                    ]
+                }
+            ]
+        },
         {
             "version": "1.0.3",
             "date": "6 de Marzo, 2026",
