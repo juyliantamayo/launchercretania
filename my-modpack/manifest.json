@@ -1,1314 +1,1360 @@
 {
-  "version": "1.0.3",
-  "minecraft": "1.20.1",
-  "loader": "fabric",
-  "loaderVersion": "0.18.4",
-  "patchNotes": [
-    {
-      "version": "1.0.3",
-      "date": "6 de Marzo, 2026",
-      "categories": [
+    "version": "1.0.3",
+    "minecraft": "1.20.1",
+    "loader": "fabric",
+    "loaderVersion": "0.18.4",
+    "patchNotes": [
         {
-          "type": "added",
-          "title": "Nuevos",
-          "icon": "+",
-          "entries": [
-            { "text": "Añadido mod CreateNewRecipes", "detail": "" }
-          ]
-        }
-      ]
-    },
-    {
-      "version": "1.0.2",
-      "date": "6 de Marzo, 2026",
-      "categories": [
-        {
-          "type": "fixed",
-          "title": "Correcciones",
-          "icon": "\u2713",
-          "entries": [
-            { "text": "ProtectorMod: corregido bug de dueño por defecto", "detail": "Ya no asigna 'owner' como dueño por defecto al proteger zonas" }
-          ]
-        }
-      ]
-    },
-    {
-      "version": "1.0.1",
-      "date": "6 de Marzo, 2026",
-      "categories": [
-        {
-          "type": "added",
-          "title": "Nuevos",
-          "icon": "+",
-          "entries": [
-            { "text": "23 mods nuevos añadidos al modpack", "detail": "Xaero's Minimap, Bobby, C2ME, Dynamic FPS, Alternate Current y más" },
-            { "text": "Interfaz rediseñada con pestañas", "detail": "Inicio, Ajustes y Consola separados para mejor navegación" },
-            { "text": "Badge de notas de parche" },
-            { "text": "Notificación en pestaña Consola", "detail": "Punto naranja cuando hay nuevos logs sin ver" }
-          ]
+            "version": "1.0.3",
+            "date": "6 de Marzo, 2026",
+            "categories": [
+                {
+                    "type": "added",
+                    "title": "Nuevos",
+                    "icon": "+",
+                    "entries": [
+                        {
+                            "text": "Añadido mod CreateNewRecipes",
+                            "detail": "Mod Fabric para Minecraft 1.20.1 que añade un sistema completo de gestión de recetas para Create. Incluye: GUI in-game (/cnr) con 9 paneles (bloqueo de recetas/ítems/bloques/mods, creador de recetas, visor por mod, cadenas de proceso, ítems dinámicos). Soporta 16 tipos de recetas Create (deploying, mixing, crushing, pressing, cutting, compacting, sequenced assembly, mechanical crafting, emptying, filling, etc.). Añade 49 ítems custom (cretania:) organizados en 7 cadenas de fabricación (Forge Hammer, Prensa Mecánica, Taladro, Latón, Mezcladora, Sierra, Láminas de hierro/oro/cobre). Bloqueo en vivo de recetas con hot-reload (sin reiniciar servidor), persistencia SQLite para recetas custom, sincronización automática con clientes (EMI/JEI), sistema de ítems calientes que queman al jugador, bloqueo de uso de ítems/bloques por click derecho, GUI Python standalone (tkinter), y bridge nativo C++ opcional. ~120 recetas/ítems bloqueados por defecto de Create Connected, Waystones, Easy Mob Farm, Immersive Armors, Sophisticated Backpacks e Immersive Paintings."
+                        }
+                    ]
+                }
+            ]
         },
         {
-          "type": "changed",
-          "title": "Mejoras",
-          "icon": "\u2191",
-          "entries": [
-            { "text": "Panel principal más ancho y scrollable" },
-            { "text": "Botón Jugar siempre visible en barra inferior" },
-            { "text": "Cuentas con más espacio para múltiples cuentas" },
-            { "text": "Elementos más grandes y fáciles de usar" }
-          ]
+            "version": "1.0.2",
+            "date": "6 de Marzo, 2026",
+            "categories": [
+                {
+                    "type": "fixed",
+                    "title": "Correcciones",
+                    "icon": "\u2713",
+                    "entries": [
+                        {
+                            "text": "ProtectorMod: corregido bug de dueño por defecto",
+                            "detail": "Ya no asigna 'owner' como dueño por defecto al proteger zonas"
+                        }
+                    ]
+                }
+            ]
         },
         {
-          "type": "fixed",
-          "title": "Correcciones",
-          "icon": "\u2713",
-          "entries": [
-            { "text": "Cache-busting en manifest", "detail": "GitHub CDN ya no sirve versiones viejas del manifest" },
-            { "text": "Mods no se actualizaban al subir nuevas versiones" },
-            { "text": "Refresh de token Microsoft al iniciar" }
-          ]
-        }
-      ]
-    },
-    {
-      "version": "1.0.0",
-      "date": "Lanzamiento inicial",
-      "categories": [
+            "version": "1.0.1",
+            "date": "6 de Marzo, 2026",
+            "categories": [
+                {
+                    "type": "added",
+                    "title": "Nuevos",
+                    "icon": "+",
+                    "entries": [
+                        {
+                            "text": "23 mods nuevos añadidos al modpack",
+                            "detail": "Xaero's Minimap, Bobby, C2ME, Dynamic FPS, Alternate Current y más"
+                        },
+                        {
+                            "text": "Interfaz rediseñada con pestañas",
+                            "detail": "Inicio, Ajustes y Consola separados para mejor navegación"
+                        },
+                        {
+                            "text": "Badge de notas de parche"
+                        },
+                        {
+                            "text": "Notificación en pestaña Consola",
+                            "detail": "Punto naranja cuando hay nuevos logs sin ver"
+                        }
+                    ]
+                },
+                {
+                    "type": "changed",
+                    "title": "Mejoras",
+                    "icon": "\u2191",
+                    "entries": [
+                        {
+                            "text": "Panel principal más ancho y scrollable"
+                        },
+                        {
+                            "text": "Botón Jugar siempre visible en barra inferior"
+                        },
+                        {
+                            "text": "Cuentas con más espacio para múltiples cuentas"
+                        },
+                        {
+                            "text": "Elementos más grandes y fáciles de usar"
+                        }
+                    ]
+                },
+                {
+                    "type": "fixed",
+                    "title": "Correcciones",
+                    "icon": "\u2713",
+                    "entries": [
+                        {
+                            "text": "Cache-busting en manifest",
+                            "detail": "GitHub CDN ya no sirve versiones viejas del manifest"
+                        },
+                        {
+                            "text": "Mods no se actualizaban al subir nuevas versiones"
+                        },
+                        {
+                            "text": "Refresh de token Microsoft al iniciar"
+                        }
+                    ]
+                }
+            ]
+        },
         {
-          "type": "added",
-          "title": "Nuevos",
-          "icon": "+",
-          "entries": [
-            { "text": "Launcher Cretania con tema steampunk" },
-            { "text": "Autenticación Microsoft con multicuenta" },
-            { "text": "180 mods Fabric 1.20.1 con descarga remota" },
-            { "text": "Instalación automática de Java 21" },
-            { "text": "Sincronización diferencial con SHA1" },
-            { "text": "Consola de Minecraft integrada" },
-            { "text": "Configuración de RAM y carpeta personalizable" }
-          ]
+            "version": "1.0.0",
+            "date": "Lanzamiento inicial",
+            "categories": [
+                {
+                    "type": "added",
+                    "title": "Nuevos",
+                    "icon": "+",
+                    "entries": [
+                        {
+                            "text": "Launcher Cretania con tema steampunk"
+                        },
+                        {
+                            "text": "Autenticación Microsoft con multicuenta"
+                        },
+                        {
+                            "text": "180 mods Fabric 1.20.1 con descarga remota"
+                        },
+                        {
+                            "text": "Instalación automática de Java 21"
+                        },
+                        {
+                            "text": "Sincronización diferencial con SHA1"
+                        },
+                        {
+                            "text": "Consola de Minecraft integrada"
+                        },
+                        {
+                            "text": "Configuración de RAM y carpeta personalizable"
+                        }
+                    ]
+                }
+            ]
         }
-      ]
-    }
-  ],
-  "mods": [
-    {
-      "id": "advancementplaques-1-20-1-fabric-1-6-7",
-      "file": "mods/AdvancementPlaques-1.20.1-fabric-1.6.7.jar",
-      "sha1": "c90badc7d2fed0c1144d944a3c0ee10a540f2a27",
-      "size": 194905
-    },
-    {
-      "id": "axiom-5-1-1-for-mc1-20-1",
-      "file": "mods/Axiom-5.1.1-for-MC1.20.1.jar",
-      "sha1": "0a39ace06b538674bb7f1496361815987b8ce73c",
-      "size": 42690630
-    },
-    {
-      "id": "badoptimizations-2-4-1-1-20-1",
-      "file": "mods/BadOptimizations-2.4.1-1.20.1.jar",
-      "sha1": "304007dcb0fb15ed1a1bc3771736470dafc5be0f",
-      "size": 460234
-    },
-    {
-      "id": "clumps-fabric-1-20-1-12-0-0-4",
-      "file": "mods/Clumps-fabric-1.20.1-12.0.0.4.jar",
-      "sha1": "4a845a29ddfd40bcc4695bbbc82872c237dbbac5",
-      "size": 21987
-    },
-    {
-      "id": "controlling-fabric-1-20-1-12-0-2",
-      "file": "mods/Controlling-fabric-1.20.1-12.0.2.jar",
-      "sha1": "8a61ca1600e33c73598530f1e208bb07081fdcd6",
-      "size": 122777
-    },
-    {
-      "id": "createbetterfps-1-1-1",
-      "file": "mods/CreateBetterFps-1.1.1.jar",
-      "sha1": "73739bc8abf307021dc23ffec35c6950b1894b36",
-      "size": 23384
-    },
-    {
-      "id": "creativecore_fabric_v2-12-34_mc1-20-1",
-      "file": "mods/CreativeCore_FABRIC_v2.12.34_mc1.20.1.jar",
-      "sha1": "d6fd7ceb95052431a01c139c9ed242aa40895fe7",
-      "size": 1212248
-    },
-    {
-      "id": "customnpcs-unofficial-fabric-1-20-1-20251214",
-      "file": "mods/CustomNPCs-Unofficial-Fabric-1.20.1.20251214.jar",
-      "sha1": "a402669028e240e663c2c65d1c6cc3eb36f03c96",
-      "size": 12981960
-    },
-    {
-      "id": "emi-create-schematics--1-0-1-fabric-1-20-1-",
-      "file": "mods/EMI Create Schematics [1.0.1 Fabric 1.20.1].jar",
-      "sha1": "a65f802c06d609c00d9c3ab100fb27dab219e930",
-      "size": 51589
-    },
-    {
-      "id": "emiprofessions-fabric-1-20-1-1-0-4",
-      "file": "mods/EMIProfessions-fabric-1.20.1-1.0.4.jar",
-      "sha1": "6b08bae3a67a79ac08a68d017cebf77fb04a3122",
-      "size": 25237
-    },
-    {
-      "id": "fallingtree-1-20-1-4-3-4",
-      "file": "mods/FallingTree-1.20.1-4.3.4.jar",
-      "sha1": "44d15ae2074b761597e8b8de5846cb2f98f64d25",
-      "size": 420179
-    },
-    {
-      "id": "farmersdelight-1-20-1-2-4-1-refabricated",
-      "file": "mods/FarmersDelight-1.20.1-2.4.1+refabricated.jar",
-      "sha1": "b8dded252730b2d47655813dde9d743785c0b107",
-      "size": 8056758
-    },
-    {
-      "id": "forgeconfigapiport-v8-0-3-1-20-1-fabric",
-      "file": "mods/ForgeConfigAPIPort-v8.0.3-1.20.1-Fabric.jar",
-      "sha1": "41f146d16a37f62e84e60cab226058d1a87f9cec",
-      "size": 396628
-    },
-    {
-      "id": "gamma-utils-1-7-16-mc1-20-1",
-      "file": "mods/Gamma-Utils-1.7.16-mc1.20.1.jar",
-      "sha1": "9ee543857f50fb5379f2281df10b64f28b3f4618",
-      "size": 57562
-    },
-    {
-      "id": "highlighter-1-20-1-fabric-1-1-9",
-      "file": "mods/Highlighter-1.20.1-fabric-1.1.9.jar",
-      "sha1": "12fd494098bbcf8d34b1cb939587599594d4e9bf",
-      "size": 30635
-    },
-    {
-      "id": "iceberg-1-20-1-fabric-1-1-25",
-      "file": "mods/Iceberg-1.20.1-fabric-1.1.25.jar",
-      "sha1": "365e70abde54faab847d2594420dc2bbd589ad3d",
-      "size": 119018
-    },
-    {
-      "id": "immediatelyfast-fabric-1-5-4-1-20-4",
-      "file": "mods/ImmediatelyFast-Fabric-1.5.4+1.20.4.jar",
-      "sha1": "bb9e7a507bb7a442cba451d79b5c1fde74aea07c",
-      "size": 354883
-    },
-    {
-      "id": "immersiveui-fabric-0-3-0",
-      "file": "mods/ImmersiveUI-FABRIC-0.3.0.jar",
-      "sha1": "b01ad7ccfe09720b92ddaabc1d42db6701f56c2d",
-      "size": 215188
-    },
-    {
-      "id": "jade-1-20-fabric-11-13-1",
-      "file": "mods/Jade-1.20-Fabric-11.13.1.jar",
-      "sha1": "511ff9de2b9322089e769433f8613f3ac16bdade",
-      "size": 572882
-    },
-    {
-      "id": "jadeaddons-1-20-1-fabric-5-4-0",
-      "file": "mods/JadeAddons-1.20.1-Fabric-5.4.0.jar",
-      "sha1": "326c7080c34972bb693457f26b20d509ae03e293",
-      "size": 86538
-    },
-    {
-      "id": "jadeaddons-1-20-1-fabric-5-5-1",
-      "file": "mods/JadeAddons-1.20.1-Fabric-5.5.1.jar",
-      "sha1": "b9c1fdaa9633d14a0b33f045952718d8c3ef903e",
-      "size": 93694
-    },
-    {
-      "id": "ksyxis-1-3-4",
-      "file": "mods/Ksyxis-1.3.4.jar",
-      "sha1": "143fe088170e5777d3ccf5b488d61ee3635ebffe",
-      "size": 29869
-    },
-    {
-      "id": "legendarytooltips-1-20-1-fabric-1-4-5",
-      "file": "mods/LegendaryTooltips-1.20.1-fabric-1.4.5.jar",
-      "sha1": "64170c3a1b42b8f8c430d4f2400644f8131a47a1",
-      "size": 63969
-    },
-    {
-      "id": "log-begone-fabric-1-20-1-1-0-8",
-      "file": "mods/Log-Begone-Fabric-1.20.1-1.0.8.jar",
-      "sha1": "f1c697ffcf7ec79e458b3af3d32392d75bf2caff",
-      "size": 126944
-    },
-    {
-      "id": "magicparticles-1-2-1-1-20-1",
-      "file": "mods/MagicParticles-1.2.1+1.20.1.jar",
-      "sha1": "1d043393b601368e8ba2e67ef01705b19424873e",
-      "size": 286031
-    },
-    {
-      "id": "moogsvoyagerstructures-1-20-5-0-4",
-      "file": "mods/MoogsVoyagerStructures-1.20-5.0.4.jar",
-      "sha1": "c7c384d91180b7a37064504a9839fa6f14801224",
-      "size": 2661209
-    },
-    {
-      "id": "mousetweaks-fabric-mc1-20-2-26",
-      "file": "mods/MouseTweaks-fabric-mc1.20-2.26.jar",
-      "sha1": "6a6b977e671b1ab625e740fc70fb5300c21bb841",
-      "size": 77943
-    },
-    {
-      "id": "naturescompass-1-20-1-2-2-3-fabric",
-      "file": "mods/NaturesCompass-1.20.1-2.2.3-fabric.jar",
-      "sha1": "0734579799a17b9662b833cc21399521b09161ff",
-      "size": 230344
-    },
-    {
-      "id": "necronomicon-fabric-1-6-0-1-20-1",
-      "file": "mods/Necronomicon-Fabric-1.6.0+1.20.1.jar",
-      "sha1": "86e4ba3727be9ef8816844aa15f45db099ecb858",
-      "size": 37533
-    },
-    {
-      "id": "octolib-fabric-0-5-0-1-1-20-1",
-      "file": "mods/OctoLib-FABRIC-0.5.0.1+1.20.1.jar",
-      "sha1": "ea6763c11aac7635d9812dbccccba0d10b797a1d",
-      "size": 424020
-    },
-    {
-      "id": "patchouli-1-20-1-84-1-fabric",
-      "file": "mods/Patchouli-1.20.1-84.1-FABRIC.jar",
-      "sha1": "ac0b6b19b150fcb97dc037df26a298ab93f2cd90",
-      "size": 857105
-    },
-    {
-      "id": "perception-fabric-0-1-4-1-20-1",
-      "file": "mods/Perception-FABRIC-0.1.4+1.20.1.jar",
-      "sha1": "b1c788ac4149a0046e5ed91c7eafa1c68d06aced",
-      "size": 69672
-    },
-    {
-      "id": "prism-1-20-1-fabric-1-0-5",
-      "file": "mods/Prism-1.20.1-fabric-1.0.5.jar",
-      "sha1": "cd169ef91788fed7e1025e5d2273d61978898e52",
-      "size": 57257
-    },
-    {
-      "id": "protectormod-1-5-6",
-      "file": "mods/ProtectorMod-1.5.6.jar",
-      "sha1": "9d88f6fda226c7329dcdb7a030c6657cc0e58ace",
-      "size": 761467
-    },
-    {
-      "id": "puzzleslib-v8-1-33-1-20-1-fabric",
-      "file": "mods/PuzzlesLib-v8.1.33-1.20.1-Fabric.jar",
-      "sha1": "13282e818c9b5d20ba9f50949e3776d678d6926d",
-      "size": 1084397
-    },
-    {
-      "id": "searchables-fabric-1-20-1-1-0-3",
-      "file": "mods/Searchables-fabric-1.20.1-1.0.3.jar",
-      "sha1": "3fe28bfd8de8f13adeefb4dd5c9a8f97b233a0a1",
-      "size": 80283
-    },
-    {
-      "id": "serverpad-1-0-2",
-      "file": "mods/ServerPad-1.0.2.jar",
-      "sha1": "222b269d946b3ba8019798559d0d9e609e32137f",
-      "size": 2027052
-    },
-    {
-      "id": "steam_rails-1-6-15-beta-fabric-mc1-20-1",
-      "file": "mods/Steam_Rails-1.6.15-beta+fabric-mc1.20.1.jar",
-      "sha1": "2930fc022d2f93b07c5837d6ff9d0727a6ab7f9b",
-      "size": 9887158
-    },
-    {
-      "id": "undergroundvillages-fabric-1-20-1-2-1-0",
-      "file": "mods/UndergroundVillages-fabric-1.20.1-2.1.0.jar",
-      "sha1": "85ffd30c58ce52a2312d18577225bb388d2d662e",
-      "size": 282700
-    },
-    {
-      "id": "a_good_place-1-20-1-2-8-fabric",
-      "file": "mods/a_good_place-1.20-1.2.8-fabric.jar",
-      "sha1": "f7b47b066db92686a5be3e8f92a16e0233471303",
-      "size": 255328
-    },
-    {
-      "id": "adorablehamsterpets-3-4-3-1-20-1-fabric",
-      "file": "mods/adorablehamsterpets-3.4.3-1.20.1+fabric.jar",
-      "sha1": "d1764aac63a25b1a2a1e9496b94bf6fee1af96f9",
-      "size": 4513943
-    },
-    {
-      "id": "ajolocoin-fabric-1-2-1",
-      "file": "mods/ajolocoin-fabric-1.2.1.jar",
-      "sha1": "a40beccbb88111bba007c8a389a9949e20c8d21e",
-      "size": 226205
-    },
-    {
-      "id": "almanac-1-20-x-fabric-1-0-2",
-      "file": "mods/almanac-1.20.x-fabric-1.0.2.jar",
-      "sha1": "0f31abe886e9785592f1896c7c1ffe5992e2c6de",
-      "size": 16082
-    },
-    {
-      "id": "alternate-current-mc1-20-1-9-0",
-      "file": "mods/alternate-current-mc1.20-1.9.0.jar",
-      "sha1": "f09b6c60556ca329b82d4bdb965dd4f574c0e1e3",
-      "size": 51875
-    },
-    {
-      "id": "appleskin-fabric-mc1-20-1-2-5-2",
-      "file": "mods/appleskin-fabric-mc1.20.1-2.5.2.jar",
-      "sha1": "f859bb13130788ae2dc2e76a9c80c89e4bbbef5f",
-      "size": 1097240
-    },
-    {
-      "id": "architectury-9-2-14-fabric",
-      "file": "mods/architectury-9.2.14-fabric.jar",
-      "sha1": "4fa65e32dbf63a871a30fe8ec6fbff9a4b8d007d",
-      "size": 585207
-    },
-    {
-      "id": "athena-fabric-1-20-1-3-1-2",
-      "file": "mods/athena-fabric-1.20.1-3.1.2.jar",
-      "sha1": "53014ceff1e10085609c16adbe246df51113bfe9",
-      "size": 74370
-    },
-    {
-      "id": "authhybrid-1-6-0-1-20-1-client",
-      "file": "mods/authhybrid-1.6.0+1.20.1-client.jar",
-      "sha1": "a2254073c7b8f89b000a343d36ea045669cc3e76",
-      "size": 4011
-    },
-    {
-      "id": "autoconfig1u-3-4-0",
-      "file": "mods/autoconfig1u-3.4.0.jar",
-      "sha1": "5c0b2bad699ceca0f2d7da95e11f1715f4f24b15",
-      "size": 245894
-    },
-    {
-      "id": "balm-fabric-1-20-1-7-3-38",
-      "file": "mods/balm-fabric-1.20.1-7.3.38.jar",
-      "sha1": "833370d2a28be5673537b177e332918668e829e0",
-      "size": 609150
-    },
-    {
-      "id": "bat-remover-1-0-2",
-      "file": "mods/bat-remover-1.0.2.jar",
-      "sha1": "89a526c36f1fc2e0f941ed4678b087a27836206c",
-      "size": 4439
-    },
-    {
-      "id": "bellsandwhistles-0-4-5-1-20-1-fabric",
-      "file": "mods/bellsandwhistles-0.4.5+1.20.1-FABRIC.jar",
-      "sha1": "70e97c2ff786b8df7f354a37442ae36f4df35dc3",
-      "size": 216802
-    },
-    {
-      "id": "betterbeds-1-3-0-1-19-3",
-      "file": "mods/betterbeds-1.3.0-1.19.3.jar",
-      "sha1": "be8020ab06b679bb33f93a7e9ade8a783985eab0",
-      "size": 50218
-    },
-    {
-      "id": "betterchunkloading-fabric-1-20-1-5-5",
-      "file": "mods/betterchunkloading-fabric-1.20.1-5.5.jar",
-      "sha1": "78bc02e57d7e81faa4ea7ca438afe2f6fc1e92ba",
-      "size": 58613
-    },
-    {
-      "id": "betterfpsdist-fabric-1-20-1-6-0",
-      "file": "mods/betterfpsdist-fabric-1.20.1-6.0.jar",
-      "sha1": "46534d1a7d107133963f013a5f041490d8e3f160",
-      "size": 22249
-    },
-    {
-      "id": "bobby-5-0-1",
-      "file": "mods/bobby-5.0.1.jar",
-      "sha1": "bdc0285d4209c529019ae1c5f1f0af0e3a3cffa6",
-      "size": 799098
-    },
-    {
-      "id": "borderless-mining-1-1-8-1-20-1",
-      "file": "mods/borderless-mining-1.1.8+1.20.1.jar",
-      "sha1": "dbdb8a0600679f3c76480ae5d0995e2334773ce3",
-      "size": 118295
-    },
-    {
-      "id": "botarium-fabric-1-20-1-2-3-4",
-      "file": "mods/botarium-fabric-1.20.1-2.3.4.jar",
-      "sha1": "20e1c12cd5e4b4127c7b20ab7e7f81e7119dbf8b",
-      "size": 188388
-    },
-    {
-      "id": "c2me-fabric-mc1-20-1-0-2-0-alpha-11-16",
-      "file": "mods/c2me-fabric-mc1.20.1-0.2.0+alpha.11.16.jar",
-      "sha1": "94d96b5fffd9e98bd8448dcdd9e27f60511b1d29",
-      "size": 1426500
-    },
-    {
-      "id": "cardinal-components-api-5-2-3",
-      "file": "mods/cardinal-components-api-5.2.3.jar",
-      "sha1": "d0d687d8fc3f367bf696fa0059bccdf0591c51f4",
-      "size": 228709
-    },
-    {
-      "id": "chat_heads-0-14-2-fabric-1-20",
-      "file": "mods/chat_heads-0.14.2-fabric-1.20.jar",
-      "sha1": "300f25ceda7b00735930f927fdc6f12377dcd138",
-      "size": 80747
-    },
-    {
-      "id": "chatanimation-fabric-1-20-1-1-1-3",
-      "file": "mods/chatanimation-fabric-1.20.1-1.1.3.jar",
-      "sha1": "25310f8bd85bd4e7e4f4c2332e2a32b24814ffc5",
-      "size": 381362
-    },
-    {
-      "id": "chipped-fabric-1-20-1-3-0-7",
-      "file": "mods/chipped-fabric-1.20.1-3.0.7.jar",
-      "sha1": "add35e79f6a930825e4dbe77d5d0468fb96c533f",
-      "size": 15057458
-    },
-    {
-      "id": "chunksending-fabric-1-20-1-2-8",
-      "file": "mods/chunksending-fabric-1.20.1-2.8.jar",
-      "sha1": "7dcbf4ad0e571fd5b86af0262197305f2067481b",
-      "size": 11318
-    },
-    {
-      "id": "clientcrafting-fabric-1-20-1-1-8",
-      "file": "mods/clientcrafting-fabric-1.20.1-1.8.jar",
-      "sha1": "c8fb1ebedea3ffde2ad1d4e4a3fc3041056ae185",
-      "size": 6641
-    },
-    {
-      "id": "cloth-config-11-1-136-fabric",
-      "file": "mods/cloth-config-11.1.136-fabric.jar",
-      "sha1": "d5fe84a0cc9ed5c7290a76ba570e1f8716afecab",
-      "size": 1172214
-    },
-    {
-      "id": "collective-1-20-1-8-13",
-      "file": "mods/collective-1.20.1-8.13.jar",
-      "sha1": "74b917dd99cd97b2f0480628a1b56958f5e0f5ad",
-      "size": 665169
-    },
-    {
-      "id": "comandsservers-1-0-0",
-      "file": "mods/comandsservers-1.0.0.jar",
-      "sha1": "b0c04f27353d05f2d28303f7fca90e65cfeff437",
-      "size": 182056
-    },
-    {
-      "id": "connectivity-fabric-1-20-1-7-6",
-      "file": "mods/connectivity-fabric-1.20.1-7.6.jar",
-      "sha1": "4b23cff87b1e23edb179868ee0eb58e4d34c98b6",
-      "size": 198670
-    },
-    {
-      "id": "continuity-3-0-0-1-20-1",
-      "file": "mods/continuity-3.0.0+1.20.1.jar",
-      "sha1": "b9b3908c93efed3da5ad7caaf733b9d5b678c85f",
-      "size": 1016063
-    },
-    {
-      "id": "coroutil-fabric-1-20-1-1-3-7",
-      "file": "mods/coroutil-fabric-1.20.1-1.3.7.jar",
-      "sha1": "0b9a1b0db34d1271fe7bcc4ec0e451c3fb25a04c",
-      "size": 2392617
-    },
-    {
-      "id": "create-fabric-6-0-8-1-build-1744-mc1-20-1",
-      "file": "mods/create-fabric-6.0.8.1+build.1744-mc1.20.1.jar",
-      "sha1": "f750d019bc1230c8c7a8a4ccf549d1db192d7a69",
-      "size": 32189889
-    },
-    {
-      "id": "create-zinc-craft-1-20-1--1-",
-      "file": "mods/create-zinc-craft-1.20.1 (1).jar",
-      "sha1": "a8096290e65cda65b1f721b27b227543fb4d8e28",
-      "size": 4367
-    },
-    {
-      "id": "create__automation-fabric-1-20-1-0-1-2a",
-      "file": "mods/create__automation-fabric-1.20.1-0.1.2a.jar",
-      "sha1": "60388904638979dc026410a7bd3aa57d0de31da8",
-      "size": 28589
-    },
-    {
-      "id": "create_copper_and_zinc-1-6-0-fabric-1-20-1",
-      "file": "mods/create_copper_and_zinc-1.6.0-fabric-1.20.1.jar",
-      "sha1": "6f359d079480b75e9d86e0ba09ceb9363feea82f",
-      "size": 94555
-    },
-    {
-      "id": "create_ironworks-3-5-0-fabric-1-20-1",
-      "file": "mods/create_ironworks-3.5.0-fabric-1.20.1.jar",
-      "sha1": "151ee28c788eb717df2d7c45ef9f64864909bc35",
-      "size": 780613
-    },
-    {
-      "id": "create_redstone-1-0-5",
-      "file": "mods/create_redstone-1.0.5.jar",
-      "sha1": "99fc0151ab0df81a2caf8a1e1455d8543344ac56",
-      "size": 4105
-    },
-    {
-      "id": "create_snt-2-0-no-apple-syrup",
-      "file": "mods/create_snt-2.0 NO-APPLE-SYRUP.jar",
-      "sha1": "8205b3750da109534ff3a381488326fa3d20eacd",
-      "size": 307348
-    },
-    {
-      "id": "create_ultimate_factory-2-1-0-fabric-1-20-1",
-      "file": "mods/create_ultimate_factory-2.1.0-fabric-1.20.1.jar",
-      "sha1": "f1821ea3471db0c94c80a0d485e6dcbe11a6407c",
-      "size": 227202
-    },
-    {
-      "id": "createaddition-fabric-1-20-1-1-3-4",
-      "file": "mods/createaddition-fabric+1.20.1-1.3.4.jar",
-      "sha1": "22843b7edd3f1b151a8aaeffe72ec3c827929b36",
-      "size": 1647722
-    },
-    {
-      "id": "createbigcannons-5-10-2-mc-1-20-1-fabric",
-      "file": "mods/createbigcannons-5.10.2-mc.1.20.1-fabric.jar",
-      "sha1": "eb580daf894d3bbb9f453e8097d9bf9891773efe",
-      "size": 6275310
-    },
-    {
-      "id": "createcobblestone-1-4-8-fabric-1-20-1-126",
-      "file": "mods/createcobblestone-1.4.8+fabric-1.20.1-126.jar",
-      "sha1": "a491e3f3582cc2c80dd53f7ce0c67b646bfa722a",
-      "size": 235198
-    },
-    {
-      "id": "createnewrecipes-1-0-0-1-20-1-sources",
-      "file": "mods/createnewrecipes-1.0.0+1.20.1-sources.jar",
-      "sha1": "724473e35bc62a8e52f562c7f879f79e73f97759",
-      "size": 163346
-    },
-    {
-      "id": "createthreadedtrains-fabric-1-20-1-1-0-0",
-      "file": "mods/createthreadedtrains-fabric-1.20.1-1.0.0.jar",
-      "sha1": "8a14e2c88b3dda004c4aa6f1c4502a165478349d",
-      "size": 77441
-    },
-    {
-      "id": "cupboard-fabric-1-20-1-2-7",
-      "file": "mods/cupboard-fabric-1.20.1-2.7.jar",
-      "sha1": "33f853230169b03d896775cbc663e016975702d2",
-      "size": 25668
-    },
-    {
-      "id": "customdynamicnpc-1-0-0",
-      "file": "mods/customdynamicnpc-1.0.0.jar",
-      "sha1": "d6996a419be8ece1054070b2eff9a384f1dba281",
-      "size": 175723
-    },
-    {
-      "id": "customshops-1-1-0",
-      "file": "mods/customshops-1.1.0.jar",
-      "sha1": "b24e06778f2b95aab399c402865b21dddfcc8ea8",
-      "size": 3996516
-    },
-    {
-      "id": "distraction_free_recipes-fabric-1-2-1-1-20-1",
-      "file": "mods/distraction_free_recipes-fabric-1.2.1-1.20.1.jar",
-      "sha1": "1bef806e432adec90f514f61a4b46a36da6f1881",
-      "size": 413226
-    },
-    {
-      "id": "durabilitytooltip-1-1-6-fabric-mc1-20-4",
-      "file": "mods/durabilitytooltip-1.1.6-fabric-mc1.20.4.jar",
-      "sha1": "5f330edddd6cf60413f4532c26f9f851db2a102d",
-      "size": 21282
-    },
-    {
-      "id": "dynamic-fps-3-11-4-minecraft-1-20-0-fabric",
-      "file": "mods/dynamic-fps-3.11.4+minecraft-1.20.0-fabric.jar",
-      "sha1": "38196ee5bcfb3605f9bb9e52a45916b250216313",
-      "size": 223261
-    },
-    {
-      "id": "easy_mob_farm-fabric-1-20-1-10-4-0",
-      "file": "mods/easy_mob_farm-fabric-1.20.1-10.4.0.jar",
-      "sha1": "20499f10fc62eaf5b8759b493e5ffb174c5fb26f",
-      "size": 886071
-    },
-    {
-      "id": "emi-1-1-22-1-20-1-fabric",
-      "file": "mods/emi-1.1.22+1.20.1+fabric.jar",
-      "sha1": "968357a16a878d1a0a2063d1d2dfc5eb2ae3ac3b",
-      "size": 1051034
-    },
-    {
-      "id": "emi-letsdo-compat-1-8-1",
-      "file": "mods/emi-letsdo-compat-1.8.1.jar",
-      "sha1": "d75de241f5c84f25f25e76a61f19324682db16bc",
-      "size": 135112
-    },
-    {
-      "id": "emi_enchanting-0-1-2-1-20-1",
-      "file": "mods/emi_enchanting-0.1.2+1.20.1.jar",
-      "sha1": "dbc3c4acecdce9b083cde7b91cc95e5ba57b3892",
-      "size": 15241
-    },
-    {
-      "id": "emiffect-fabric-2-1-5-mc1-20-1",
-      "file": "mods/emiffect-fabric-2.1.5+mc1.20.1.jar",
-      "sha1": "18711c0138626c1087836796074cc3a6bd83a0ca",
-      "size": 39666
-    },
-    {
-      "id": "emitrades-fabric-1-2-1-mc1-20-1",
-      "file": "mods/emitrades-fabric-1.2.1+mc1.20.1.jar",
-      "sha1": "72b51627c09e539e9f6194fc5aad862ff5f09461",
-      "size": 51479
-    },
-    {
-      "id": "enhancedblockentities-0-9-1-20",
-      "file": "mods/enhancedblockentities-0.9+1.20.jar",
-      "sha1": "61cfe50f69f8ef9e3640c0269ef158870f5b0410",
-      "size": 490690
-    },
-    {
-      "id": "entity_model_features_1-20-1-fabric-3-0-11",
-      "file": "mods/entity_model_features_1.20.1-fabric-3.0.11.jar",
-      "sha1": "de3c324185dbebd193dffc811aaab92e0d2a2ad6",
-      "size": 491235
-    },
-    {
-      "id": "entity_texture_features_1-20-1-fabric-7-0-8",
-      "file": "mods/entity_texture_features_1.20.1-fabric-7.0.8.jar",
-      "sha1": "ca793bf5caff84284d75f7d04d242074f5fd8747",
-      "size": 737909
-    },
-    {
-      "id": "entityculling-fabric-1-9-5-mc1-20-1",
-      "file": "mods/entityculling-fabric-1.9.5-mc1.20.1.jar",
-      "sha1": "d82ff7418e16ef89afa123127e3fb945983cdf70",
-      "size": 1561882
-    },
-    {
-      "id": "extra-mod-integrations-0-4-7-1-20-1",
-      "file": "mods/extra-mod-integrations-0.4.7+1.20.1.jar",
-      "sha1": "3c7c6645130f35772d81ba8a9cd70e6a85d0bbc8",
-      "size": 257271
-    },
-    {
-      "id": "fabric-api-0-92-7-1-20-1",
-      "file": "mods/fabric-api-0.92.7+1.20.1.jar",
-      "sha1": "85117a1e8984a45c972b85571c8e075cee45039a",
-      "size": 2107977
-    },
-    {
-      "id": "fabric-language-kotlin-1-13-8-kotlin-2-3-0",
-      "file": "mods/fabric-language-kotlin-1.13.8+kotlin.2.3.0.jar",
-      "sha1": "05fe02fe61232c4ddea4059e8103281424d5a2bd",
-      "size": 7618852
-    },
-    {
-      "id": "fabrictailor-2-1-2",
-      "file": "mods/fabrictailor-2.1.2.jar",
-      "sha1": "b7500e7538a9f73a7b988fb33ca3f071f7175816",
-      "size": 112497
-    },
-    {
-      "id": "farsight-fabric-1-20-1-4-5",
-      "file": "mods/farsight-fabric-1.20.1-4.5.jar",
-      "sha1": "bb75cc31834f9f48997eec5e294d6bf809016327",
-      "size": 373226
-    },
-    {
-      "id": "fastasyncworldsave-fabric-1-20-1-2-6",
-      "file": "mods/fastasyncworldsave-fabric-1.20.1-2.6.jar",
-      "sha1": "eed28a3850a5feb6bcf018a02fc48d8bd36851c0",
-      "size": 11980
-    },
-    {
-      "id": "fastboot-1-20-x-1-2fabric",
-      "file": "mods/fastboot-1.20.x-1.2fabric.jar",
-      "sha1": "72c11409a1c70c787ffb66329a87b21ba27ad4bd",
-      "size": 30721
-    },
-    {
-      "id": "ferritecore-6-0-1-fabric",
-      "file": "mods/ferritecore-6.0.1-fabric.jar",
-      "sha1": "8fa3b84fc5860dbc30fdf8cced02af68dffcf3fa",
-      "size": 125197
-    },
-    {
-      "id": "ftb-chunks-fabric-2001-3-6",
-      "file": "mods/ftb-chunks-fabric-2001.3.6.jar",
-      "sha1": "5bb9152187a1d0a90425399e6fb68f2229260129",
-      "size": 970189
-    },
-    {
-      "id": "ftb-essentials-fabric-2001-2-3",
-      "file": "mods/ftb-essentials-fabric-2001.2.3.jar",
-      "sha1": "cea593ae304a6741c6b63026e0433a2750ff2dd7",
-      "size": 155533
-    },
-    {
-      "id": "ftb-library-fabric-2001-2-12",
-      "file": "mods/ftb-library-fabric-2001.2.12.jar",
-      "sha1": "974823aa0fcb3420cae1e7a0148469672d0bc186",
-      "size": 769888
-    },
-    {
-      "id": "ftb-quests-fabric-2001-4-17",
-      "file": "mods/ftb-quests-fabric-2001.4.17.jar",
-      "sha1": "9016e9cfe00a9762334f76f169937a3906694d89",
-      "size": 1235809
-    },
-    {
-      "id": "ftb-teams-fabric-2001-3-2",
-      "file": "mods/ftb-teams-fabric-2001.3.2.jar",
-      "sha1": "fcfc1afb1aef5a7878f56a09868b9b6a74bf841b",
-      "size": 248853
-    },
-    {
-      "id": "ftbxaerocompat-fabric-1-1-2",
-      "file": "mods/ftbxaerocompat-fabric-1.1.2.jar",
-      "sha1": "641405f21ce716cce045a4e617ac9a4bbce510d9",
-      "size": 106055
-    },
-    {
-      "id": "fusion-1-2-12-fabric-mc1-20-1",
-      "file": "mods/fusion-1.2.12-fabric-mc1.20.1.jar",
-      "sha1": "30a8b63c0398ea1c89be08dff34185a2e26391ad",
-      "size": 515916
-    },
-    {
-      "id": "fzzy_config-0-7-5-1-20-1",
-      "file": "mods/fzzy_config-0.7.5+1.20.1.jar",
-      "sha1": "cff17781b0b62d8ad9c2e88280020d30b6325ddb",
-      "size": 2370386
-    },
-    {
-      "id": "geckolib-fabric-1-20-1-4-8-3",
-      "file": "mods/geckolib-fabric-1.20.1-4.8.3.jar",
-      "sha1": "4ed1ca003d1ba6c48bace04ba5797616854157a1",
-      "size": 1069327
-    },
-    {
-      "id": "getittogetherdrops-fabric-1-20-1-3-1",
-      "file": "mods/getittogetherdrops-fabric-1.20-1.3.1.jar",
-      "sha1": "cdf7f844b1d710cabb41eed13f66b3aab75aaaee",
-      "size": 82403
-    },
-    {
-      "id": "goml-1-9-4-1-20-1",
-      "file": "mods/goml-1.9.4+1.20.1.jar",
-      "sha1": "1cfe208762f165a9cad1db2364189cb8fc13af8c",
-      "size": 1451828
-    },
-    {
-      "id": "gpumemleakfix-fabric-1-20-1-1-8",
-      "file": "mods/gpumemleakfix-fabric-1.20.1-1.8.jar",
-      "sha1": "f3cda542199d4344c317c464256a2a499a596431",
-      "size": 6949
-    },
-    {
-      "id": "grieflogger-1-2-4-1-20-1-fabric",
-      "file": "mods/grieflogger-1.2.4-1.20.1-fabric.jar",
-      "sha1": "f6d1420de2373006a35b56e92c083051c0f0a4c5",
-      "size": 18997220
-    },
-    {
-      "id": "hold_my_items_v2-7-1_1-20---1-20-4",
-      "file": "mods/hold_my_items_v2.7.1_1.20 - 1.20.4.jar",
-      "sha1": "ee74d17a19c3ecce4c6c290475eb2240a395b3f7",
-      "size": 16183
-    },
-    {
-      "id": "imfast-fabric-1-20-1-1-0-3",
-      "file": "mods/imfast-FABRIC-1.20.1-1.0.3.jar",
-      "sha1": "dcd87a6ba93c0d0fa7f5eb98adb518b208c1c1d7",
-      "size": 3261
-    },
-    {
-      "id": "immersive_aircraft-1-4-0-1-20-1-fabric",
-      "file": "mods/immersive_aircraft-1.4.0+1.20.1-fabric.jar",
-      "sha1": "4c38293da3561c861429263b16aede300148c4b4",
-      "size": 2417420
-    },
-    {
-      "id": "immersive_armors-1-7-1-1-20-1-fabric",
-      "file": "mods/immersive_armors-1.7.1+1.20.1-fabric.jar",
-      "sha1": "a28582c00a49caf757a401364aa3917c18c0a03c",
-      "size": 1252785
-    },
-    {
-      "id": "immersive_melodies-0-6-0-1-20-1-fabric",
-      "file": "mods/immersive_melodies-0.6.0+1.20.1-fabric.jar",
-      "sha1": "45c9e5b8b2900a7190117ebd85ae34dd468a1738",
-      "size": 5516803
-    },
-    {
-      "id": "immersive_paintings-0-6-8-1-20-1-fabric",
-      "file": "mods/immersive_paintings-0.6.8+1.20.1-fabric.jar",
-      "sha1": "66e4d68857c4905d357da7b1f3b982f9389e6f6e",
-      "size": 4853104
-    },
-    {
-      "id": "indium-1-0-36-mc1-20-1",
-      "file": "mods/indium-1.0.36+mc1.20.1.jar",
-      "sha1": "d824614e7a173d273167969f427702f51846aca7",
-      "size": 105382
-    },
-    {
-      "id": "interiors-1-20-1-fabric-0-6-0",
-      "file": "mods/interiors-1.20.1-fabric-0.6.0.jar",
-      "sha1": "429a2dea60c4efe3eaa172e59b2847b1b9c67e56",
-      "size": 507098
-    },
-    {
-      "id": "inventoryhud-fabric-1-20-1-3-4-26",
-      "file": "mods/inventoryhud.fabric.1.20.1-3.4.26.jar",
-      "sha1": "623f71c059bc26c57c0e45ea2f5e00090496e40a",
-      "size": 237573
-    },
-    {
-      "id": "iris-1-7-6-mc1-20-1",
-      "file": "mods/iris-1.7.6+mc1.20.1.jar",
-      "sha1": "880c0b9ce38bb4997645793407c1801df83f4233",
-      "size": 2726899
-    },
-    {
-      "id": "item-merger-1-0-4",
-      "file": "mods/item-merger-1.0.4.jar",
-      "sha1": "1f090d64bacbe4f5da48e0ca01a3f7a1c64bdb9c",
-      "size": 8800
-    },
-    {
-      "id": "jamlib-fabric-1-3-5-1-20-1",
-      "file": "mods/jamlib-fabric-1.3.5+1.20.1.jar",
-      "sha1": "55850420addaeed88101d63eb1c96d4d924bf456",
-      "size": 240386
-    },
-    {
-      "id": "justzoom_fabric_2-1-0_mc_1-20-1",
-      "file": "mods/justzoom_fabric_2.1.0_MC_1.20.1.jar",
-      "sha1": "538a90dd2eced7704a900d53b9cbc5cf5cea6b64",
-      "size": 196623
-    },
-    {
-      "id": "konkrete_fabric_1-8-1_mc_1-20-1",
-      "file": "mods/konkrete_fabric_1.8.1_MC_1.20.1.jar",
-      "sha1": "38d3201d95a08bdeb12a8cd3687c6d0b8f5e7f3d",
-      "size": 892067
-    },
-    {
-      "id": "krypton-0-2-3",
-      "file": "mods/krypton-0.2.3.jar",
-      "sha1": "4d499819effd8afe811e5d93952fcc46765a00df",
-      "size": 185895
-    },
-    {
-      "id": "kubejs-create-fabric-2024-8-12-build-1",
-      "file": "mods/kubejs-create-fabric-2024.8.12-build.1.jar",
-      "sha1": "5e9389bab5eb9808a5cbde5bb1964d4e1d0dfb15",
-      "size": 30295
-    },
-    {
-      "id": "kubejs-fabric-2001-6-5-build-16",
-      "file": "mods/kubejs-fabric-2001.6.5-build.16.jar",
-      "sha1": "e22f2658ecd6a63edac7982766bb0ce15b53949a",
-      "size": 1604251
-    },
-    {
-      "id": "lambdynamiclights-4-4-0-1-20-1",
-      "file": "mods/lambdynamiclights-4.4.0+1.20.1.jar",
-      "sha1": "eeab178cb91f18bc72f990c2097b5f0103f01c06",
-      "size": 1114373
-    },
-    {
-      "id": "larion-fabric-1-20-4-4-3-0",
-      "file": "mods/larion-fabric-1.20.4-4.3.0.jar",
-      "sha1": "0b4e006901d60753eba0d01ea638fb3f293c2e48",
-      "size": 80929
-    },
-    {
-      "id": "lazy-language-loader-0-3-3",
-      "file": "mods/lazy-language-loader-0.3.3.jar",
-      "sha1": "6273d4bfd443d5f8ce9b039602da5f6fb9107f62",
-      "size": 26621
-    },
-    {
-      "id": "lazydfu-0-1-3",
-      "file": "mods/lazydfu-0.1.3.jar",
-      "sha1": "0dfa8b03ed408fb7fdada29e01cfebba02af1049",
-      "size": 14531
-    },
-    {
-      "id": "leaky-fabric-1-20-1-2-3",
-      "file": "mods/leaky-fabric-1.20.1-2.3.jar",
-      "sha1": "fc6d9455dfb490700236f6568c8c3f067e8c5977",
-      "size": 17285
-    },
-    {
-      "id": "letmedespawn-1-20-x-fabric-1-5-0",
-      "file": "mods/letmedespawn-1.20.x-fabric-1.5.0.jar",
-      "sha1": "49537044b774743cd37a834567204f7662a5329c",
-      "size": 14607
-    },
-    {
-      "id": "litematica-fabric-1-20-1-0-15-3",
-      "file": "mods/litematica-fabric-1.20.1-0.15.3.jar",
-      "sha1": "427b04faee05fab436c52c3618e8e391a010b648",
-      "size": 909971
-    },
-    {
-      "id": "lithium-fabric-mc1-20-1-0-11-4",
-      "file": "mods/lithium-fabric-mc1.20.1-0.11.4.jar",
-      "sha1": "048227ed60a3005cf9fa55880dfe0cf20b0ba680",
-      "size": 691483
-    },
-    {
-      "id": "lunade-fastanim-1-6-1-20",
-      "file": "mods/lunade-fastanim-1.6-1.20.jar",
-      "sha1": "0e611399323878b9f3efcc6016ea5d6eefc8c765",
-      "size": 118384
-    },
-    {
-      "id": "malilib-fabric-1-20-1-0-16-3",
-      "file": "mods/malilib-fabric-1.20.1-0.16.3.jar",
-      "sha1": "94d4dd8a82e493d956b423019134d8c48ee737be",
-      "size": 545403
-    },
-    {
-      "id": "man_of_many_planes-0-2-0-1-20-1-fabric",
-      "file": "mods/man_of_many_planes-0.2.0+1.20.1-fabric.jar",
-      "sha1": "3f667f22513ca4ac67740c23ded3db0e06ac6e61",
-      "size": 308327
-    },
-    {
-      "id": "melody_fabric_1-0-4_mc_1-20-1-1-20-4",
-      "file": "mods/melody_fabric_1.0.4_MC_1.20.1-1.20.4.jar",
-      "sha1": "15eeff0c0fd8b4734492915c656077592b2d9e67",
-      "size": 39696
-    },
-    {
-      "id": "midnightlib-fabric-1-9-2-1-20-1",
-      "file": "mods/midnightlib-fabric-1.9.2+1.20.1.jar",
-      "sha1": "40abb8a47d30f387a3c2110fc23ea0c364034c09",
-      "size": 58575
-    },
-    {
-      "id": "minetracer-fabric-1-20-1-1-6-14",
-      "file": "mods/minetracer-fabric-1.20.1-1.6.14.jar",
-      "sha1": "d8c10333357906ba17853a5bc98a02b1622c1fa4",
-      "size": 35024887
-    },
-    {
-      "id": "mining_quakes-fabric-1-1-3",
-      "file": "mods/mining_quakes-fabric-1.1.3.jar",
-      "sha1": "f4faefbb962097cda4eed4ccce88e8386a360ab7",
-      "size": 113389
-    },
-    {
-      "id": "miningspeedtooltips-fabric-1-0-0-1-20-1",
-      "file": "mods/miningspeedtooltips-fabric-1.0.0-1.20.1.jar",
-      "sha1": "4a7cea6a3f3e54189732fea10177097431fa0b4a",
-      "size": 450475
-    },
-    {
-      "id": "mob-merger-1-1-0",
-      "file": "mods/mob-merger-1.1.0.jar",
-      "sha1": "c9ebf84516d0275c1ba05e619aab97ff8115c84a",
-      "size": 18460
-    },
-    {
-      "id": "modelfix-1-15-fabric",
-      "file": "mods/modelfix-1.15-fabric.jar",
-      "sha1": "75554b02e63a2440321a32dc5e55988897181bdf",
-      "size": 65491
-    },
-    {
-      "id": "modernfix-fabric-5-25-2-mc1-20-1",
-      "file": "mods/modernfix-fabric-5.25.2+mc1.20.1.jar",
-      "sha1": "be03b9eb570c1e9df7593e68623f0fecbd039460",
-      "size": 545175
-    },
-    {
-      "id": "modmenu-7-2-2",
-      "file": "mods/modmenu-7.2.2.jar",
-      "sha1": "099c68feeb74887cbbbd8ce9a27c6123804a2c5a",
-      "size": 721366
-    },
-    {
-      "id": "modmenu-badges-lib-2023-6-1",
-      "file": "mods/modmenu-badges-lib-2023.6.1.jar",
-      "sha1": "d1d7e28a3e266c693d7bb14ce4e34e4153f540ef",
-      "size": 5221
-    },
-    {
-      "id": "moogs_structure_lib-1-1-0-1-20-1-20-4-fabric",
-      "file": "mods/moogs_structure_lib-1.1.0-1.20-1.20.4-fabric.jar",
-      "sha1": "c103bae01ea0ae6a0a6965b7700958fc980aedee",
-      "size": 255203
-    },
-    {
-      "id": "moreculling-1-20-1-0-24-5",
-      "file": "mods/moreculling-1.20.1-0.24.5.jar",
-      "sha1": "5110436d5f7867033744d2c065c44986730d79aa",
-      "size": 274506
-    },
-    {
-      "id": "no-more-villagers-1-3-1",
-      "file": "mods/no-more-villagers-1.3.1.jar",
-      "sha1": "a49528ddf49a15cd384a93c50b20fc3794d931a8",
-      "size": 1451699
-    },
-    {
-      "id": "notenoughanimations-fabric-1-11-2-mc1-20-1",
-      "file": "mods/notenoughanimations-fabric-1.11.2-mc1.20.1.jar",
-      "sha1": "f4ab2e2c3aa489f185504d9a10c09e7daa0122d7",
-      "size": 1926182
-    },
-    {
-      "id": "particle-blocker",
-      "file": "mods/particle-blocker.jar",
-      "sha1": "af2cc04d7345d19491c130e6f95e0ba6e7adda64",
-      "size": 163496
-    },
-    {
-      "id": "player-animation-lib-fabric-1-0-2-rc1-1-20",
-      "file": "mods/player-animation-lib-fabric-1.0.2-rc1+1.20.jar",
-      "sha1": "9182c38bcf614d0ed7091b15f7e099a7f2fb3617",
-      "size": 181008
-    },
-    {
-      "id": "plushie_buddies-0-1-7-1-20-1",
-      "file": "mods/plushie_buddies-0.1.7-1.20.1.jar",
-      "sha1": "0cc3272287900181933a35cb0b301a6ec1c30ec3",
-      "size": 433577
-    },
-    {
-      "id": "questlog-fabric-1-20-1-1-0-7",
-      "file": "mods/questlog-fabric-1.20.1-1.0.7.jar",
-      "sha1": "7a8fd496b2a762ecd56506a6132253f0d423d9c1",
-      "size": 518881
-    },
-    {
-      "id": "recipeessentials-fabric-1-20-1-4-1",
-      "file": "mods/recipeessentials-fabric-1.20.1-4.1.jar",
-      "sha1": "e70aa0db46209c7c69bca58b2e701bed007aed99",
-      "size": 51639
-    },
-    {
-      "id": "reeses_sodium_options-1-7-2-mc1-20-1-build-101",
-      "file": "mods/reeses_sodium_options-1.7.2+mc1.20.1-build.101.jar",
-      "sha1": "206f1b01b99ac3df99ddd84ed96b466a8700412d",
-      "size": 77304
-    },
-    {
-      "id": "resourcefullib-fabric-1-20-1-2-1-29",
-      "file": "mods/resourcefullib-fabric-1.20.1-2.1.29.jar",
-      "sha1": "e1d85a3100c2f3683a65dca20518e3914d82b0f0",
-      "size": 431646
-    },
-    {
-      "id": "rhino-fabric-2001-2-3-build-10",
-      "file": "mods/rhino-fabric-2001.2.3-build.10.jar",
-      "sha1": "a1fd74cf31c0bf959803870c1ac3d918ae66fc1e",
-      "size": 1743587
-    },
-    {
-      "id": "rightclickharvest-fabric-4-6-1-1-20-1",
-      "file": "mods/rightclickharvest-fabric-4.6.1+1.20.1.jar",
-      "sha1": "69598f4ba873c74404d3567e8cc05df8fff14f99",
-      "size": 287561
-    },
-    {
-      "id": "ritchiesprojectilelib-2-1-1-mc-1-20-1-fabric",
-      "file": "mods/ritchiesprojectilelib-2.1.1-mc.1.20.1-fabric.jar",
-      "sha1": "eb1201c6a6e6149a96914f5f713349dda29c6353",
-      "size": 2532001
-    },
-    {
-      "id": "servercore-fabric-1-5-2-1-20-1",
-      "file": "mods/servercore-fabric-1.5.2+1.20.1.jar",
-      "sha1": "681757921997f3ab8455a968bf77ee4f305b82ed",
-      "size": 815594
-    },
-    {
-      "id": "skinlayers3d-fabric-1-10-1-mc1-20-1",
-      "file": "mods/skinlayers3d-fabric-1.10.1-mc1.20.1.jar",
-      "sha1": "ba624f3b84d10153ba325299edf5c51947e289fc",
-      "size": 1966174
-    },
-    {
-      "id": "smoothchunk-fabric-1-20-1-4-1",
-      "file": "mods/smoothchunk-fabric-1.20.1-4.1.jar",
-      "sha1": "1136d8d1ebc37dc7754f22ebe7ee24ac91166ce3",
-      "size": 17498
-    },
-    {
-      "id": "snowdownessentails-1-0-1",
-      "file": "mods/snowdownessentails-1.0.1.jar",
-      "sha1": "478f1e0c3d95921791ca7de1a5a86fdfd54d4c09",
-      "size": 140811
-    },
-    {
-      "id": "sodium-extra-0-5-9-mc1-20-1",
-      "file": "mods/sodium-extra-0.5.9+mc1.20.1.jar",
-      "sha1": "0f97ec3f395b223848a63573b1a46cbecf97f19f",
-      "size": 370701
-    },
-    {
-      "id": "sodium-fabric-0-5-13-mc1-20-1",
-      "file": "mods/sodium-fabric-0.5.13+mc1.20.1.jar",
-      "sha1": "bcdbf37d9494e405cba210d7a80ed58e756297b5",
-      "size": 971552
-    },
-    {
-      "id": "sodiumextras-fabric-1-0-7-1-20-1",
-      "file": "mods/sodiumextras-fabric-1.0.7-1.20.1.jar",
-      "sha1": "415f6d815b673f6d719c55a7caaa44e03f62bf56",
-      "size": 630468
-    },
-    {
-      "id": "sodiumoptionsapi-fabric-1-0-10-1-20-1",
-      "file": "mods/sodiumoptionsapi-fabric-1.0.10-1.20.1.jar",
-      "sha1": "dc188678ffaceacf6d03a2d693af9a2ac4ed69f5",
-      "size": 657853
-    },
-    {
-      "id": "sodiumoptionsmodcompat-fabric-1-0-0-1-20-1",
-      "file": "mods/sodiumoptionsmodcompat-fabric-1.0.0-1.20.1.jar",
-      "sha1": "5b589b7b515f56e0e0047571dcc67a65bb45c811",
-      "size": 605673
-    },
-    {
-      "id": "sophisticatedbackpacks-1-20-1-3-23-4-5-110",
-      "file": "mods/sophisticatedbackpacks-1.20.1-3.23.4.5.110.jar",
-      "sha1": "a4f49de0f9df379cb151dde440467b90e8923724",
-      "size": 986101
-    },
-    {
-      "id": "sophisticatedcore-1-20-1-1-2-7-15-166",
-      "file": "mods/sophisticatedcore-1.20.1-1.2.7.15.166.jar",
-      "sha1": "3d32bdf672b33b90ac38dc9572f9af6a6afae82e",
-      "size": 2858683
-    },
-    {
-      "id": "sound-physics-remastered-fabric-1-20-1-1-5-1",
-      "file": "mods/sound-physics-remastered-fabric-1.20.1-1.5.1.jar",
-      "sha1": "b06a2eb31bcfe3d98463d1323e4787ac2b378bff",
-      "size": 205569
-    },
-    {
-      "id": "spark-1-10-53-fabric",
-      "file": "mods/spark-1.10.53-fabric.jar",
-      "sha1": "252de323db10d2b49ef74f8e7a6a5c72929be140",
-      "size": 3082974
-    },
-    {
-      "id": "structureessentials-fabric-1-20-1-4-8",
-      "file": "mods/structureessentials-fabric-1.20.1-4.8.jar",
-      "sha1": "8562b9ec3b35d7251073b11937337201446a957d",
-      "size": 63961
-    },
-    {
-      "id": "supermartijn642configlib-1-1-8a-fabric-mc1-20",
-      "file": "mods/supermartijn642configlib-1.1.8a-fabric-mc1.20.jar",
-      "sha1": "964df96c16afe775efd467b22f24458915805ad8",
-      "size": 207990
-    },
-    {
-      "id": "taterzens-fabric-1-20-1-1-11-7",
-      "file": "mods/taterzens-fabric-1.20.1-1.11.7.jar",
-      "sha1": "8c5c8b7244064213334ed243f5f30b8e9c45e66d",
-      "size": 496129
-    },
-    {
-      "id": "threadtweak-fabric-1-20-1-0-1-0",
-      "file": "mods/threadtweak-fabric-1.20.1-0.1.0.jar",
-      "sha1": "9869b906423fc138e6247e40dfe689511c7a3781",
-      "size": 144725
-    },
-    {
-      "id": "trinkets-3-7-2",
-      "file": "mods/trinkets-3.7.2.jar",
-      "sha1": "d58cc8759587f03f320f188972ca66baa788d008",
-      "size": 238532
-    },
-    {
-      "id": "tweakeroo-fabric-1-20-1-0-17-1",
-      "file": "mods/tweakeroo-fabric-1.20.1-0.17.1.jar",
-      "sha1": "2a18f5905f9e10c6a3b45388b4401ec135b3b3cf",
-      "size": 273435
-    },
-    {
-      "id": "txnilib-fabric-1-0-24-1-20-1",
-      "file": "mods/txnilib-fabric-1.0.24-1.20.1.jar",
-      "sha1": "ef3d09633f44a6a7ee818c9872cb12472bc420ba",
-      "size": 1057614
-    },
-    {
-      "id": "visuality-0-7-1-1-20",
-      "file": "mods/visuality-0.7.1+1.20.jar",
-      "sha1": "a4a5fc1edae49126432fc903dd6fdbb88b7251ed",
-      "size": 67302
-    },
-    {
-      "id": "vmp-fabric-mc1-20-1-0-2-0-beta-7-102-all",
-      "file": "mods/vmp-fabric-mc1.20.1-0.2.0+beta.7.102-all.jar",
-      "sha1": "46e896cabf7813275413c97e6dd2f48ef534057d",
-      "size": 487043
-    },
-    {
-      "id": "voicechat-fabric-1-20-1-2-6-11",
-      "file": "mods/voicechat-fabric-1.20.1-2.6.11.jar",
-      "sha1": "ceb26733205db520e86acf5cdab7a87f3aae60f9",
-      "size": 5251599
-    },
-    {
-      "id": "wakes-0-4-0-1-20-1",
-      "file": "mods/wakes-0.4.0+1.20.1.jar",
-      "sha1": "c7683a2cfe6e874d01c68da9a596e31615f29536",
-      "size": 355290
-    },
-    {
-      "id": "waystones-fabric-1-20-1-14-1-18",
-      "file": "mods/waystones-fabric-1.20.1-14.1.18.jar",
-      "sha1": "1dd44ebedbc03913206f095e931cba414473d4c4",
-      "size": 519906
-    },
-    {
-      "id": "worldedit-mod-7-2-15",
-      "file": "mods/worldedit-mod-7.2.15.jar",
-      "sha1": "9c52765ca56f917ef8cbafc20e9a4f45c346508f",
-      "size": 5825402
-    },
-    {
-      "id": "xaerominimap-fabric-1-20-1-25-3-5",
-      "file": "mods/xaerominimap-fabric-1.20.1-25.3.5.jar",
-      "sha1": "749f43d9686eece78c3538ffb1caf350ceb3a923",
-      "size": 2153600
-    },
-    {
-      "id": "xaeroworldmap-fabric-1-20-1-1-40-6",
-      "file": "mods/xaeroworldmap-fabric-1.20.1-1.40.6.jar",
-      "sha1": "6477dd04fa180ed3ed1f342ea37c3f2ba4f500b8",
-      "size": 1402552
-    },
-    {
-      "id": "yet_another_config_lib_v3-3-6-6-1-20-1-fabric",
-      "file": "mods/yet_another_config_lib_v3-3.6.6+1.20.1-fabric.jar",
-      "sha1": "dc5ac6c6c4d1e48e8e520b9a41b41e704e82cf55",
-      "size": 1294234
-    },
-    {
-      "id": "youre-in-grave-danger-fabric-2-0-16",
-      "file": "mods/youre-in-grave-danger-fabric-2.0.16.jar",
-      "sha1": "b396513f5e9bb8c2e0adf00e011011cf7d90a0b3",
-      "size": 825112
-    }
-  ]
+    ],
+    "mods": [
+        {
+            "id": "advancementplaques-1-20-1-fabric-1-6-7",
+            "file": "mods/AdvancementPlaques-1.20.1-fabric-1.6.7.jar",
+            "sha1": "c90badc7d2fed0c1144d944a3c0ee10a540f2a27",
+            "size": 194905
+        },
+        {
+            "id": "axiom-5-1-1-for-mc1-20-1",
+            "file": "mods/Axiom-5.1.1-for-MC1.20.1.jar",
+            "sha1": "0a39ace06b538674bb7f1496361815987b8ce73c",
+            "size": 42690630
+        },
+        {
+            "id": "badoptimizations-2-4-1-1-20-1",
+            "file": "mods/BadOptimizations-2.4.1-1.20.1.jar",
+            "sha1": "304007dcb0fb15ed1a1bc3771736470dafc5be0f",
+            "size": 460234
+        },
+        {
+            "id": "clumps-fabric-1-20-1-12-0-0-4",
+            "file": "mods/Clumps-fabric-1.20.1-12.0.0.4.jar",
+            "sha1": "4a845a29ddfd40bcc4695bbbc82872c237dbbac5",
+            "size": 21987
+        },
+        {
+            "id": "controlling-fabric-1-20-1-12-0-2",
+            "file": "mods/Controlling-fabric-1.20.1-12.0.2.jar",
+            "sha1": "8a61ca1600e33c73598530f1e208bb07081fdcd6",
+            "size": 122777
+        },
+        {
+            "id": "createbetterfps-1-1-1",
+            "file": "mods/CreateBetterFps-1.1.1.jar",
+            "sha1": "73739bc8abf307021dc23ffec35c6950b1894b36",
+            "size": 23384
+        },
+        {
+            "id": "creativecore_fabric_v2-12-34_mc1-20-1",
+            "file": "mods/CreativeCore_FABRIC_v2.12.34_mc1.20.1.jar",
+            "sha1": "d6fd7ceb95052431a01c139c9ed242aa40895fe7",
+            "size": 1212248
+        },
+        {
+            "id": "customnpcs-unofficial-fabric-1-20-1-20251214",
+            "file": "mods/CustomNPCs-Unofficial-Fabric-1.20.1.20251214.jar",
+            "sha1": "a402669028e240e663c2c65d1c6cc3eb36f03c96",
+            "size": 12981960
+        },
+        {
+            "id": "emi-create-schematics--1-0-1-fabric-1-20-1-",
+            "file": "mods/EMI Create Schematics [1.0.1 Fabric 1.20.1].jar",
+            "sha1": "a65f802c06d609c00d9c3ab100fb27dab219e930",
+            "size": 51589
+        },
+        {
+            "id": "emiprofessions-fabric-1-20-1-1-0-4",
+            "file": "mods/EMIProfessions-fabric-1.20.1-1.0.4.jar",
+            "sha1": "6b08bae3a67a79ac08a68d017cebf77fb04a3122",
+            "size": 25237
+        },
+        {
+            "id": "fallingtree-1-20-1-4-3-4",
+            "file": "mods/FallingTree-1.20.1-4.3.4.jar",
+            "sha1": "44d15ae2074b761597e8b8de5846cb2f98f64d25",
+            "size": 420179
+        },
+        {
+            "id": "farmersdelight-1-20-1-2-4-1-refabricated",
+            "file": "mods/FarmersDelight-1.20.1-2.4.1+refabricated.jar",
+            "sha1": "b8dded252730b2d47655813dde9d743785c0b107",
+            "size": 8056758
+        },
+        {
+            "id": "forgeconfigapiport-v8-0-3-1-20-1-fabric",
+            "file": "mods/ForgeConfigAPIPort-v8.0.3-1.20.1-Fabric.jar",
+            "sha1": "41f146d16a37f62e84e60cab226058d1a87f9cec",
+            "size": 396628
+        },
+        {
+            "id": "gamma-utils-1-7-16-mc1-20-1",
+            "file": "mods/Gamma-Utils-1.7.16-mc1.20.1.jar",
+            "sha1": "9ee543857f50fb5379f2281df10b64f28b3f4618",
+            "size": 57562
+        },
+        {
+            "id": "highlighter-1-20-1-fabric-1-1-9",
+            "file": "mods/Highlighter-1.20.1-fabric-1.1.9.jar",
+            "sha1": "12fd494098bbcf8d34b1cb939587599594d4e9bf",
+            "size": 30635
+        },
+        {
+            "id": "iceberg-1-20-1-fabric-1-1-25",
+            "file": "mods/Iceberg-1.20.1-fabric-1.1.25.jar",
+            "sha1": "365e70abde54faab847d2594420dc2bbd589ad3d",
+            "size": 119018
+        },
+        {
+            "id": "immediatelyfast-fabric-1-5-4-1-20-4",
+            "file": "mods/ImmediatelyFast-Fabric-1.5.4+1.20.4.jar",
+            "sha1": "bb9e7a507bb7a442cba451d79b5c1fde74aea07c",
+            "size": 354883
+        },
+        {
+            "id": "immersiveui-fabric-0-3-0",
+            "file": "mods/ImmersiveUI-FABRIC-0.3.0.jar",
+            "sha1": "b01ad7ccfe09720b92ddaabc1d42db6701f56c2d",
+            "size": 215188
+        },
+        {
+            "id": "jade-1-20-fabric-11-13-1",
+            "file": "mods/Jade-1.20-Fabric-11.13.1.jar",
+            "sha1": "511ff9de2b9322089e769433f8613f3ac16bdade",
+            "size": 572882
+        },
+        {
+            "id": "jadeaddons-1-20-1-fabric-5-4-0",
+            "file": "mods/JadeAddons-1.20.1-Fabric-5.4.0.jar",
+            "sha1": "326c7080c34972bb693457f26b20d509ae03e293",
+            "size": 86538
+        },
+        {
+            "id": "jadeaddons-1-20-1-fabric-5-5-1",
+            "file": "mods/JadeAddons-1.20.1-Fabric-5.5.1.jar",
+            "sha1": "b9c1fdaa9633d14a0b33f045952718d8c3ef903e",
+            "size": 93694
+        },
+        {
+            "id": "ksyxis-1-3-4",
+            "file": "mods/Ksyxis-1.3.4.jar",
+            "sha1": "143fe088170e5777d3ccf5b488d61ee3635ebffe",
+            "size": 29869
+        },
+        {
+            "id": "legendarytooltips-1-20-1-fabric-1-4-5",
+            "file": "mods/LegendaryTooltips-1.20.1-fabric-1.4.5.jar",
+            "sha1": "64170c3a1b42b8f8c430d4f2400644f8131a47a1",
+            "size": 63969
+        },
+        {
+            "id": "log-begone-fabric-1-20-1-1-0-8",
+            "file": "mods/Log-Begone-Fabric-1.20.1-1.0.8.jar",
+            "sha1": "f1c697ffcf7ec79e458b3af3d32392d75bf2caff",
+            "size": 126944
+        },
+        {
+            "id": "magicparticles-1-2-1-1-20-1",
+            "file": "mods/MagicParticles-1.2.1+1.20.1.jar",
+            "sha1": "1d043393b601368e8ba2e67ef01705b19424873e",
+            "size": 286031
+        },
+        {
+            "id": "moogsvoyagerstructures-1-20-5-0-4",
+            "file": "mods/MoogsVoyagerStructures-1.20-5.0.4.jar",
+            "sha1": "c7c384d91180b7a37064504a9839fa6f14801224",
+            "size": 2661209
+        },
+        {
+            "id": "mousetweaks-fabric-mc1-20-2-26",
+            "file": "mods/MouseTweaks-fabric-mc1.20-2.26.jar",
+            "sha1": "6a6b977e671b1ab625e740fc70fb5300c21bb841",
+            "size": 77943
+        },
+        {
+            "id": "naturescompass-1-20-1-2-2-3-fabric",
+            "file": "mods/NaturesCompass-1.20.1-2.2.3-fabric.jar",
+            "sha1": "0734579799a17b9662b833cc21399521b09161ff",
+            "size": 230344
+        },
+        {
+            "id": "necronomicon-fabric-1-6-0-1-20-1",
+            "file": "mods/Necronomicon-Fabric-1.6.0+1.20.1.jar",
+            "sha1": "86e4ba3727be9ef8816844aa15f45db099ecb858",
+            "size": 37533
+        },
+        {
+            "id": "octolib-fabric-0-5-0-1-1-20-1",
+            "file": "mods/OctoLib-FABRIC-0.5.0.1+1.20.1.jar",
+            "sha1": "ea6763c11aac7635d9812dbccccba0d10b797a1d",
+            "size": 424020
+        },
+        {
+            "id": "patchouli-1-20-1-84-1-fabric",
+            "file": "mods/Patchouli-1.20.1-84.1-FABRIC.jar",
+            "sha1": "ac0b6b19b150fcb97dc037df26a298ab93f2cd90",
+            "size": 857105
+        },
+        {
+            "id": "perception-fabric-0-1-4-1-20-1",
+            "file": "mods/Perception-FABRIC-0.1.4+1.20.1.jar",
+            "sha1": "b1c788ac4149a0046e5ed91c7eafa1c68d06aced",
+            "size": 69672
+        },
+        {
+            "id": "prism-1-20-1-fabric-1-0-5",
+            "file": "mods/Prism-1.20.1-fabric-1.0.5.jar",
+            "sha1": "cd169ef91788fed7e1025e5d2273d61978898e52",
+            "size": 57257
+        },
+        {
+            "id": "protectormod-1-5-6",
+            "file": "mods/ProtectorMod-1.5.6.jar",
+            "sha1": "9d88f6fda226c7329dcdb7a030c6657cc0e58ace",
+            "size": 761467
+        },
+        {
+            "id": "puzzleslib-v8-1-33-1-20-1-fabric",
+            "file": "mods/PuzzlesLib-v8.1.33-1.20.1-Fabric.jar",
+            "sha1": "13282e818c9b5d20ba9f50949e3776d678d6926d",
+            "size": 1084397
+        },
+        {
+            "id": "searchables-fabric-1-20-1-1-0-3",
+            "file": "mods/Searchables-fabric-1.20.1-1.0.3.jar",
+            "sha1": "3fe28bfd8de8f13adeefb4dd5c9a8f97b233a0a1",
+            "size": 80283
+        },
+        {
+            "id": "serverpad-1-0-2",
+            "file": "mods/ServerPad-1.0.2.jar",
+            "sha1": "222b269d946b3ba8019798559d0d9e609e32137f",
+            "size": 2027052
+        },
+        {
+            "id": "steam_rails-1-6-15-beta-fabric-mc1-20-1",
+            "file": "mods/Steam_Rails-1.6.15-beta+fabric-mc1.20.1.jar",
+            "sha1": "2930fc022d2f93b07c5837d6ff9d0727a6ab7f9b",
+            "size": 9887158
+        },
+        {
+            "id": "undergroundvillages-fabric-1-20-1-2-1-0",
+            "file": "mods/UndergroundVillages-fabric-1.20.1-2.1.0.jar",
+            "sha1": "85ffd30c58ce52a2312d18577225bb388d2d662e",
+            "size": 282700
+        },
+        {
+            "id": "a_good_place-1-20-1-2-8-fabric",
+            "file": "mods/a_good_place-1.20-1.2.8-fabric.jar",
+            "sha1": "f7b47b066db92686a5be3e8f92a16e0233471303",
+            "size": 255328
+        },
+        {
+            "id": "adorablehamsterpets-3-4-3-1-20-1-fabric",
+            "file": "mods/adorablehamsterpets-3.4.3-1.20.1+fabric.jar",
+            "sha1": "d1764aac63a25b1a2a1e9496b94bf6fee1af96f9",
+            "size": 4513943
+        },
+        {
+            "id": "ajolocoin-fabric-1-2-1",
+            "file": "mods/ajolocoin-fabric-1.2.1.jar",
+            "sha1": "a40beccbb88111bba007c8a389a9949e20c8d21e",
+            "size": 226205
+        },
+        {
+            "id": "almanac-1-20-x-fabric-1-0-2",
+            "file": "mods/almanac-1.20.x-fabric-1.0.2.jar",
+            "sha1": "0f31abe886e9785592f1896c7c1ffe5992e2c6de",
+            "size": 16082
+        },
+        {
+            "id": "alternate-current-mc1-20-1-9-0",
+            "file": "mods/alternate-current-mc1.20-1.9.0.jar",
+            "sha1": "f09b6c60556ca329b82d4bdb965dd4f574c0e1e3",
+            "size": 51875
+        },
+        {
+            "id": "appleskin-fabric-mc1-20-1-2-5-2",
+            "file": "mods/appleskin-fabric-mc1.20.1-2.5.2.jar",
+            "sha1": "f859bb13130788ae2dc2e76a9c80c89e4bbbef5f",
+            "size": 1097240
+        },
+        {
+            "id": "architectury-9-2-14-fabric",
+            "file": "mods/architectury-9.2.14-fabric.jar",
+            "sha1": "4fa65e32dbf63a871a30fe8ec6fbff9a4b8d007d",
+            "size": 585207
+        },
+        {
+            "id": "athena-fabric-1-20-1-3-1-2",
+            "file": "mods/athena-fabric-1.20.1-3.1.2.jar",
+            "sha1": "53014ceff1e10085609c16adbe246df51113bfe9",
+            "size": 74370
+        },
+        {
+            "id": "authhybrid-1-6-0-1-20-1-client",
+            "file": "mods/authhybrid-1.6.0+1.20.1-client.jar",
+            "sha1": "a2254073c7b8f89b000a343d36ea045669cc3e76",
+            "size": 4011
+        },
+        {
+            "id": "autoconfig1u-3-4-0",
+            "file": "mods/autoconfig1u-3.4.0.jar",
+            "sha1": "5c0b2bad699ceca0f2d7da95e11f1715f4f24b15",
+            "size": 245894
+        },
+        {
+            "id": "balm-fabric-1-20-1-7-3-38",
+            "file": "mods/balm-fabric-1.20.1-7.3.38.jar",
+            "sha1": "833370d2a28be5673537b177e332918668e829e0",
+            "size": 609150
+        },
+        {
+            "id": "bat-remover-1-0-2",
+            "file": "mods/bat-remover-1.0.2.jar",
+            "sha1": "89a526c36f1fc2e0f941ed4678b087a27836206c",
+            "size": 4439
+        },
+        {
+            "id": "bellsandwhistles-0-4-5-1-20-1-fabric",
+            "file": "mods/bellsandwhistles-0.4.5+1.20.1-FABRIC.jar",
+            "sha1": "70e97c2ff786b8df7f354a37442ae36f4df35dc3",
+            "size": 216802
+        },
+        {
+            "id": "betterbeds-1-3-0-1-19-3",
+            "file": "mods/betterbeds-1.3.0-1.19.3.jar",
+            "sha1": "be8020ab06b679bb33f93a7e9ade8a783985eab0",
+            "size": 50218
+        },
+        {
+            "id": "betterchunkloading-fabric-1-20-1-5-5",
+            "file": "mods/betterchunkloading-fabric-1.20.1-5.5.jar",
+            "sha1": "78bc02e57d7e81faa4ea7ca438afe2f6fc1e92ba",
+            "size": 58613
+        },
+        {
+            "id": "betterfpsdist-fabric-1-20-1-6-0",
+            "file": "mods/betterfpsdist-fabric-1.20.1-6.0.jar",
+            "sha1": "46534d1a7d107133963f013a5f041490d8e3f160",
+            "size": 22249
+        },
+        {
+            "id": "bobby-5-0-1",
+            "file": "mods/bobby-5.0.1.jar",
+            "sha1": "bdc0285d4209c529019ae1c5f1f0af0e3a3cffa6",
+            "size": 799098
+        },
+        {
+            "id": "borderless-mining-1-1-8-1-20-1",
+            "file": "mods/borderless-mining-1.1.8+1.20.1.jar",
+            "sha1": "dbdb8a0600679f3c76480ae5d0995e2334773ce3",
+            "size": 118295
+        },
+        {
+            "id": "botarium-fabric-1-20-1-2-3-4",
+            "file": "mods/botarium-fabric-1.20.1-2.3.4.jar",
+            "sha1": "20e1c12cd5e4b4127c7b20ab7e7f81e7119dbf8b",
+            "size": 188388
+        },
+        {
+            "id": "c2me-fabric-mc1-20-1-0-2-0-alpha-11-16",
+            "file": "mods/c2me-fabric-mc1.20.1-0.2.0+alpha.11.16.jar",
+            "sha1": "94d96b5fffd9e98bd8448dcdd9e27f60511b1d29",
+            "size": 1426500
+        },
+        {
+            "id": "cardinal-components-api-5-2-3",
+            "file": "mods/cardinal-components-api-5.2.3.jar",
+            "sha1": "d0d687d8fc3f367bf696fa0059bccdf0591c51f4",
+            "size": 228709
+        },
+        {
+            "id": "chat_heads-0-14-2-fabric-1-20",
+            "file": "mods/chat_heads-0.14.2-fabric-1.20.jar",
+            "sha1": "300f25ceda7b00735930f927fdc6f12377dcd138",
+            "size": 80747
+        },
+        {
+            "id": "chatanimation-fabric-1-20-1-1-1-3",
+            "file": "mods/chatanimation-fabric-1.20.1-1.1.3.jar",
+            "sha1": "25310f8bd85bd4e7e4f4c2332e2a32b24814ffc5",
+            "size": 381362
+        },
+        {
+            "id": "chipped-fabric-1-20-1-3-0-7",
+            "file": "mods/chipped-fabric-1.20.1-3.0.7.jar",
+            "sha1": "add35e79f6a930825e4dbe77d5d0468fb96c533f",
+            "size": 15057458
+        },
+        {
+            "id": "chunksending-fabric-1-20-1-2-8",
+            "file": "mods/chunksending-fabric-1.20.1-2.8.jar",
+            "sha1": "7dcbf4ad0e571fd5b86af0262197305f2067481b",
+            "size": 11318
+        },
+        {
+            "id": "clientcrafting-fabric-1-20-1-1-8",
+            "file": "mods/clientcrafting-fabric-1.20.1-1.8.jar",
+            "sha1": "c8fb1ebedea3ffde2ad1d4e4a3fc3041056ae185",
+            "size": 6641
+        },
+        {
+            "id": "cloth-config-11-1-136-fabric",
+            "file": "mods/cloth-config-11.1.136-fabric.jar",
+            "sha1": "d5fe84a0cc9ed5c7290a76ba570e1f8716afecab",
+            "size": 1172214
+        },
+        {
+            "id": "collective-1-20-1-8-13",
+            "file": "mods/collective-1.20.1-8.13.jar",
+            "sha1": "74b917dd99cd97b2f0480628a1b56958f5e0f5ad",
+            "size": 665169
+        },
+        {
+            "id": "comandsservers-1-0-0",
+            "file": "mods/comandsservers-1.0.0.jar",
+            "sha1": "b0c04f27353d05f2d28303f7fca90e65cfeff437",
+            "size": 182056
+        },
+        {
+            "id": "connectivity-fabric-1-20-1-7-6",
+            "file": "mods/connectivity-fabric-1.20.1-7.6.jar",
+            "sha1": "4b23cff87b1e23edb179868ee0eb58e4d34c98b6",
+            "size": 198670
+        },
+        {
+            "id": "continuity-3-0-0-1-20-1",
+            "file": "mods/continuity-3.0.0+1.20.1.jar",
+            "sha1": "b9b3908c93efed3da5ad7caaf733b9d5b678c85f",
+            "size": 1016063
+        },
+        {
+            "id": "coroutil-fabric-1-20-1-1-3-7",
+            "file": "mods/coroutil-fabric-1.20.1-1.3.7.jar",
+            "sha1": "0b9a1b0db34d1271fe7bcc4ec0e451c3fb25a04c",
+            "size": 2392617
+        },
+        {
+            "id": "create-fabric-6-0-8-1-build-1744-mc1-20-1",
+            "file": "mods/create-fabric-6.0.8.1+build.1744-mc1.20.1.jar",
+            "sha1": "f750d019bc1230c8c7a8a4ccf549d1db192d7a69",
+            "size": 32189889
+        },
+        {
+            "id": "create-zinc-craft-1-20-1--1-",
+            "file": "mods/create-zinc-craft-1.20.1 (1).jar",
+            "sha1": "a8096290e65cda65b1f721b27b227543fb4d8e28",
+            "size": 4367
+        },
+        {
+            "id": "create__automation-fabric-1-20-1-0-1-2a",
+            "file": "mods/create__automation-fabric-1.20.1-0.1.2a.jar",
+            "sha1": "60388904638979dc026410a7bd3aa57d0de31da8",
+            "size": 28589
+        },
+        {
+            "id": "create_copper_and_zinc-1-6-0-fabric-1-20-1",
+            "file": "mods/create_copper_and_zinc-1.6.0-fabric-1.20.1.jar",
+            "sha1": "6f359d079480b75e9d86e0ba09ceb9363feea82f",
+            "size": 94555
+        },
+        {
+            "id": "create_ironworks-3-5-0-fabric-1-20-1",
+            "file": "mods/create_ironworks-3.5.0-fabric-1.20.1.jar",
+            "sha1": "151ee28c788eb717df2d7c45ef9f64864909bc35",
+            "size": 780613
+        },
+        {
+            "id": "create_redstone-1-0-5",
+            "file": "mods/create_redstone-1.0.5.jar",
+            "sha1": "99fc0151ab0df81a2caf8a1e1455d8543344ac56",
+            "size": 4105
+        },
+        {
+            "id": "create_snt-2-0-no-apple-syrup",
+            "file": "mods/create_snt-2.0 NO-APPLE-SYRUP.jar",
+            "sha1": "8205b3750da109534ff3a381488326fa3d20eacd",
+            "size": 307348
+        },
+        {
+            "id": "create_ultimate_factory-2-1-0-fabric-1-20-1",
+            "file": "mods/create_ultimate_factory-2.1.0-fabric-1.20.1.jar",
+            "sha1": "f1821ea3471db0c94c80a0d485e6dcbe11a6407c",
+            "size": 227202
+        },
+        {
+            "id": "createaddition-fabric-1-20-1-1-3-4",
+            "file": "mods/createaddition-fabric+1.20.1-1.3.4.jar",
+            "sha1": "22843b7edd3f1b151a8aaeffe72ec3c827929b36",
+            "size": 1647722
+        },
+        {
+            "id": "createbigcannons-5-10-2-mc-1-20-1-fabric",
+            "file": "mods/createbigcannons-5.10.2-mc.1.20.1-fabric.jar",
+            "sha1": "eb580daf894d3bbb9f453e8097d9bf9891773efe",
+            "size": 6275310
+        },
+        {
+            "id": "createcobblestone-1-4-8-fabric-1-20-1-126",
+            "file": "mods/createcobblestone-1.4.8+fabric-1.20.1-126.jar",
+            "sha1": "a491e3f3582cc2c80dd53f7ce0c67b646bfa722a",
+            "size": 235198
+        },
+        {
+            "id": "createnewrecipes-1-0-0-1-20-1",
+            "file": "mods/createnewrecipes-1.0.0+1.20.1.jar",
+            "sha1": "f8147e4382d6b762387798321dc863ebdc9a6306",
+            "size": 13690114
+        },
+        {
+            "id": "createthreadedtrains-fabric-1-20-1-1-0-0",
+            "file": "mods/createthreadedtrains-fabric-1.20.1-1.0.0.jar",
+            "sha1": "8a14e2c88b3dda004c4aa6f1c4502a165478349d",
+            "size": 77441
+        },
+        {
+            "id": "cupboard-fabric-1-20-1-2-7",
+            "file": "mods/cupboard-fabric-1.20.1-2.7.jar",
+            "sha1": "33f853230169b03d896775cbc663e016975702d2",
+            "size": 25668
+        },
+        {
+            "id": "customdynamicnpc-1-0-0",
+            "file": "mods/customdynamicnpc-1.0.0.jar",
+            "sha1": "d6996a419be8ece1054070b2eff9a384f1dba281",
+            "size": 175723
+        },
+        {
+            "id": "customshops-1-1-0",
+            "file": "mods/customshops-1.1.0.jar",
+            "sha1": "b24e06778f2b95aab399c402865b21dddfcc8ea8",
+            "size": 3996516
+        },
+        {
+            "id": "distraction_free_recipes-fabric-1-2-1-1-20-1",
+            "file": "mods/distraction_free_recipes-fabric-1.2.1-1.20.1.jar",
+            "sha1": "1bef806e432adec90f514f61a4b46a36da6f1881",
+            "size": 413226
+        },
+        {
+            "id": "durabilitytooltip-1-1-6-fabric-mc1-20-4",
+            "file": "mods/durabilitytooltip-1.1.6-fabric-mc1.20.4.jar",
+            "sha1": "5f330edddd6cf60413f4532c26f9f851db2a102d",
+            "size": 21282
+        },
+        {
+            "id": "dynamic-fps-3-11-4-minecraft-1-20-0-fabric",
+            "file": "mods/dynamic-fps-3.11.4+minecraft-1.20.0-fabric.jar",
+            "sha1": "38196ee5bcfb3605f9bb9e52a45916b250216313",
+            "size": 223261
+        },
+        {
+            "id": "easy_mob_farm-fabric-1-20-1-10-4-0",
+            "file": "mods/easy_mob_farm-fabric-1.20.1-10.4.0.jar",
+            "sha1": "20499f10fc62eaf5b8759b493e5ffb174c5fb26f",
+            "size": 886071
+        },
+        {
+            "id": "emi-1-1-22-1-20-1-fabric",
+            "file": "mods/emi-1.1.22+1.20.1+fabric.jar",
+            "sha1": "968357a16a878d1a0a2063d1d2dfc5eb2ae3ac3b",
+            "size": 1051034
+        },
+        {
+            "id": "emi-letsdo-compat-1-8-1",
+            "file": "mods/emi-letsdo-compat-1.8.1.jar",
+            "sha1": "d75de241f5c84f25f25e76a61f19324682db16bc",
+            "size": 135112
+        },
+        {
+            "id": "emi_enchanting-0-1-2-1-20-1",
+            "file": "mods/emi_enchanting-0.1.2+1.20.1.jar",
+            "sha1": "dbc3c4acecdce9b083cde7b91cc95e5ba57b3892",
+            "size": 15241
+        },
+        {
+            "id": "emiffect-fabric-2-1-5-mc1-20-1",
+            "file": "mods/emiffect-fabric-2.1.5+mc1.20.1.jar",
+            "sha1": "18711c0138626c1087836796074cc3a6bd83a0ca",
+            "size": 39666
+        },
+        {
+            "id": "emitrades-fabric-1-2-1-mc1-20-1",
+            "file": "mods/emitrades-fabric-1.2.1+mc1.20.1.jar",
+            "sha1": "72b51627c09e539e9f6194fc5aad862ff5f09461",
+            "size": 51479
+        },
+        {
+            "id": "enhancedblockentities-0-9-1-20",
+            "file": "mods/enhancedblockentities-0.9+1.20.jar",
+            "sha1": "61cfe50f69f8ef9e3640c0269ef158870f5b0410",
+            "size": 490690
+        },
+        {
+            "id": "entity_model_features_1-20-1-fabric-3-0-11",
+            "file": "mods/entity_model_features_1.20.1-fabric-3.0.11.jar",
+            "sha1": "de3c324185dbebd193dffc811aaab92e0d2a2ad6",
+            "size": 491235
+        },
+        {
+            "id": "entity_texture_features_1-20-1-fabric-7-0-8",
+            "file": "mods/entity_texture_features_1.20.1-fabric-7.0.8.jar",
+            "sha1": "ca793bf5caff84284d75f7d04d242074f5fd8747",
+            "size": 737909
+        },
+        {
+            "id": "entityculling-fabric-1-9-5-mc1-20-1",
+            "file": "mods/entityculling-fabric-1.9.5-mc1.20.1.jar",
+            "sha1": "d82ff7418e16ef89afa123127e3fb945983cdf70",
+            "size": 1561882
+        },
+        {
+            "id": "extra-mod-integrations-0-4-7-1-20-1",
+            "file": "mods/extra-mod-integrations-0.4.7+1.20.1.jar",
+            "sha1": "3c7c6645130f35772d81ba8a9cd70e6a85d0bbc8",
+            "size": 257271
+        },
+        {
+            "id": "fabric-api-0-92-7-1-20-1",
+            "file": "mods/fabric-api-0.92.7+1.20.1.jar",
+            "sha1": "85117a1e8984a45c972b85571c8e075cee45039a",
+            "size": 2107977
+        },
+        {
+            "id": "fabric-language-kotlin-1-13-8-kotlin-2-3-0",
+            "file": "mods/fabric-language-kotlin-1.13.8+kotlin.2.3.0.jar",
+            "sha1": "05fe02fe61232c4ddea4059e8103281424d5a2bd",
+            "size": 7618852
+        },
+        {
+            "id": "fabrictailor-2-1-2",
+            "file": "mods/fabrictailor-2.1.2.jar",
+            "sha1": "b7500e7538a9f73a7b988fb33ca3f071f7175816",
+            "size": 112497
+        },
+        {
+            "id": "farsight-fabric-1-20-1-4-5",
+            "file": "mods/farsight-fabric-1.20.1-4.5.jar",
+            "sha1": "bb75cc31834f9f48997eec5e294d6bf809016327",
+            "size": 373226
+        },
+        {
+            "id": "fastasyncworldsave-fabric-1-20-1-2-6",
+            "file": "mods/fastasyncworldsave-fabric-1.20.1-2.6.jar",
+            "sha1": "eed28a3850a5feb6bcf018a02fc48d8bd36851c0",
+            "size": 11980
+        },
+        {
+            "id": "fastboot-1-20-x-1-2fabric",
+            "file": "mods/fastboot-1.20.x-1.2fabric.jar",
+            "sha1": "72c11409a1c70c787ffb66329a87b21ba27ad4bd",
+            "size": 30721
+        },
+        {
+            "id": "ferritecore-6-0-1-fabric",
+            "file": "mods/ferritecore-6.0.1-fabric.jar",
+            "sha1": "8fa3b84fc5860dbc30fdf8cced02af68dffcf3fa",
+            "size": 125197
+        },
+        {
+            "id": "ftb-chunks-fabric-2001-3-6",
+            "file": "mods/ftb-chunks-fabric-2001.3.6.jar",
+            "sha1": "5bb9152187a1d0a90425399e6fb68f2229260129",
+            "size": 970189
+        },
+        {
+            "id": "ftb-essentials-fabric-2001-2-3",
+            "file": "mods/ftb-essentials-fabric-2001.2.3.jar",
+            "sha1": "cea593ae304a6741c6b63026e0433a2750ff2dd7",
+            "size": 155533
+        },
+        {
+            "id": "ftb-library-fabric-2001-2-12",
+            "file": "mods/ftb-library-fabric-2001.2.12.jar",
+            "sha1": "974823aa0fcb3420cae1e7a0148469672d0bc186",
+            "size": 769888
+        },
+        {
+            "id": "ftb-quests-fabric-2001-4-17",
+            "file": "mods/ftb-quests-fabric-2001.4.17.jar",
+            "sha1": "9016e9cfe00a9762334f76f169937a3906694d89",
+            "size": 1235809
+        },
+        {
+            "id": "ftb-teams-fabric-2001-3-2",
+            "file": "mods/ftb-teams-fabric-2001.3.2.jar",
+            "sha1": "fcfc1afb1aef5a7878f56a09868b9b6a74bf841b",
+            "size": 248853
+        },
+        {
+            "id": "ftbxaerocompat-fabric-1-1-2",
+            "file": "mods/ftbxaerocompat-fabric-1.1.2.jar",
+            "sha1": "641405f21ce716cce045a4e617ac9a4bbce510d9",
+            "size": 106055
+        },
+        {
+            "id": "fusion-1-2-12-fabric-mc1-20-1",
+            "file": "mods/fusion-1.2.12-fabric-mc1.20.1.jar",
+            "sha1": "30a8b63c0398ea1c89be08dff34185a2e26391ad",
+            "size": 515916
+        },
+        {
+            "id": "fzzy_config-0-7-5-1-20-1",
+            "file": "mods/fzzy_config-0.7.5+1.20.1.jar",
+            "sha1": "cff17781b0b62d8ad9c2e88280020d30b6325ddb",
+            "size": 2370386
+        },
+        {
+            "id": "geckolib-fabric-1-20-1-4-8-3",
+            "file": "mods/geckolib-fabric-1.20.1-4.8.3.jar",
+            "sha1": "4ed1ca003d1ba6c48bace04ba5797616854157a1",
+            "size": 1069327
+        },
+        {
+            "id": "getittogetherdrops-fabric-1-20-1-3-1",
+            "file": "mods/getittogetherdrops-fabric-1.20-1.3.1.jar",
+            "sha1": "cdf7f844b1d710cabb41eed13f66b3aab75aaaee",
+            "size": 82403
+        },
+        {
+            "id": "goml-1-9-4-1-20-1",
+            "file": "mods/goml-1.9.4+1.20.1.jar",
+            "sha1": "1cfe208762f165a9cad1db2364189cb8fc13af8c",
+            "size": 1451828
+        },
+        {
+            "id": "gpumemleakfix-fabric-1-20-1-1-8",
+            "file": "mods/gpumemleakfix-fabric-1.20.1-1.8.jar",
+            "sha1": "f3cda542199d4344c317c464256a2a499a596431",
+            "size": 6949
+        },
+        {
+            "id": "grieflogger-1-2-4-1-20-1-fabric",
+            "file": "mods/grieflogger-1.2.4-1.20.1-fabric.jar",
+            "sha1": "f6d1420de2373006a35b56e92c083051c0f0a4c5",
+            "size": 18997220
+        },
+        {
+            "id": "hold_my_items_v2-7-1_1-20---1-20-4",
+            "file": "mods/hold_my_items_v2.7.1_1.20 - 1.20.4.jar",
+            "sha1": "ee74d17a19c3ecce4c6c290475eb2240a395b3f7",
+            "size": 16183
+        },
+        {
+            "id": "imfast-fabric-1-20-1-1-0-3",
+            "file": "mods/imfast-FABRIC-1.20.1-1.0.3.jar",
+            "sha1": "dcd87a6ba93c0d0fa7f5eb98adb518b208c1c1d7",
+            "size": 3261
+        },
+        {
+            "id": "immersive_aircraft-1-4-0-1-20-1-fabric",
+            "file": "mods/immersive_aircraft-1.4.0+1.20.1-fabric.jar",
+            "sha1": "4c38293da3561c861429263b16aede300148c4b4",
+            "size": 2417420
+        },
+        {
+            "id": "immersive_armors-1-7-1-1-20-1-fabric",
+            "file": "mods/immersive_armors-1.7.1+1.20.1-fabric.jar",
+            "sha1": "a28582c00a49caf757a401364aa3917c18c0a03c",
+            "size": 1252785
+        },
+        {
+            "id": "immersive_melodies-0-6-0-1-20-1-fabric",
+            "file": "mods/immersive_melodies-0.6.0+1.20.1-fabric.jar",
+            "sha1": "45c9e5b8b2900a7190117ebd85ae34dd468a1738",
+            "size": 5516803
+        },
+        {
+            "id": "immersive_paintings-0-6-8-1-20-1-fabric",
+            "file": "mods/immersive_paintings-0.6.8+1.20.1-fabric.jar",
+            "sha1": "66e4d68857c4905d357da7b1f3b982f9389e6f6e",
+            "size": 4853104
+        },
+        {
+            "id": "indium-1-0-36-mc1-20-1",
+            "file": "mods/indium-1.0.36+mc1.20.1.jar",
+            "sha1": "d824614e7a173d273167969f427702f51846aca7",
+            "size": 105382
+        },
+        {
+            "id": "interiors-1-20-1-fabric-0-6-0",
+            "file": "mods/interiors-1.20.1-fabric-0.6.0.jar",
+            "sha1": "429a2dea60c4efe3eaa172e59b2847b1b9c67e56",
+            "size": 507098
+        },
+        {
+            "id": "inventoryhud-fabric-1-20-1-3-4-26",
+            "file": "mods/inventoryhud.fabric.1.20.1-3.4.26.jar",
+            "sha1": "623f71c059bc26c57c0e45ea2f5e00090496e40a",
+            "size": 237573
+        },
+        {
+            "id": "iris-1-7-6-mc1-20-1",
+            "file": "mods/iris-1.7.6+mc1.20.1.jar",
+            "sha1": "880c0b9ce38bb4997645793407c1801df83f4233",
+            "size": 2726899
+        },
+        {
+            "id": "item-merger-1-0-4",
+            "file": "mods/item-merger-1.0.4.jar",
+            "sha1": "1f090d64bacbe4f5da48e0ca01a3f7a1c64bdb9c",
+            "size": 8800
+        },
+        {
+            "id": "jamlib-fabric-1-3-5-1-20-1",
+            "file": "mods/jamlib-fabric-1.3.5+1.20.1.jar",
+            "sha1": "55850420addaeed88101d63eb1c96d4d924bf456",
+            "size": 240386
+        },
+        {
+            "id": "justzoom_fabric_2-1-0_mc_1-20-1",
+            "file": "mods/justzoom_fabric_2.1.0_MC_1.20.1.jar",
+            "sha1": "538a90dd2eced7704a900d53b9cbc5cf5cea6b64",
+            "size": 196623
+        },
+        {
+            "id": "konkrete_fabric_1-8-1_mc_1-20-1",
+            "file": "mods/konkrete_fabric_1.8.1_MC_1.20.1.jar",
+            "sha1": "38d3201d95a08bdeb12a8cd3687c6d0b8f5e7f3d",
+            "size": 892067
+        },
+        {
+            "id": "krypton-0-2-3",
+            "file": "mods/krypton-0.2.3.jar",
+            "sha1": "4d499819effd8afe811e5d93952fcc46765a00df",
+            "size": 185895
+        },
+        {
+            "id": "kubejs-create-fabric-2024-8-12-build-1",
+            "file": "mods/kubejs-create-fabric-2024.8.12-build.1.jar",
+            "sha1": "5e9389bab5eb9808a5cbde5bb1964d4e1d0dfb15",
+            "size": 30295
+        },
+        {
+            "id": "kubejs-fabric-2001-6-5-build-16",
+            "file": "mods/kubejs-fabric-2001.6.5-build.16.jar",
+            "sha1": "e22f2658ecd6a63edac7982766bb0ce15b53949a",
+            "size": 1604251
+        },
+        {
+            "id": "lambdynamiclights-4-4-0-1-20-1",
+            "file": "mods/lambdynamiclights-4.4.0+1.20.1.jar",
+            "sha1": "eeab178cb91f18bc72f990c2097b5f0103f01c06",
+            "size": 1114373
+        },
+        {
+            "id": "larion-fabric-1-20-4-4-3-0",
+            "file": "mods/larion-fabric-1.20.4-4.3.0.jar",
+            "sha1": "0b4e006901d60753eba0d01ea638fb3f293c2e48",
+            "size": 80929
+        },
+        {
+            "id": "lazy-language-loader-0-3-3",
+            "file": "mods/lazy-language-loader-0.3.3.jar",
+            "sha1": "6273d4bfd443d5f8ce9b039602da5f6fb9107f62",
+            "size": 26621
+        },
+        {
+            "id": "lazydfu-0-1-3",
+            "file": "mods/lazydfu-0.1.3.jar",
+            "sha1": "0dfa8b03ed408fb7fdada29e01cfebba02af1049",
+            "size": 14531
+        },
+        {
+            "id": "leaky-fabric-1-20-1-2-3",
+            "file": "mods/leaky-fabric-1.20.1-2.3.jar",
+            "sha1": "fc6d9455dfb490700236f6568c8c3f067e8c5977",
+            "size": 17285
+        },
+        {
+            "id": "letmedespawn-1-20-x-fabric-1-5-0",
+            "file": "mods/letmedespawn-1.20.x-fabric-1.5.0.jar",
+            "sha1": "49537044b774743cd37a834567204f7662a5329c",
+            "size": 14607
+        },
+        {
+            "id": "litematica-fabric-1-20-1-0-15-3",
+            "file": "mods/litematica-fabric-1.20.1-0.15.3.jar",
+            "sha1": "427b04faee05fab436c52c3618e8e391a010b648",
+            "size": 909971
+        },
+        {
+            "id": "lithium-fabric-mc1-20-1-0-11-4",
+            "file": "mods/lithium-fabric-mc1.20.1-0.11.4.jar",
+            "sha1": "048227ed60a3005cf9fa55880dfe0cf20b0ba680",
+            "size": 691483
+        },
+        {
+            "id": "lunade-fastanim-1-6-1-20",
+            "file": "mods/lunade-fastanim-1.6-1.20.jar",
+            "sha1": "0e611399323878b9f3efcc6016ea5d6eefc8c765",
+            "size": 118384
+        },
+        {
+            "id": "malilib-fabric-1-20-1-0-16-3",
+            "file": "mods/malilib-fabric-1.20.1-0.16.3.jar",
+            "sha1": "94d4dd8a82e493d956b423019134d8c48ee737be",
+            "size": 545403
+        },
+        {
+            "id": "man_of_many_planes-0-2-0-1-20-1-fabric",
+            "file": "mods/man_of_many_planes-0.2.0+1.20.1-fabric.jar",
+            "sha1": "3f667f22513ca4ac67740c23ded3db0e06ac6e61",
+            "size": 308327
+        },
+        {
+            "id": "melody_fabric_1-0-4_mc_1-20-1-1-20-4",
+            "file": "mods/melody_fabric_1.0.4_MC_1.20.1-1.20.4.jar",
+            "sha1": "15eeff0c0fd8b4734492915c656077592b2d9e67",
+            "size": 39696
+        },
+        {
+            "id": "midnightlib-fabric-1-9-2-1-20-1",
+            "file": "mods/midnightlib-fabric-1.9.2+1.20.1.jar",
+            "sha1": "40abb8a47d30f387a3c2110fc23ea0c364034c09",
+            "size": 58575
+        },
+        {
+            "id": "minetracer-fabric-1-20-1-1-6-14",
+            "file": "mods/minetracer-fabric-1.20.1-1.6.14.jar",
+            "sha1": "d8c10333357906ba17853a5bc98a02b1622c1fa4",
+            "size": 35024887
+        },
+        {
+            "id": "mining_quakes-fabric-1-1-3",
+            "file": "mods/mining_quakes-fabric-1.1.3.jar",
+            "sha1": "f4faefbb962097cda4eed4ccce88e8386a360ab7",
+            "size": 113389
+        },
+        {
+            "id": "miningspeedtooltips-fabric-1-0-0-1-20-1",
+            "file": "mods/miningspeedtooltips-fabric-1.0.0-1.20.1.jar",
+            "sha1": "4a7cea6a3f3e54189732fea10177097431fa0b4a",
+            "size": 450475
+        },
+        {
+            "id": "mob-merger-1-1-0",
+            "file": "mods/mob-merger-1.1.0.jar",
+            "sha1": "c9ebf84516d0275c1ba05e619aab97ff8115c84a",
+            "size": 18460
+        },
+        {
+            "id": "modelfix-1-15-fabric",
+            "file": "mods/modelfix-1.15-fabric.jar",
+            "sha1": "75554b02e63a2440321a32dc5e55988897181bdf",
+            "size": 65491
+        },
+        {
+            "id": "modernfix-fabric-5-25-2-mc1-20-1",
+            "file": "mods/modernfix-fabric-5.25.2+mc1.20.1.jar",
+            "sha1": "be03b9eb570c1e9df7593e68623f0fecbd039460",
+            "size": 545175
+        },
+        {
+            "id": "modmenu-7-2-2",
+            "file": "mods/modmenu-7.2.2.jar",
+            "sha1": "099c68feeb74887cbbbd8ce9a27c6123804a2c5a",
+            "size": 721366
+        },
+        {
+            "id": "modmenu-badges-lib-2023-6-1",
+            "file": "mods/modmenu-badges-lib-2023.6.1.jar",
+            "sha1": "d1d7e28a3e266c693d7bb14ce4e34e4153f540ef",
+            "size": 5221
+        },
+        {
+            "id": "moogs_structure_lib-1-1-0-1-20-1-20-4-fabric",
+            "file": "mods/moogs_structure_lib-1.1.0-1.20-1.20.4-fabric.jar",
+            "sha1": "c103bae01ea0ae6a0a6965b7700958fc980aedee",
+            "size": 255203
+        },
+        {
+            "id": "moreculling-1-20-1-0-24-5",
+            "file": "mods/moreculling-1.20.1-0.24.5.jar",
+            "sha1": "5110436d5f7867033744d2c065c44986730d79aa",
+            "size": 274506
+        },
+        {
+            "id": "no-more-villagers-1-3-1",
+            "file": "mods/no-more-villagers-1.3.1.jar",
+            "sha1": "a49528ddf49a15cd384a93c50b20fc3794d931a8",
+            "size": 1451699
+        },
+        {
+            "id": "notenoughanimations-fabric-1-11-2-mc1-20-1",
+            "file": "mods/notenoughanimations-fabric-1.11.2-mc1.20.1.jar",
+            "sha1": "f4ab2e2c3aa489f185504d9a10c09e7daa0122d7",
+            "size": 1926182
+        },
+        {
+            "id": "particle-blocker",
+            "file": "mods/particle-blocker.jar",
+            "sha1": "af2cc04d7345d19491c130e6f95e0ba6e7adda64",
+            "size": 163496
+        },
+        {
+            "id": "player-animation-lib-fabric-1-0-2-rc1-1-20",
+            "file": "mods/player-animation-lib-fabric-1.0.2-rc1+1.20.jar",
+            "sha1": "9182c38bcf614d0ed7091b15f7e099a7f2fb3617",
+            "size": 181008
+        },
+        {
+            "id": "plushie_buddies-0-1-7-1-20-1",
+            "file": "mods/plushie_buddies-0.1.7-1.20.1.jar",
+            "sha1": "0cc3272287900181933a35cb0b301a6ec1c30ec3",
+            "size": 433577
+        },
+        {
+            "id": "questlog-fabric-1-20-1-1-0-7",
+            "file": "mods/questlog-fabric-1.20.1-1.0.7.jar",
+            "sha1": "7a8fd496b2a762ecd56506a6132253f0d423d9c1",
+            "size": 518881
+        },
+        {
+            "id": "recipeessentials-fabric-1-20-1-4-1",
+            "file": "mods/recipeessentials-fabric-1.20.1-4.1.jar",
+            "sha1": "e70aa0db46209c7c69bca58b2e701bed007aed99",
+            "size": 51639
+        },
+        {
+            "id": "reeses_sodium_options-1-7-2-mc1-20-1-build-101",
+            "file": "mods/reeses_sodium_options-1.7.2+mc1.20.1-build.101.jar",
+            "sha1": "206f1b01b99ac3df99ddd84ed96b466a8700412d",
+            "size": 77304
+        },
+        {
+            "id": "resourcefullib-fabric-1-20-1-2-1-29",
+            "file": "mods/resourcefullib-fabric-1.20.1-2.1.29.jar",
+            "sha1": "e1d85a3100c2f3683a65dca20518e3914d82b0f0",
+            "size": 431646
+        },
+        {
+            "id": "rhino-fabric-2001-2-3-build-10",
+            "file": "mods/rhino-fabric-2001.2.3-build.10.jar",
+            "sha1": "a1fd74cf31c0bf959803870c1ac3d918ae66fc1e",
+            "size": 1743587
+        },
+        {
+            "id": "rightclickharvest-fabric-4-6-1-1-20-1",
+            "file": "mods/rightclickharvest-fabric-4.6.1+1.20.1.jar",
+            "sha1": "69598f4ba873c74404d3567e8cc05df8fff14f99",
+            "size": 287561
+        },
+        {
+            "id": "ritchiesprojectilelib-2-1-1-mc-1-20-1-fabric",
+            "file": "mods/ritchiesprojectilelib-2.1.1-mc.1.20.1-fabric.jar",
+            "sha1": "eb1201c6a6e6149a96914f5f713349dda29c6353",
+            "size": 2532001
+        },
+        {
+            "id": "servercore-fabric-1-5-2-1-20-1",
+            "file": "mods/servercore-fabric-1.5.2+1.20.1.jar",
+            "sha1": "681757921997f3ab8455a968bf77ee4f305b82ed",
+            "size": 815594
+        },
+        {
+            "id": "skinlayers3d-fabric-1-10-1-mc1-20-1",
+            "file": "mods/skinlayers3d-fabric-1.10.1-mc1.20.1.jar",
+            "sha1": "ba624f3b84d10153ba325299edf5c51947e289fc",
+            "size": 1966174
+        },
+        {
+            "id": "smoothchunk-fabric-1-20-1-4-1",
+            "file": "mods/smoothchunk-fabric-1.20.1-4.1.jar",
+            "sha1": "1136d8d1ebc37dc7754f22ebe7ee24ac91166ce3",
+            "size": 17498
+        },
+        {
+            "id": "snowdownessentails-1-0-1",
+            "file": "mods/snowdownessentails-1.0.1.jar",
+            "sha1": "478f1e0c3d95921791ca7de1a5a86fdfd54d4c09",
+            "size": 140811
+        },
+        {
+            "id": "sodium-extra-0-5-9-mc1-20-1",
+            "file": "mods/sodium-extra-0.5.9+mc1.20.1.jar",
+            "sha1": "0f97ec3f395b223848a63573b1a46cbecf97f19f",
+            "size": 370701
+        },
+        {
+            "id": "sodium-fabric-0-5-13-mc1-20-1",
+            "file": "mods/sodium-fabric-0.5.13+mc1.20.1.jar",
+            "sha1": "bcdbf37d9494e405cba210d7a80ed58e756297b5",
+            "size": 971552
+        },
+        {
+            "id": "sodiumextras-fabric-1-0-7-1-20-1",
+            "file": "mods/sodiumextras-fabric-1.0.7-1.20.1.jar",
+            "sha1": "415f6d815b673f6d719c55a7caaa44e03f62bf56",
+            "size": 630468
+        },
+        {
+            "id": "sodiumoptionsapi-fabric-1-0-10-1-20-1",
+            "file": "mods/sodiumoptionsapi-fabric-1.0.10-1.20.1.jar",
+            "sha1": "dc188678ffaceacf6d03a2d693af9a2ac4ed69f5",
+            "size": 657853
+        },
+        {
+            "id": "sodiumoptionsmodcompat-fabric-1-0-0-1-20-1",
+            "file": "mods/sodiumoptionsmodcompat-fabric-1.0.0-1.20.1.jar",
+            "sha1": "5b589b7b515f56e0e0047571dcc67a65bb45c811",
+            "size": 605673
+        },
+        {
+            "id": "sophisticatedbackpacks-1-20-1-3-23-4-5-110",
+            "file": "mods/sophisticatedbackpacks-1.20.1-3.23.4.5.110.jar",
+            "sha1": "a4f49de0f9df379cb151dde440467b90e8923724",
+            "size": 986101
+        },
+        {
+            "id": "sophisticatedcore-1-20-1-1-2-7-15-166",
+            "file": "mods/sophisticatedcore-1.20.1-1.2.7.15.166.jar",
+            "sha1": "3d32bdf672b33b90ac38dc9572f9af6a6afae82e",
+            "size": 2858683
+        },
+        {
+            "id": "sound-physics-remastered-fabric-1-20-1-1-5-1",
+            "file": "mods/sound-physics-remastered-fabric-1.20.1-1.5.1.jar",
+            "sha1": "b06a2eb31bcfe3d98463d1323e4787ac2b378bff",
+            "size": 205569
+        },
+        {
+            "id": "spark-1-10-53-fabric",
+            "file": "mods/spark-1.10.53-fabric.jar",
+            "sha1": "252de323db10d2b49ef74f8e7a6a5c72929be140",
+            "size": 3082974
+        },
+        {
+            "id": "structureessentials-fabric-1-20-1-4-8",
+            "file": "mods/structureessentials-fabric-1.20.1-4.8.jar",
+            "sha1": "8562b9ec3b35d7251073b11937337201446a957d",
+            "size": 63961
+        },
+        {
+            "id": "supermartijn642configlib-1-1-8a-fabric-mc1-20",
+            "file": "mods/supermartijn642configlib-1.1.8a-fabric-mc1.20.jar",
+            "sha1": "964df96c16afe775efd467b22f24458915805ad8",
+            "size": 207990
+        },
+        {
+            "id": "taterzens-fabric-1-20-1-1-11-7",
+            "file": "mods/taterzens-fabric-1.20.1-1.11.7.jar",
+            "sha1": "8c5c8b7244064213334ed243f5f30b8e9c45e66d",
+            "size": 496129
+        },
+        {
+            "id": "threadtweak-fabric-1-20-1-0-1-0",
+            "file": "mods/threadtweak-fabric-1.20.1-0.1.0.jar",
+            "sha1": "9869b906423fc138e6247e40dfe689511c7a3781",
+            "size": 144725
+        },
+        {
+            "id": "trinkets-3-7-2",
+            "file": "mods/trinkets-3.7.2.jar",
+            "sha1": "d58cc8759587f03f320f188972ca66baa788d008",
+            "size": 238532
+        },
+        {
+            "id": "tweakeroo-fabric-1-20-1-0-17-1",
+            "file": "mods/tweakeroo-fabric-1.20.1-0.17.1.jar",
+            "sha1": "2a18f5905f9e10c6a3b45388b4401ec135b3b3cf",
+            "size": 273435
+        },
+        {
+            "id": "txnilib-fabric-1-0-24-1-20-1",
+            "file": "mods/txnilib-fabric-1.0.24-1.20.1.jar",
+            "sha1": "ef3d09633f44a6a7ee818c9872cb12472bc420ba",
+            "size": 1057614
+        },
+        {
+            "id": "visuality-0-7-1-1-20",
+            "file": "mods/visuality-0.7.1+1.20.jar",
+            "sha1": "a4a5fc1edae49126432fc903dd6fdbb88b7251ed",
+            "size": 67302
+        },
+        {
+            "id": "vmp-fabric-mc1-20-1-0-2-0-beta-7-102-all",
+            "file": "mods/vmp-fabric-mc1.20.1-0.2.0+beta.7.102-all.jar",
+            "sha1": "46e896cabf7813275413c97e6dd2f48ef534057d",
+            "size": 487043
+        },
+        {
+            "id": "voicechat-fabric-1-20-1-2-6-11",
+            "file": "mods/voicechat-fabric-1.20.1-2.6.11.jar",
+            "sha1": "ceb26733205db520e86acf5cdab7a87f3aae60f9",
+            "size": 5251599
+        },
+        {
+            "id": "wakes-0-4-0-1-20-1",
+            "file": "mods/wakes-0.4.0+1.20.1.jar",
+            "sha1": "c7683a2cfe6e874d01c68da9a596e31615f29536",
+            "size": 355290
+        },
+        {
+            "id": "waystones-fabric-1-20-1-14-1-18",
+            "file": "mods/waystones-fabric-1.20.1-14.1.18.jar",
+            "sha1": "1dd44ebedbc03913206f095e931cba414473d4c4",
+            "size": 519906
+        },
+        {
+            "id": "worldedit-mod-7-2-15",
+            "file": "mods/worldedit-mod-7.2.15.jar",
+            "sha1": "9c52765ca56f917ef8cbafc20e9a4f45c346508f",
+            "size": 5825402
+        },
+        {
+            "id": "xaerominimap-fabric-1-20-1-25-3-5",
+            "file": "mods/xaerominimap-fabric-1.20.1-25.3.5.jar",
+            "sha1": "749f43d9686eece78c3538ffb1caf350ceb3a923",
+            "size": 2153600
+        },
+        {
+            "id": "xaeroworldmap-fabric-1-20-1-1-40-6",
+            "file": "mods/xaeroworldmap-fabric-1.20.1-1.40.6.jar",
+            "sha1": "6477dd04fa180ed3ed1f342ea37c3f2ba4f500b8",
+            "size": 1402552
+        },
+        {
+            "id": "yet_another_config_lib_v3-3-6-6-1-20-1-fabric",
+            "file": "mods/yet_another_config_lib_v3-3.6.6+1.20.1-fabric.jar",
+            "sha1": "dc5ac6c6c4d1e48e8e520b9a41b41e704e82cf55",
+            "size": 1294234
+        },
+        {
+            "id": "youre-in-grave-danger-fabric-2-0-16",
+            "file": "mods/youre-in-grave-danger-fabric-2.0.16.jar",
+            "sha1": "b396513f5e9bb8c2e0adf00e011011cf7d90a0b3",
+            "size": 825112
+        }
+    ]
 }
