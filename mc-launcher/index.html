@@ -1339,12 +1339,29 @@
     }
 
     // ── INIT ─────────────────────────────────────────────────────────
+    let _lastFocusCheck = 0;
     (async () => {
       await loadSettings();
       await refreshAccounts();
       checkForUpdates();
       checkJava();
       loadPatchNotes();
+
+      // Polling: revisar actualizaciones y patch notes cada 5 minutos
+      setInterval(() => {
+        checkForUpdates();
+        loadPatchNotes();
+      }, 5 * 60 * 1000);
+
+      // También revisar al recuperar el foco (máx cada 60s)
+      window.addEventListener("focus", () => {
+        const now = Date.now();
+        if (now - _lastFocusCheck > 60_000) {
+          _lastFocusCheck = now;
+          checkForUpdates();
+          loadPatchNotes();
+        }
+      });
     })();
   </script>
 </body>
