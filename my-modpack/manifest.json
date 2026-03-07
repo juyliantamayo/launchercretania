@@ -1,9 +1,23 @@
 {
-  "version": "1.0.1",
+  "version": "1.0.2",
   "minecraft": "1.20.1",
   "loader": "fabric",
   "loaderVersion": "0.18.4",
   "patchNotes": [
+    {
+      "version": "1.0.2",
+      "date": "6 de Marzo, 2026",
+      "categories": [
+        {
+          "type": "fixed",
+          "title": "Correcciones",
+          "icon": "\u2713",
+          "entries": [
+            { "text": "ProtectorMod: corregido bug de dueño por defecto", "detail": "Ya no asigna 'owner' como dueño por defecto al proteger zonas" }
+          ]
+        }
+      ]
+    },
     {
       "version": "1.0.1",
       "date": "6 de Marzo, 2026",
@@ -263,16 +277,10 @@
       "size": 57257
     },
     {
-      "id": "protectormod-1-5-3",
-      "file": "mods/ProtectorMod-1.5.3.jar",
-      "sha1": "44468749490951a0e86bdbca3fda283bb2257b64",
-      "size": 754122
-    },
-    {
       "id": "protectormod-1-5-6",
       "file": "mods/ProtectorMod-1.5.6.jar",
-      "sha1": "dcb13d5005228e5ec604a96ee1b4cf458aadbe16",
-      "size": 759799
+      "sha1": "9d88f6fda226c7329dcdb7a030c6657cc0e58ace",
+      "size": 761467
     },
     {
       "id": "puzzleslib-v8-1-33-1-20-1-fabric",

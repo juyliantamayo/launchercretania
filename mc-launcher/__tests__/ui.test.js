@@ -45,7 +45,7 @@ describe("HTML Structure", () => {
 // ═══════════════════════════════════════════════════════════════════════════════
 describe("Window Controls (frameless)", () => {
   test("tiene barra de título personalizada", () => {
-    expect(html).toContain("title-bar");
+    expect(html).toContain("titlebar");
   });
 
   test("tiene botón minimizar", () => {
