@@ -208,16 +208,21 @@ async function getAccountAuth(uuid) {
       return { mclc: freshMclc, profile: { name: account.name, uuid: account.uuid } };
     } catch (err) {
       console.warn("[auth] No se pudo refrescar token:", err.message);
-      // Usar token guardado como fallback
+      // Token expirado y no se pudo refrescar — NO usar token viejo
+      // porque causará "AuthHybrid: Could not verify your Minecraft account"
+      throw new Error(
+        "Tu sesión de Microsoft ha expirado y no se pudo renovar. " +
+        "Elimina la cuenta y vuelve a iniciar sesión."
+      );
     }
   }
 
-  // Usar token cacheado
-  console.log("[auth] Usando token cacheado para:", account.name);
-  account.lastUsed = Date.now();
-  saveAccounts(accounts);
-
-  return { mclc: account.mclc, profile: { name: account.name, uuid: account.uuid } };
+  // Sin datos msmc para refrescar — token probablemente expirado
+  console.warn("[auth] Sin datos msmc para refrescar, token puede estar expirado:", account.name);
+  throw new Error(
+    "No se puede verificar tu cuenta de Microsoft. " +
+    "Elimina la cuenta y vuelve a iniciar sesión."
+  );
 }
 
 module.exports = {
