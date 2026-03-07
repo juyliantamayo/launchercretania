@@ -1,9 +1,23 @@
 {
-  "version": "1.0.2",
+  "version": "1.0.3",
   "minecraft": "1.20.1",
   "loader": "fabric",
   "loaderVersion": "0.18.4",
   "patchNotes": [
+    {
+      "version": "1.0.3",
+      "date": "6 de Marzo, 2026",
+      "categories": [
+        {
+          "type": "added",
+          "title": "Nuevos",
+          "icon": "+",
+          "entries": [
+            { "text": "Añadido mod CreateNewRecipes", "detail": "" }
+          ]
+        }
+      ]
+    },
     {
       "version": "1.0.2",
       "date": "6 de Marzo, 2026",
@@ -569,6 +583,12 @@
       "file": "mods/createcobblestone-1.4.8+fabric-1.20.1-126.jar",
       "sha1": "a491e3f3582cc2c80dd53f7ce0c67b646bfa722a",
       "size": 235198
+    },
+    {
+      "id": "createnewrecipes-1-0-0-1-20-1-sources",
+      "file": "mods/createnewrecipes-1.0.0+1.20.1-sources.jar",
+      "sha1": "724473e35bc62a8e52f562c7f879f79e73f97759",
+      "size": 163346
     },
     {
       "id": "createthreadedtrains-fabric-1-20-1-1-0-0",

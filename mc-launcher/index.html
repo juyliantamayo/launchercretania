@@ -1054,6 +1054,22 @@
     btnLaunch.addEventListener("click", async () => {
       if (!selectedAccount) return;
       setLoading(true);
+
+      // Última verificación de actualizaciones antes de lanzar
+      setStatus("Verificando actualizaciones\u2026");
+      appendConsole("[LAUNCHER] Verificando actualizaciones antes de lanzar\u2026", "system");
+      try {
+        const upd = await ipcRenderer.invoke("check-updates");
+        if (upd && upd.hasUpdate) {
+          showBanner("\u26a0 Nueva versi\u00f3n v" + upd.remoteVersion + " detectada. Actualizando mods al lanzar\u2026", "warning");
+          appendConsole("[LAUNCHER] Nueva versi\u00f3n detectada: v" + upd.remoteVersion, "system");
+        }
+        // También refrescar patch notes y badge
+        loadPatchNotes();
+      } catch (e) {
+        console.warn("Pre-launch update check failed:", e);
+      }
+
       setStatus("Preparando lanzamiento\u2026");
       appendConsole("[LAUNCHER] Preparando lanzamiento\u2026", "system");
       try {
