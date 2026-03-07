@@ -125,7 +125,7 @@ describe("Token Refresh (getAccountAuth)", () => {
     expect(result.profile.name).toBe("TestPlayer");
   });
 
-  test("usa token cacheado si refresh falla", async () => {
+  test("lanza error si refresh falla (no usa token expirado)", async () => {
     const { Auth } = require("msmc");
     Auth.mockImplementationOnce(() => ({
       refresh: jest.fn().mockRejectedValue(new Error("Refresh failed"))
@@ -134,8 +134,7 @@ describe("Token Refresh (getAccountAuth)", () => {
       uuid: "uc", name: "Cached", offline: false, lastUsed: 1,
       mclc: { access_token: "cached-token" }, msmcData: { msmc: "old" }
     }]));
-    const result = await getAccountAuth("uc");
-    expect(result.mclc.access_token).toBe("cached-token");
+    await expect(getAccountAuth("uc")).rejects.toThrow("sesión de Microsoft ha expirado");
   });
 
   test("lanza error si cuenta no existe", async () => {
