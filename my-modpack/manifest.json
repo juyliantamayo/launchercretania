@@ -1,9 +1,34 @@
 {
-    "version": "1.0.4",
+    "version": "1.0.5",
     "minecraft": "1.20.1",
     "loader": "fabric",
     "loaderVersion": "0.18.4",
     "patchNotes": [
+        {
+            "version": "1.0.5",
+            "date": "8 de Marzo, 2026",
+            "categories": [
+                {
+                    "type": "fixed",
+                    "title": "Correcciones",
+                    "icon": "\u2713",
+                    "entries": [
+                        { "text": "No More Villagers: fix aplicado para que el sistema de aldeanos funcione correctamente" },
+                        { "text": "ServerPad: solucionados los errores de uso y visualización de comandos del servidor" }
+                    ]
+                },
+                {
+                    "type": "changed",
+                    "title": "Mejoras",
+                    "icon": "\u2191",
+                    "entries": [
+                        { "text": "Calidad de vida: ajustes generales para que el servidor vaya más fluido y cómodo para todos" },
+                        { "text": "No More Villagers actualizado a v1.3.5" },
+                        { "text": "ServerPad actualizado a v1.0.3" }
+                    ]
+                }
+            ]
+        },
         {
             "version": "1.0.4",
             "date": "6 de Marzo, 2026",
@@ -366,10 +391,10 @@
             "size": 80283
         },
         {
-            "id": "serverpad-1-0-2",
-            "file": "mods/ServerPad-1.0.2.jar",
-            "sha1": "222b269d946b3ba8019798559d0d9e609e32137f",
-            "size": 2027052
+            "id": "serverpad-1-0-3",
+            "file": "mods/ServerPad-1.0.3.jar",
+            "sha1": "8285c2af37ac60e7cb082c3d6765cbbacbf1b509",
+            "size": 2081404
         },
         {
             "id": "steam_rails-1-6-15-beta-fabric-mc1-20-1",
@@ -1116,10 +1141,10 @@
             "size": 274506
         },
         {
-            "id": "no-more-villagers-1-3-1",
-            "file": "mods/no-more-villagers-1.3.1.jar",
-            "sha1": "a49528ddf49a15cd384a93c50b20fc3794d931a8",
-            "size": 1451699
+            "id": "no-more-villagers-1-3-5",
+            "file": "mods/no-more-villagers-1.3.5.jar",
+            "sha1": "4932691012748fae9e301f1d61a4a95a54964328",
+            "size": 1452076
         },
         {
             "id": "notenoughanimations-fabric-1-11-2-mc1-20-1",
