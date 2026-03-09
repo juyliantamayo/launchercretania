@@ -1,9 +1,23 @@
 {
-    "version": "1.0.6",
+    "version": "1.0.7",
     "minecraft": "1.20.1",
     "loader": "fabric",
     "loaderVersion": "0.18.4",
     "patchNotes": [
+        {
+            "version": "1.0.7",
+            "date": "8 de Marzo, 2026",
+            "categories": [
+                {
+                    "type": "changed",
+                    "title": "Mejoras",
+                    "icon": "\u2191",
+                    "entries": [
+                        { "text": "CreateNewRecipes actualizado a v1.0.2" }
+                    ]
+                }
+            ]
+        },
         {
             "version": "1.0.6",
             "date": "8 de Marzo, 2026",
@@ -689,10 +703,10 @@
             "size": 235198
         },
         {
-            "id": "createnewrecipes-1-0-0-1-20-1",
-            "file": "mods/createnewrecipes-1.0.0+1.20.1.jar",
-            "sha1": "f8147e4382d6b762387798321dc863ebdc9a6306",
-            "size": 13690114
+            "id": "createnewrecipes-1-0-2-1-20-1",
+            "file": "mods/createnewrecipes-1.0.2+1.20.1.jar",
+            "sha1": "3ad39ae381b0e449ef58110f672bf5da9c01e088",
+            "size": 13718828
         },
         {
             "id": "createthreadedtrains-fabric-1-20-1-1-0-0",
