@@ -206,28 +206,29 @@ describe("Action Bar", () => {
 // TEST SUITE: IPC Integration
 // ═══════════════════════════════════════════════════════════════════════════════
 describe("IPC Integration (script integrity)", () => {
-  test("importa ipcRenderer", () => {
-    expect(html).toContain("ipcRenderer");
+  test("usa context bridge (window.cretania) en vez de ipcRenderer directo", () => {
+    expect(html).toContain("window.cretania");
+    expect(html).not.toContain("require(\"electron\")");
   });
 
-  test("usa invoke para IPC async", () => {
-    expect(html).toContain("ipcRenderer.invoke");
+  test("usa ipc.invoke para IPC async", () => {
+    expect(html).toContain("ipc.invoke");
   });
 
-  test("usa ipcRenderer.on para eventos del main process", () => {
-    expect(html).toContain("ipcRenderer.on");
+  test("usa ipc.on para eventos del main process", () => {
+    expect(html).toContain("ipc.on");
   });
 
   test("tiene listener para progress events", () => {
-    expect(html).toMatch(/ipcRenderer\.on\(\s*["']progress["']/);
+    expect(html).toMatch(/ipc\.on\(\s*["']progress["']/);
   });
 
   test("tiene listener para mc-closed events", () => {
-    expect(html).toMatch(/ipcRenderer\.on\(\s*["']mc-closed["']/);
+    expect(html).toMatch(/ipc\.on\(\s*["']mc-closed["']/);
   });
 
   test("tiene listener para log events", () => {
-    expect(html).toMatch(/ipcRenderer\.on\(\s*["']log["']/);
+    expect(html).toMatch(/ipc\.on\(\s*["']log["']/);
   });
 });
 

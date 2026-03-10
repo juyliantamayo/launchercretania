@@ -1,0 +1,67 @@
+/**
+ * preload.js — Context Bridge para aislamiento de seguridad
+ *
+ * Expone SOLO las funciones IPC necesarias al renderer (index.html)
+ * a través de window.cretania, sin dar acceso a Node.js ni a ipcRenderer directamente.
+ */
+
+const { contextBridge, ipcRenderer } = require("electron");
+
+// Lista blanca de canales permitidos — cualquier canal no listado aquí es bloqueado
+const INVOKE_CHANNELS = [
+  "get-settings",
+  "save-settings",
+  "select-game-dir",
+  "open-game-dir",
+  "get-accounts",
+  "remove-account",
+  "login-microsoft",
+  "check-updates",
+  "launch",
+  "download-modpack",
+  "check-java",
+  "install-java",
+  "get-patch-notes"
+];
+
+const SEND_CHANNELS = [
+  "win-minimize",
+  "win-close"
+];
+
+const ON_CHANNELS = [
+  "progress",
+  "log",
+  "mc-closed",
+  "java-install-progress"
+];
+
+contextBridge.exposeInMainWorld("cretania", {
+  /** Llamada async al main process (request/response) */
+  invoke: (channel, ...args) => {
+    if (!INVOKE_CHANNELS.includes(channel)) {
+      throw new Error(`Canal IPC no permitido: ${channel}`);
+    }
+    return ipcRenderer.invoke(channel, ...args);
+  },
+
+  /** Envío sin respuesta al main process */
+  send: (channel, ...args) => {
+    if (!SEND_CHANNELS.includes(channel)) {
+      throw new Error(`Canal IPC no permitido: ${channel}`);
+    }
+    ipcRenderer.send(channel, ...args);
+  },
+
+  /** Escuchar eventos del main process */
+  on: (channel, callback) => {
+    if (!ON_CHANNELS.includes(channel)) {
+      throw new Error(`Canal IPC no permitido: ${channel}`);
+    }
+    // Envolver callback para no exponer el objeto event de Electron
+    const handler = (_event, ...args) => callback(...args);
+    ipcRenderer.on(channel, handler);
+    // Retornar función para desuscribirse
+    return () => ipcRenderer.removeListener(channel, handler);
+  }
+});

@@ -782,7 +782,7 @@
   </div>
 
   <script>
-    const { ipcRenderer } = require("electron");
+    const ipc = window.cretania;
 
     // ── PARTICLES ────────────────────────────────────────────────────
     const particlesEl = document.getElementById("particles");
@@ -832,8 +832,8 @@
     }
 
     // ── WINDOW CONTROLS ──────────────────────────────────────────────
-    document.getElementById("btnMin").addEventListener("click", () => ipcRenderer.send("win-minimize"));
-    document.getElementById("btnClose").addEventListener("click", () => ipcRenderer.send("win-close"));
+    document.getElementById("btnMin").addEventListener("click", () => ipc.send("win-minimize"));
+    document.getElementById("btnClose").addEventListener("click", () => ipc.send("win-close"));
 
     // ── TAB NAVIGATION ───────────────────────────────────────────────
     const tabBtns = document.querySelectorAll(".tab-btn");
@@ -857,7 +857,7 @@
 
     // ── SETTINGS ─────────────────────────────────────────────────────
     async function loadSettings() {
-      const s = await ipcRenderer.invoke("get-settings");
+      const s = await ipc.invoke("get-settings");
       ramMinSlider.value = s.ramMin || 2;
       ramMaxSlider.value = s.ramMax || 4;
       ramMinVal.textContent = ramMinSlider.value + "G";
@@ -867,8 +867,8 @@
     }
 
     async function saveSettings() {
-      const currentSettings = await ipcRenderer.invoke("get-settings");
-      await ipcRenderer.invoke("save-settings", {
+      const currentSettings = await ipc.invoke("get-settings");
+      await ipc.invoke("save-settings", {
         ramMin: parseInt(ramMinSlider.value),
         ramMax: parseInt(ramMaxSlider.value),
         width: 1280, height: 720,
@@ -895,24 +895,24 @@
 
     // ── INSTALL PATH ─────────────────────────────────────────────────
     document.getElementById("btnChangePath").addEventListener("click", async () => {
-      const result = await ipcRenderer.invoke("select-game-dir");
+      const result = await ipc.invoke("select-game-dir");
       if (result.cancelled) return;
-      const currentSettings = await ipcRenderer.invoke("get-settings");
+      const currentSettings = await ipc.invoke("get-settings");
       currentSettings.gameDir = result.path;
-      await ipcRenderer.invoke("save-settings", currentSettings);
+      await ipc.invoke("save-settings", currentSettings);
       installPathDisplay.textContent = result.path;
       installPathDisplay.title = result.path;
       setStatus("Carpeta de instalación cambiada.");
     });
 
     document.getElementById("btnOpenPath").addEventListener("click", () => {
-      ipcRenderer.invoke("open-game-dir");
+      ipc.invoke("open-game-dir");
     });
 
     document.getElementById("btnResetPath").addEventListener("click", async () => {
-      const currentSettings = await ipcRenderer.invoke("get-settings");
+      const currentSettings = await ipc.invoke("get-settings");
       currentSettings.gameDir = "";
-      await ipcRenderer.invoke("save-settings", currentSettings);
+      await ipc.invoke("save-settings", currentSettings);
       installPathDisplay.textContent = "Por defecto (%APPDATA%/.cretania-minecraft)";
       installPathDisplay.title = "Carpeta por defecto";
       setStatus("Carpeta restablecida al valor por defecto.");
@@ -957,7 +957,7 @@
         removeBtn.title = "Eliminar cuenta";
         removeBtn.addEventListener("click", async (e) => {
           e.stopPropagation();
-          await ipcRenderer.invoke("remove-account", acc.uuid);
+          await ipc.invoke("remove-account", acc.uuid);
           await refreshAccounts();
         });
 
@@ -979,7 +979,7 @@
     }
 
     async function refreshAccounts() {
-      accounts = await ipcRenderer.invoke("get-accounts");
+      accounts = await ipc.invoke("get-accounts");
       accounts = accounts.filter(a => !a.offline);
       renderAccounts();
     }
@@ -989,7 +989,7 @@
       btnAddAccount.disabled = true;
       setStatus("Abriendo login de Microsoft\u2026");
       try {
-        const result = await ipcRenderer.invoke("login-microsoft");
+        const result = await ipc.invoke("login-microsoft");
         setStatus("Cuenta agregada: " + result.profile.name);
         await refreshAccounts();
       } catch (err) {
@@ -999,7 +999,7 @@
     });
 
     // ── PROGRESS ─────────────────────────────────────────────────────
-    ipcRenderer.on("progress", (_e, data) => {
+    ipc.on("progress", (data) => {
       if (data.phase === "verify") {
         const pct = Math.round((data.current / data.total) * 100);
         progressBar.style.display = "block";
@@ -1033,12 +1033,12 @@
       }
     });
 
-    ipcRenderer.on("log", (_e, msg) => {
+    ipc.on("log", (msg) => {
       console.log("[MC]", msg);
       appendConsole(msg, "info");
     });
 
-    ipcRenderer.on("mc-closed", (_e, code) => {
+    ipc.on("mc-closed", (code) => {
       if (code === 0) {
         setStatus("Minecraft cerrado correctamente.");
         appendConsole("[LAUNCHER] Minecraft cerrado correctamente.", "system");
@@ -1059,7 +1059,7 @@
       setStatus("Verificando actualizaciones\u2026");
       appendConsole("[LAUNCHER] Verificando actualizaciones antes de lanzar\u2026", "system");
       try {
-        const upd = await ipcRenderer.invoke("check-updates");
+        const upd = await ipc.invoke("check-updates");
         if (upd && upd.hasUpdate) {
           showBanner("\u26a0 Nueva versi\u00f3n v" + upd.remoteVersion + " detectada. Actualizando mods al lanzar\u2026", "warning");
           appendConsole("[LAUNCHER] Nueva versi\u00f3n detectada: v" + upd.remoteVersion, "system");
@@ -1073,7 +1073,7 @@
       setStatus("Preparando lanzamiento\u2026");
       appendConsole("[LAUNCHER] Preparando lanzamiento\u2026", "system");
       try {
-        await ipcRenderer.invoke("launch", { accountUuid: selectedAccount });
+        await ipc.invoke("launch", { accountUuid: selectedAccount });
         setStatus("\u00a1Buen viaje, ingeniero! \u2699");
         appendConsole("[LAUNCHER] Minecraft iniciado.", "system");
       } catch (err) {
@@ -1093,7 +1093,7 @@
       setLoading(true);
       setStatus("Selecciona destino\u2026");
       try {
-        const result = await ipcRenderer.invoke("download-modpack");
+        const result = await ipc.invoke("download-modpack");
         if (result.cancelled) {
           setStatus("Descarga cancelada.");
         } else {
@@ -1115,7 +1115,7 @@
 
     async function checkForUpdates() {
       try {
-        const result = await ipcRenderer.invoke("check-updates");
+        const result = await ipc.invoke("check-updates");
         if (result.error) return;
         if (result.hasUpdate) {
           showBanner("\u26a0 Nueva versi\u00f3n del modpack disponible (v" + result.remoteVersion + "). Se actualizar\u00e1 al jugar.", "warning");
@@ -1130,7 +1130,7 @@
     // ── JAVA CHECK & INSTALL ────────────────────────────────────────
     async function checkJava() {
       try {
-        const info = await ipcRenderer.invoke("check-java");
+        const info = await ipc.invoke("check-java");
         if (info.found) {
           javaStatusEl.textContent = "\u2713 Java " + info.version + " detectado";
           javaStatusEl.className = "java-status java-ok";
@@ -1157,7 +1157,7 @@
       // Switch to settings tab to show progress
       switchTab("settings");
       try {
-        const result = await ipcRenderer.invoke("install-java");
+        const result = await ipc.invoke("install-java");
         javaStatusEl.textContent = "\u2713 Java " + result.version + " instalado correctamente";
         javaStatusEl.className = "java-status java-ok";
         btnInstallJava.style.display = "none";
@@ -1173,7 +1173,7 @@
       }
     });
 
-    ipcRenderer.on("java-install-progress", (_e, data) => {
+    ipc.on("java-install-progress", (data) => {
       javaProgressEl.style.display = "block";
       javaProgressFill.style.width = data.percent + "%";
       javaProgressText.textContent = data.message;
@@ -1233,7 +1233,7 @@
 
     async function loadPatchNotes() {
       try {
-        const result = await ipcRenderer.invoke("get-patch-notes");
+        const result = await ipc.invoke("get-patch-notes");
         patchNotesData = result.patchNotes || [];
         patchNotesVersion = result.version || "";
         document.getElementById("pnVersionTag").textContent = patchNotesVersion ? "v" + patchNotesVersion : "";
