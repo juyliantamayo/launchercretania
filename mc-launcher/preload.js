@@ -11,17 +11,28 @@ const { contextBridge, ipcRenderer } = require("electron");
 const INVOKE_CHANNELS = [
   "get-settings",
   "save-settings",
+  "get-launcher-update-status",
   "select-game-dir",
   "open-game-dir",
+  "open-modpack-dir",
   "get-accounts",
   "remove-account",
   "login-microsoft",
   "check-updates",
+  "get-modpacks",
+  "get-optional-mods",
+  "save-optional-mods",
+  "get-instance-status",
   "launch",
   "download-modpack",
   "check-java",
   "install-java",
-  "get-patch-notes"
+  "get-patch-notes",
+  // multi-modpack
+  "get-modpacks",
+  "get-optional-mods",
+  "save-optional-mods",
+  "get-instance-status"
 ];
 
 const SEND_CHANNELS = [
@@ -33,7 +44,8 @@ const ON_CHANNELS = [
   "progress",
   "log",
   "mc-closed",
-  "java-install-progress"
+  "java-install-progress",
+  "launcher-update-status"
 ];
 
 contextBridge.exposeInMainWorld("cretania", {

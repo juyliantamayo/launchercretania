@@ -6,6 +6,7 @@ const path = require("path");
 const fs = require("fs-extra");
 const crypto = require("crypto");
 const EventEmitter = require("events");
+const { encryptManifestObject } = require("../manifest-crypto");
 
 jest.mock("axios");
 const axios = require("axios");
@@ -33,10 +34,16 @@ afterEach(() => {
   fs.removeSync(TEST_DIR);
 });
 
-const { syncMods } = require("../updater");
+const { syncMods, getManifestBaseUrl } = require("../updater");
 
 // ═══════════════════════════════════════════════════════════════════════════════
 describe("Manifest Loading", () => {
+  test("deriva baseUrl correctamente desde manifest.enc", () => {
+    expect(getManifestBaseUrl("https://github.com/juyliantamayo/launchercretania/releases/download/modpack-v1.0.0/manifest.enc")).toBe(
+      "https://github.com/juyliantamayo/launchercretania/releases/download/modpack-v1.0.0"
+    );
+  });
+
   test("descarga manifest remoto y cachea localmente", async () => {
     const manifest = { version: "1.0.1", minecraft: "1.20.1", loader: "fabric", loaderVersion: "0.18.4", mods: [] };
     axios.get.mockResolvedValueOnce({ data: manifest });
@@ -51,10 +58,22 @@ describe("Manifest Loading", () => {
   test("usa manifest cacheado si la descarga falla", async () => {
     const cached = { version: "1.0.0", minecraft: "1.20.1", loader: "fabric", loaderVersion: "0.18.4", mods: [] };
     fs.writeFileSync(path.join(GAME_DIR, "manifest-cache.json"), JSON.stringify(cached));
-    axios.get.mockRejectedValueOnce(new Error("Network error"));
+    axios.get.mockRejectedValue(new Error("Network error"));
 
     const result = await syncMods(GAME_DIR, new EventEmitter());
     expect(result.version).toBe("1.0.0");
+  });
+
+  test("descifra manifest remoto cifrado", async () => {
+    const manifest = {
+      formatVersion: 2,
+      launcher: { version: "1.0.0", patchNotes: [] },
+      modpacks: [{ id: "cretania", version: "1.0.2", minecraft: "1.20.1", loader: "fabric", loaderVersion: "0.18.4", mods: [] }]
+    };
+    axios.get.mockResolvedValueOnce({ data: encryptManifestObject(manifest) });
+
+    const result = await syncMods(GAME_DIR, new EventEmitter(), { modpackId: "cretania" });
+    expect(result.version).toBe("1.0.2");
   });
 });
 
@@ -69,7 +88,7 @@ describe("Mod Sync — Downloads", () => {
     };
 
     axios.get.mockImplementation((url) => {
-      if (url.includes("manifest.json")) return Promise.resolve({ data: manifest });
+      if (url.includes("manifest.")) return Promise.resolve({ data: manifest });
       return Promise.resolve({ data: Buffer.from(modContent) });
     });
 
@@ -114,7 +133,7 @@ describe("Mod Sync — Downloads", () => {
     };
 
     axios.get.mockImplementation((url) => {
-      if (url.includes("manifest.json")) return Promise.resolve({ data: manifest });
+      if (url.includes("manifest.")) return Promise.resolve({ data: manifest });
       return Promise.resolve({ data: Buffer.from(newContent) });
     });
 
@@ -150,6 +169,79 @@ describe("Mod Cleanup — Eliminar obsoletos", () => {
 });
 
 // ═══════════════════════════════════════════════════════════════════════════════
+describe("Extra Content Sync", () => {
+  test("sincroniza resourcepacks y datasources preservando ruta", async () => {
+    const packContent = "resource-pack-data";
+    const dsContent = "datasource-data";
+    const manifest = {
+      formatVersion: 2,
+      modpacks: [{
+        id: "cretania",
+        version: "1.0.0",
+        minecraft: "1.20.1",
+        loader: "fabric",
+        loaderType: "fabric",
+        loaderVersion: "0.18.4",
+        mods: [],
+        optionalMods: [],
+        resourcepacks: [
+          { id: "rp-1", file: "resourcepacks/cinematic.zip", sha1: sha1(packContent), url: "https://example.com/cinematic.zip" }
+        ],
+        datasources: [
+          { id: "ds-1", file: "datasources/quests/data.json", sha1: sha1(dsContent), url: "https://example.com/data.json" }
+        ],
+        datapacks: [],
+        folders: [],
+        patchNotes: []
+      }]
+    };
+
+    axios.get.mockImplementation((url) => {
+      if (url.includes("manifest.")) return Promise.resolve({ data: manifest });
+      if (url.includes("cinematic.zip")) return Promise.resolve({ data: Buffer.from(packContent) });
+      return Promise.resolve({ data: Buffer.from(dsContent) });
+    });
+
+    await syncMods(GAME_DIR, new EventEmitter(), { modpackId: "cretania" });
+
+    expect(fs.existsSync(path.join(GAME_DIR, "resourcepacks", "cinematic.zip"))).toBe(true);
+    expect(fs.existsSync(path.join(GAME_DIR, "datasources", "quests", "data.json"))).toBe(true);
+  });
+
+  test("sincroniza archivos declarados en folders/ al destino real sin el prefijo", async () => {
+    const folderContent = "folder-managed-file";
+    const manifest = {
+      formatVersion: 2,
+      modpacks: [{
+        id: "cretania",
+        version: "1.0.0",
+        minecraft: "1.20.1",
+        loader: "fabric",
+        loaderType: "fabric",
+        loaderVersion: "0.18.4",
+        mods: [],
+        optionalMods: [],
+        resourcepacks: [],
+        datasources: [],
+        datapacks: [],
+        folders: [
+          { id: "cfg-1", file: "folders/config/example/settings.json", sha1: sha1(folderContent), url: "https://example.com/settings.json" }
+        ],
+        patchNotes: []
+      }]
+    };
+
+    axios.get.mockImplementation((url) => {
+      if (url.includes("manifest.")) return Promise.resolve({ data: manifest });
+      return Promise.resolve({ data: Buffer.from(folderContent) });
+    });
+
+    await syncMods(GAME_DIR, new EventEmitter(), { modpackId: "cretania" });
+    expect(fs.existsSync(path.join(GAME_DIR, "config", "example", "settings.json"))).toBe(true);
+  });
+});
+
+// ═══════════════════════════════════════════════════════════════════════════════
 describe("Error Handling & Resilience", () => {
   test("fallo individual no bloquea el resto", async () => {
     const contentB = "mod-b-data";
@@ -162,7 +254,7 @@ describe("Error Handling & Resilience", () => {
       ]
     };
     axios.get.mockImplementation((url) => {
-      if (url.includes("manifest.json")) return Promise.resolve({ data: manifest });
+      if (url.includes("manifest.")) return Promise.resolve({ data: manifest });
       if (url.includes("mod-a.jar")) return Promise.reject(new Error("Download failed"));
       return Promise.resolve({ data: Buffer.from(contentB) });
     });
@@ -197,7 +289,7 @@ describe("Progress Events", () => {
       mods: [{ id: "ev-mod", file: "mods/ev-mod.jar", sha1: hash, url: "https://example.com/ev-mod.jar" }]
     };
     axios.get.mockImplementation((url) => {
-      if (url.includes("manifest.json")) return Promise.resolve({ data: manifest });
+      if (url.includes("manifest.")) return Promise.resolve({ data: manifest });
       return Promise.resolve({ data: Buffer.from(content) });
     });
 

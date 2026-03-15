@@ -13,17 +13,22 @@
 const { app, BrowserWindow, ipcMain, dialog, shell } = require("electron");
 const { Client } = require("minecraft-launcher-core");
 const { loginMicrosoft, getAccountList, getAccountAuth, removeAccount } = require("./auth");
-const { syncMods } = require("./updater");
+const { syncMods, fetchManifest, normalizeManifest } = require("./updater");
 const path = require("path");
 const fs = require("fs");
 const fsExtra = require("fs-extra");
 const axios = require("axios");
 const EventEmitter = require("events");
-const { execSync, execFile } = require("child_process");
+const { execSync, execFile, spawn } = require("child_process");
+const { pathToFileURL } = require("url");
 
-const DEFAULT_GAME_DIR = path.join(app.getPath("appData"), ".cretania-minecraft");
+const DEFAULT_GAME_DIR = path.join(app.getPath("appData"), ".lucerion-minecraft");
 const SETTINGS_FILE = path.join(app.getPath("userData"), "settings.json");
-const MANIFEST_CHECK_URL = "https://github.com/juyliantamayo/launchercretania/releases/download/modpack-v1.0.0/manifest.json";
+const OPTIONAL_MODS_FILE = path.join(app.getPath("userData"), "optional-mods.json");
+const APP_VERSION = typeof app.getVersion === "function" ? app.getVersion() : require("./package.json").version;
+const DEFAULT_LAUNCHER_RELEASE_API = "https://api.github.com/repos/juyliantamayo/launchercretania/releases/latest";
+const DEFAULT_LAUNCHER_ASSET = "LucerionLauncher.exe";
+const LAUNCHER_UPDATE_DIR = path.join(app.getPath("userData"), "launcher-update");
 
 // Adoptium JDK 17 para Windows x64 (portable zip)
 const JAVA_VERSION = "21";
@@ -35,6 +40,19 @@ process.on("uncaughtException", (err) => {
 });
 
 let win;
+let launcherUpdateState = {
+  status: "idle",
+  currentVersion: APP_VERSION,
+  remoteVersion: "",
+  downloadedFile: "",
+  notes: [],
+  error: ""
+};
+
+// ─── MULTI-INSTANCE TRACKING ─────────────────────────────────────────────────
+// Map<modpackId, { launcher: Client, pid: number|null, startTime: number }>
+const runningInstances = new Map();
+const pendingLaunches = new Set();
 
 // ─── SETTINGS (RAM etc.) ──────────────────────────────────────────────────────
 function loadSettings() {
@@ -54,9 +72,196 @@ function saveSettings(settings) {
 }
 
 /** Obtiene el directorio de juego efectivo */
-function getGameDir() {
+function getGameDir(modpackId = "") {
   const settings = loadSettings();
-  return (settings.gameDir && settings.gameDir.trim()) ? settings.gameDir.trim() : DEFAULT_GAME_DIR;
+  const baseDir = (settings.gameDir && settings.gameDir.trim()) ? settings.gameDir.trim() : DEFAULT_GAME_DIR;
+  if (!modpackId || modpackId === "cretania") return baseDir;
+  return path.join(baseDir, "instances", modpackId);
+}
+
+function canAccessModpack(modpack, accountUuid) {
+  if (!modpack) return false;
+  if (modpack.public !== false) return true;
+  if (!Array.isArray(modpack.allowedUuids) || modpack.allowedUuids.length === 0) return false;
+  return Boolean(accountUuid && modpack.allowedUuids.includes(accountUuid));
+}
+
+function normalizeVersion(version) {
+  return String(version || "0.0.0").trim().replace(/^[^\d]*/, "");
+}
+
+function compareVersions(left, right) {
+  const a = normalizeVersion(left).split(".").map((part) => parseInt(part, 10) || 0);
+  const b = normalizeVersion(right).split(".").map((part) => parseInt(part, 10) || 0);
+  const maxLength = Math.max(a.length, b.length);
+
+  for (let index = 0; index < maxLength; index += 1) {
+    const partA = a[index] || 0;
+    const partB = b[index] || 0;
+    if (partA > partB) return 1;
+    if (partA < partB) return -1;
+  }
+
+  return 0;
+}
+
+function getPackagedModpackDir() {
+  const packed = path.join(process.resourcesPath || "", "my-modpack");
+  if (fs.existsSync(packed)) return packed;
+  return path.join(__dirname, "..", "my-modpack");
+}
+
+function resolveModpackImageUrl(modpack) {
+  if (!modpack || !modpack.image) return "";
+  if (/^https?:\/\//i.test(modpack.image)) return modpack.image;
+
+  const cleanedImage = String(modpack.image).replace(/^\.\//, "");
+  if (modpack.baseUrl) {
+    return `${String(modpack.baseUrl).replace(/\/$/, "")}/${cleanedImage}`;
+  }
+
+  const localAsset = path.join(getPackagedModpackDir(), cleanedImage);
+  if (fs.existsSync(localAsset)) {
+    return pathToFileURL(localAsset).toString();
+  }
+
+  return "";
+}
+
+function emitLauncherUpdateStatus(patch = {}) {
+  launcherUpdateState = {
+    ...launcherUpdateState,
+    ...patch,
+    currentVersion: APP_VERSION
+  };
+
+  if (win && !win.isDestroyed()) {
+    win.webContents.send("launcher-update-status", launcherUpdateState);
+  }
+}
+
+function isPackagedApp() {
+  return Boolean(app.isPackaged && !process.defaultApp);
+}
+
+function scheduleLauncherReplacementOnQuit(downloadedFile) {
+  if (!downloadedFile || !fs.existsSync(downloadedFile) || !isPackagedApp()) return;
+
+  const currentExe = process.execPath;
+  if (!currentExe || path.extname(currentExe).toLowerCase() !== ".exe") return;
+
+  const currentPid = process.pid;
+  const command = [
+    `$target = '${currentExe.replace(/'/g, "''")}'`,
+    `$source = '${downloadedFile.replace(/'/g, "''")}'`,
+    `$pidToWait = ${currentPid}`,
+    "while (Get-Process -Id $pidToWait -ErrorAction SilentlyContinue) { Start-Sleep -Milliseconds 500 }",
+    "Copy-Item -Path $source -Destination $target -Force",
+    "Start-Process -FilePath $target"
+  ].join("; ");
+
+  const child = spawn("powershell.exe", ["-NoProfile", "-ExecutionPolicy", "Bypass", "-Command", command], {
+    detached: true,
+    stdio: "ignore",
+    windowsHide: true
+  });
+
+  child.unref();
+}
+
+async function checkLauncherAutoUpdate(manifest) {
+  if (!isPackagedApp()) {
+    emitLauncherUpdateStatus({ status: "dev-mode" });
+    return;
+  }
+
+  const launcherMeta = manifest && manifest.launcher ? manifest.launcher : {};
+  const releaseApiUrl = launcherMeta.releaseApiUrl || DEFAULT_LAUNCHER_RELEASE_API;
+  const expectedAssetName = launcherMeta.assetName || DEFAULT_LAUNCHER_ASSET;
+
+  try {
+    emitLauncherUpdateStatus({ status: "checking", notes: launcherMeta.patchNotes || [] });
+    const { data: release } = await axios.get(releaseApiUrl, {
+      timeout: 15000,
+      headers: {
+        Accept: "application/vnd.github+json",
+        "Cache-Control": "no-cache"
+      }
+    });
+
+    const remoteVersion = normalizeVersion(launcherMeta.version || release.tag_name || release.name || APP_VERSION);
+    if (compareVersions(remoteVersion, APP_VERSION) <= 0) {
+      emitLauncherUpdateStatus({ status: "up-to-date", remoteVersion, notes: launcherMeta.patchNotes || [] });
+      return;
+    }
+
+    const assets = Array.isArray(release.assets) ? release.assets : [];
+    const asset = assets.find((entry) => entry.name === expectedAssetName)
+      || assets.find((entry) => /\.exe$/i.test(entry.name));
+
+    if (!asset || !asset.browser_download_url) {
+      emitLauncherUpdateStatus({ status: "error", remoteVersion, error: "No se encontró el instalador del launcher en la release." });
+      return;
+    }
+
+    await fsExtra.ensureDir(LAUNCHER_UPDATE_DIR);
+    const downloadedFile = path.join(LAUNCHER_UPDATE_DIR, `${remoteVersion}-${asset.name}`);
+    emitLauncherUpdateStatus({ status: "downloading", remoteVersion, notes: launcherMeta.patchNotes || [] });
+
+    const response = await axios.get(asset.browser_download_url, {
+      responseType: "stream",
+      timeout: 300000,
+      headers: { "Cache-Control": "no-cache" }
+    });
+
+    const totalBytes = parseInt(response.headers["content-length"] || "0", 10);
+    let downloadedBytes = 0;
+    const writer = fs.createWriteStream(downloadedFile);
+
+    await new Promise((resolve, reject) => {
+      response.data.on("data", (chunk) => {
+        downloadedBytes += chunk.length;
+        const percent = totalBytes > 0 ? Math.round((downloadedBytes / totalBytes) * 100) : 0;
+        emitLauncherUpdateStatus({
+          status: "downloading",
+          remoteVersion,
+          progress: percent,
+          downloadedFile,
+          notes: launcherMeta.patchNotes || []
+        });
+      });
+      response.data.on("error", reject);
+      writer.on("error", reject);
+      writer.on("finish", resolve);
+      response.data.pipe(writer);
+    });
+
+    emitLauncherUpdateStatus({
+      status: "ready",
+      remoteVersion,
+      downloadedFile,
+      notes: launcherMeta.patchNotes || []
+    });
+  } catch (error) {
+    emitLauncherUpdateStatus({ status: "error", error: error.message });
+  }
+}
+
+// ─── OPTIONAL MODS PREFERENCES ───────────────────────────────────────────────
+function loadOptionalMods() {
+  try {
+    if (fs.existsSync(OPTIONAL_MODS_FILE)) {
+      return JSON.parse(fs.readFileSync(OPTIONAL_MODS_FILE, "utf-8"));
+    }
+  } catch (e) {
+    console.warn("[main] Error leyendo optional-mods:", e.message);
+  }
+  return {};
+}
+
+function saveOptionalMods(data) {
+  fsExtra.ensureDirSync(path.dirname(OPTIONAL_MODS_FILE));
+  fs.writeFileSync(OPTIONAL_MODS_FILE, JSON.stringify(data, null, 2));
 }
 
 // ─── JAVA DETECTION ───────────────────────────────────────────────────────────
@@ -272,38 +477,107 @@ function detectJavaAt(javaPath) {
   return null;
 }
 
-// ─── FABRIC INSTALLER ─────────────────────────────────────────────────────────
-/**
- * Descarga e instala el perfil JSON de Fabric Loader desde la API oficial.
- * Solo descarga si el archivo no existe ya.
- *
- * @param {string} gameDir   — ruta raíz de .minecraft
- * @param {string} mcVersion — ej. "1.20.1"
- * @param {string} loaderVersion — ej. "0.18.4"
- * @returns {string} nombre del perfil custom para MCLC, ej "fabric-loader-0.18.4-1.20.1"
- */
+// ─── LOADER INSTALLERS ───────────────────────────────────────────────────────
+
+/** Instala Fabric desde meta.fabricmc.net */
 async function installFabric(gameDir, mcVersion, loaderVersion) {
   const profileName = `fabric-loader-${loaderVersion}-${mcVersion}`;
   const versionsDir = path.join(gameDir, "versions", profileName);
   const profileJson = path.join(versionsDir, `${profileName}.json`);
-
-  if (fs.existsSync(profileJson)) {
-    console.log(`[fabric] Perfil ya existe: ${profileName}`);
-    return profileName;
-  }
-
+  if (fs.existsSync(profileJson)) return profileName;
   console.log(`[fabric] Descargando perfil: ${profileName}`);
   const url = `https://meta.fabricmc.net/v2/versions/loader/${mcVersion}/${loaderVersion}/profile/json`;
-
   try {
     const { data } = await axios.get(url, { timeout: 30_000 });
     await fsExtra.ensureDir(versionsDir);
     fs.writeFileSync(profileJson, JSON.stringify(data, null, 2));
-    console.log(`[fabric] Perfil instalado: ${profileJson}`);
     return profileName;
   } catch (err) {
-    console.error(`[fabric] Error descargando perfil:`, err.message);
     throw new Error(`No se pudo instalar Fabric Loader ${loaderVersion}: ${err.message}`);
+  }
+}
+
+/** Instala Quilt desde meta.quiltmc.org */
+async function installQuilt(gameDir, mcVersion, loaderVersion) {
+  const profileName = `quilt-loader-${loaderVersion}-${mcVersion}`;
+  const versionsDir = path.join(gameDir, "versions", profileName);
+  const profileJson = path.join(versionsDir, `${profileName}.json`);
+  if (fs.existsSync(profileJson)) return profileName;
+  console.log(`[quilt] Descargando perfil: ${profileName}`);
+  const url = `https://meta.quiltmc.org/v3/versions/loader/${mcVersion}/${loaderVersion}/profile/json`;
+  try {
+    const { data } = await axios.get(url, { timeout: 30_000 });
+    await fsExtra.ensureDir(versionsDir);
+    fs.writeFileSync(profileJson, JSON.stringify(data, null, 2));
+    return profileName;
+  } catch (err) {
+    throw new Error(`No se pudo instalar Quilt Loader ${loaderVersion}: ${err.message}`);
+  }
+}
+
+/** Instala NeoForge — usa el JSON de versión ya instalado en versions/ (igual que Forge) */
+async function installNeoForge(gameDir, mcVersion, loaderVersion) {
+  // NeoForge se distribuye como <mcVersion>-neoforge-<loaderVersion>
+  // minecraft-launcher-core lo trata como forge; el usuario debe haber corrido el installer
+  // o puede usarse el campo customProfile para apuntar a un perfil ya instalado.
+  const profileName = `${mcVersion}-neoforge-${loaderVersion}`;
+  const versionsDir = path.join(gameDir, "versions", profileName);
+  const profileJson = path.join(versionsDir, `${profileName}.json`);
+  if (fs.existsSync(profileJson)) {
+    console.log(`[neoforge] Perfil ya existe: ${profileName}`);
+    return profileName;
+  }
+  throw new Error(
+    `NeoForge ${loaderVersion} no está instalado en ${gameDir}. ` +
+    `Ejecuta el installer de NeoForge primero y vuelve a lanzar.`
+  );
+}
+
+/**
+ * Resuelve el loader de un modpack y devuelve el customProfile para MCLC
+ * o null para vanilla/forge (que MCLC resuelve con opts.forge).
+ *
+ * loaderType puede ser: "fabric" | "quilt" | "neoforge" | "forge" | "vanilla" | "custom"
+ * Si loaderType es "custom", se usa directamente loaderVersion como nombre de perfil.
+ */
+async function resolveLoader(gameDir, modpack, statusCb = () => {}) {
+  const loaderType = (modpack.loaderType || modpack.loader || "fabric").toLowerCase();
+  const loaderVersion = modpack.loaderVersion || "";
+  const mcVersion = modpack.minecraft || "1.20.1";
+
+  switch (loaderType) {
+    case "fabric": {
+      statusCb("Verificando Fabric Loader…");
+      const profile = await installFabric(gameDir, mcVersion, loaderVersion);
+      return { customProfile: profile, forgeVersion: null };
+    }
+    case "quilt": {
+      statusCb("Verificando Quilt Loader…");
+      const profile = await installQuilt(gameDir, mcVersion, loaderVersion);
+      return { customProfile: profile, forgeVersion: null };
+    }
+    case "neoforge": {
+      statusCb("Verificando NeoForge…");
+      const profile = await installNeoForge(gameDir, mcVersion, loaderVersion);
+      return { customProfile: profile, forgeVersion: null };
+    }
+    case "forge": {
+      statusCb("Verificando Forge…");
+      // MCLC handles Forge via opts.forge — pass it as forgeVersion
+      return { customProfile: null, forgeVersion: loaderVersion };
+    }
+    case "custom": {
+      // loaderVersion IS the full custom profile name already installed in versions/
+      if (!loaderVersion) throw new Error("loaderType=custom pero no hay loaderVersion (nombre de perfil)");
+      const profileJson = path.join(gameDir, "versions", loaderVersion, `${loaderVersion}.json`);
+      if (!fs.existsSync(profileJson)) {
+        throw new Error(`Perfil custom "${loaderVersion}" no encontrado en ${gameDir}/versions/`);
+      }
+      return { customProfile: loaderVersion, forgeVersion: null };
+    }
+    case "vanilla":
+    default:
+      return { customProfile: null, forgeVersion: null };
   }
 }
 
@@ -329,12 +603,29 @@ function createWindow() {
     }
   });
 
-  win.once("ready-to-show", () => win.show());
+  win.once("ready-to-show", () => {
+    win.show();
+    emitLauncherUpdateStatus({});
+  });
   win.loadFile("index.html");
   // win.webContents.openDevTools();
 }
 
-app.whenReady().then(createWindow);
+app.whenReady().then(async () => {
+  createWindow();
+  try {
+    const { manifest } = await fetchManifest(getGameDir());
+    await checkLauncherAutoUpdate(manifest);
+  } catch (error) {
+    emitLauncherUpdateStatus({ status: "error", error: error.message });
+  }
+});
+
+app.on("before-quit", () => {
+  if (launcherUpdateState.status === "ready" && launcherUpdateState.downloadedFile) {
+    scheduleLauncherReplacementOnQuit(launcherUpdateState.downloadedFile);
+  }
+});
 
 app.on("window-all-closed", () => {
   if (process.platform !== "darwin") app.quit();
@@ -350,6 +641,7 @@ ipcMain.handle("save-settings", (_e, settings) => {
   saveSettings(settings);
   return { ok: true };
 });
+ipcMain.handle("get-launcher-update-status", () => launcherUpdateState);
 
 // ─── IPC: GAME DIRECTORY ─────────────────────────────────────────────────────
 ipcMain.handle("select-game-dir", async () => {
@@ -367,6 +659,13 @@ ipcMain.handle("open-game-dir", () => {
   fsExtra.ensureDirSync(dir);
   shell.openPath(dir);
   return { ok: true };
+});
+
+ipcMain.handle("open-modpack-dir", (_e, modpackId) => {
+  const dir = getGameDir(modpackId);
+  fsExtra.ensureDirSync(dir);
+  shell.openPath(dir);
+  return { ok: true, path: dir };
 });
 
 // ─── IPC: JAVA DETECTION ────────────────────────────────────────────────────
@@ -389,54 +688,144 @@ ipcMain.handle("install-java", async () => {
   }
 });
 
-// ─── IPC: PATCH NOTES (from manifest) ────────────────────────────────────────
-ipcMain.handle("get-patch-notes", async () => {
+// ─── IPC: MODPACKS (list, access control) ────────────────────────────────────
+ipcMain.handle("get-modpacks", async (_e, { accountUuid } = {}) => {
   try {
-    const url = `${MANIFEST_CHECK_URL}${MANIFEST_CHECK_URL.includes("?") ? "&" : "?"}t=${Date.now()}`;
-    const { data } = await axios.get(url, { timeout: 10_000, headers: { "Cache-Control": "no-cache" } });
-    return { version: data.version || "1.0.0", patchNotes: data.patchNotes || [] };
+    const GAME_DIR = getGameDir();
+    const { manifest } = await fetchManifest(GAME_DIR);
+    if (!manifest) return { modpacks: [], error: "No se pudo obtener el manifest" };
+
+    const modpacks = manifest.modpacks.map(mp => ({
+      id: mp.id,
+      name: mp.name,
+      subtitle: mp.subtitle || "",
+      description: mp.description || "",
+      gallery: Array.isArray(mp.gallery) ? mp.gallery : [],
+      image: mp.image || "",
+      imageUrl: resolveModpackImageUrl(mp),
+      public: mp.public !== false,
+      version: mp.version,
+      minecraft: mp.minecraft,
+      loader: mp.loader,
+      loaderType: mp.loaderType || mp.loader,
+      loaderVersion: mp.loaderVersion,
+      modCount: (mp.mods || []).length,
+      optionalModCount: (mp.optionalMods || []).length,
+      hasAccess: canAccessModpack(mp, accountUuid)
+    }));
+    return { modpacks };
   } catch (err) {
-    // Try cached manifest
+    console.warn("[main] Error obteniendo modpacks:", err.message);
+    return { modpacks: [], error: err.message };
+  }
+});
+
+// ─── IPC: OPTIONAL MODS ─────────────────────────────────────────────────────
+ipcMain.handle("get-optional-mods", async (_e, { modpackId } = {}) => {
+  try {
+    const GAME_DIR = getGameDir();
+    const { manifest } = await fetchManifest(GAME_DIR);
+    if (!manifest) return { mods: [], enabled: {} };
+
+    const modpack = manifest.modpacks.find(mp => mp.id === modpackId) || manifest.modpacks[0];
+    if (!modpack) return { mods: [], enabled: {} };
+
+    const prefs = loadOptionalMods();
+    const modpackPrefs = prefs[modpack.id] || {};
+
+    const mods = (modpack.optionalMods || []).map(m => ({
+      id: m.id,
+      name: m.name || m.id,
+      description: m.description || "",
+      category: m.category || "general",
+      defaultEnabled: m.defaultEnabled || false,
+      enabled: modpackPrefs[m.id] !== undefined ? modpackPrefs[m.id] : (m.defaultEnabled || false)
+    }));
+
+    return { mods };
+  } catch (err) {
+    console.warn("[main] Error obteniendo mods opcionales:", err.message);
+    return { mods: [], error: err.message };
+  }
+});
+
+ipcMain.handle("save-optional-mods", (_e, { modpackId, modId, enabled }) => {
+  const prefs = loadOptionalMods();
+  if (!prefs[modpackId]) prefs[modpackId] = {};
+  prefs[modpackId][modId] = enabled;
+  saveOptionalMods(prefs);
+  return { ok: true };
+});
+
+// ─── IPC: PATCH NOTES (from manifest) ────────────────────────────────────────
+ipcMain.handle("get-patch-notes", async (_e, modpackId) => {
+  try {
+    const { manifest: norm } = await fetchManifest(getGameDir());
+    if (!norm) {
+      return { version: "", patchNotes: [], launcherVersion: APP_VERSION, launcherPatchNotes: [] };
+    }
+    const mp = (modpackId ? norm.modpacks.find(m => m.id === modpackId) : norm.modpacks[0]) || norm.modpacks[0];
+    return {
+      version: mp ? mp.version : "1.0.0",
+      patchNotes: mp ? (mp.patchNotes || []) : [],
+      launcherVersion: (norm.launcher && norm.launcher.version) || APP_VERSION,
+      launcherPatchNotes: (norm.launcher && norm.launcher.patchNotes) || []
+    };
+  } catch (err) {
     const gameDir = getGameDir();
     const cached = path.join(gameDir, "manifest-cache.json");
     if (fs.existsSync(cached)) {
       try {
-        const data = JSON.parse(fs.readFileSync(cached, "utf-8"));
-        return { version: data.version || "1.0.0", patchNotes: data.patchNotes || [] };
+        const data = normalizeManifest(JSON.parse(fs.readFileSync(cached, "utf-8")));
+        const mp = (modpackId ? data.modpacks.find(m => m.id === modpackId) : data.modpacks[0]) || data.modpacks[0];
+        return {
+          version: mp ? mp.version : "1.0.0",
+          patchNotes: mp ? (mp.patchNotes || []) : [],
+          launcherVersion: (data.launcher && data.launcher.version) || APP_VERSION,
+          launcherPatchNotes: (data.launcher && data.launcher.patchNotes) || []
+        };
       } catch (_) {}
     }
-    return { version: "", patchNotes: [], error: err.message };
+    return { version: "", patchNotes: [], launcherVersion: APP_VERSION, launcherPatchNotes: [], error: err.message };
   }
 });
 
 // ─── IPC: CHECK FOR UPDATES ─────────────────────────────────────────────────
-ipcMain.handle("check-updates", async () => {
+ipcMain.handle("check-updates", async (_e, modpackId) => {
   try {
-    const url = `${MANIFEST_CHECK_URL}${MANIFEST_CHECK_URL.includes("?") ? "&" : "?"}t=${Date.now()}`;
-    const { data } = await axios.get(url, { timeout: 10_000, headers: { "Cache-Control": "no-cache" } });
-    const localVersionFile = path.join(app.getPath("userData"), "modpack-version.txt");
-    let localVer = "";
-    if (fs.existsSync(localVersionFile)) {
-      localVer = fs.readFileSync(localVersionFile, "utf-8").trim();
+    const { manifest: norm } = await fetchManifest(getGameDir());
+    if (!norm) {
+      return { error: "No se pudo obtener el manifest", hasUpdate: false };
     }
-    const remoteVer = data.version || "1.0.0";
+    const mp = (modpackId ? norm.modpacks.find(m => m.id === modpackId) : norm.modpacks[0]) || norm.modpacks[0];
+    const remoteVer = mp ? mp.version : "1.0.0";
+    const versionKey = `modpack-version-${mp ? mp.id : "default"}.txt`;
+    const localVersionFile = path.join(app.getPath("userData"), versionKey);
+    let localVer = "";
+    if (fs.existsSync(localVersionFile)) localVer = fs.readFileSync(localVersionFile, "utf-8").trim();
     const hasUpdate = localVer !== "" && localVer !== remoteVer;
     const isFirstRun = localVer === "";
-
-    // Guardar versión conocida
     fs.writeFileSync(localVersionFile, remoteVer);
-
     return {
       currentVersion: localVer || remoteVer,
       remoteVersion: remoteVer,
       hasUpdate,
       isFirstRun,
-      modCount: data.mods ? data.mods.length : 0
+      modCount: mp ? (mp.mods || []).length : 0
     };
   } catch (err) {
     console.warn("[update-check] Error:", err.message);
     return { error: err.message, hasUpdate: false };
   }
+});
+
+// ─── IPC: INSTANCE STATUS ────────────────────────────────────────────────────
+ipcMain.handle("get-instance-status", () => {
+  const result = {};
+  for (const [id, inst] of runningInstances) {
+    result[id] = { running: true, startTime: inst.startTime };
+  }
+  return result;
 });
 
 // ─── IPC: ACCOUNTS ───────────────────────────────────────────────────────────
@@ -454,7 +843,7 @@ ipcMain.handle("login-microsoft", async () => {
 });
 
 // ─── IPC: DESCARGAR MODPACK (sin login) ──────────────────────────────────────
-ipcMain.handle("download-modpack", async () => {
+ipcMain.handle("download-modpack", async (_e, { modpackId, enabledOptionalMods } = {}) => {
   const { canceled, filePaths } = await dialog.showOpenDialog(win, {
     title: "Elige dónde guardar el modpack",
     properties: ["openDirectory"],
@@ -463,173 +852,199 @@ ipcMain.handle("download-modpack", async () => {
 
   if (canceled || !filePaths.length) return { cancelled: true };
 
-  const destFolder = path.join(filePaths[0], "cretania-modpack");
+  const folderName = modpackId ? `cretania-${modpackId}` : "cretania-modpack";
+  const destFolder = path.join(filePaths[0], folderName);
 
   const emitter = new EventEmitter();
   emitter.on("progress", (data) => {
     if (win && !win.isDestroyed()) win.webContents.send("progress", data);
   });
 
-  await syncMods(destFolder, emitter);
+  await syncMods(destFolder, emitter, { modpackId, enabledOptionalMods: enabledOptionalMods || [] });
   return { cancelled: false, folder: destFolder };
 });
 
 // ─── IPC: LANZAR JUEGO ──────────────────────────────────────────────────────
-ipcMain.handle("launch", async (_event, { authData, accountUuid }) => {
-  // 0. Obtener directorio de juego
-  const GAME_DIR = getGameDir();
-
-  // 1. Auth — por token fresco o cuenta guardada
-  let auth;
-  if (authData) {
-    auth = authData;
-  } else if (accountUuid) {
-    setStatus(win, "Refrescando sesión…");
-    const account = await getAccountAuth(accountUuid);
-    auth = account.mclc;
-  } else {
-    throw new Error("Se requiere una cuenta Microsoft para jugar.");
+ipcMain.handle("launch", async (_event, { authData, accountUuid, modpackId, enabledOptionalMods }) => {
+  const requestedInstanceKey = modpackId || "default";
+  if (pendingLaunches.has(requestedInstanceKey) || runningInstances.has(requestedInstanceKey)) {
+    throw new Error("Ya hay un lanzamiento o una instancia activa para este modpack.");
   }
 
-  // 1.5 Detectar Java 21+ — si no existe, instalarlo automáticamente
-  setStatus(win, "Verificando Java…");
-  let javaInfo = detectJava();
-  if (!javaInfo.found) {
-    console.log("[main] Java no encontrado, instalando automáticamente…");
-    setStatus(win, "Java 21 no encontrado. Instalando automáticamente…");
+  pendingLaunches.add(requestedInstanceKey);
+
+  try {
+    const GAME_DIR = getGameDir(modpackId);
+    const { manifest: manifestData } = await fetchManifest(GAME_DIR);
+    const requestedModpack = manifestData
+      ? (manifestData.modpacks.find((entry) => entry.id === modpackId) || manifestData.modpacks[0])
+      : null;
+
+    if (requestedModpack && !canAccessModpack(requestedModpack, accountUuid)) {
+      throw new Error("Esta cuenta no tiene acceso a este modpack.");
+    }
+
+    let auth;
+    if (authData) {
+      auth = authData;
+    } else if (accountUuid) {
+      setStatus(win, "Refrescando sesión…");
+      const account = await getAccountAuth(accountUuid);
+      auth = account.mclc;
+    } else {
+      throw new Error("Se requiere una cuenta Microsoft para jugar.");
+    }
+
+    setStatus(win, "Verificando Java…");
+    let javaInfo = detectJava();
+    if (!javaInfo.found) {
+      console.log("[main] Java no encontrado, instalando automáticamente…");
+      setStatus(win, "Java 21 no encontrado. Instalando automáticamente…");
+      try {
+        javaInfo = await installJava((pct, msg) => {
+          if (win && !win.isDestroyed()) {
+            win.webContents.send("java-install-progress", { percent: pct, message: msg });
+          }
+        });
+      } catch (err) {
+        throw new Error(
+          "No se pudo instalar Java 21 automáticamente: " + err.message +
+          "\nInstálalo manualmente desde https://adoptium.net/"
+        );
+      }
+    }
+    console.log(`[main] Java ${javaInfo.version} encontrado: ${javaInfo.path}`);
+
+    const emitter = new EventEmitter();
+    const instanceKey = modpackId || (requestedModpack ? requestedModpack.id : "default");
+    emitter.on("progress", (data) => {
+      if (win && !win.isDestroyed()) {
+        win.webContents.send("progress", { ...data, modpackId: instanceKey });
+      }
+    });
+
+    let manifest;
     try {
-      javaInfo = await installJava((pct, msg) => {
-        if (win && !win.isDestroyed()) {
-          win.webContents.send("java-install-progress", { percent: pct, message: msg });
-        }
+      manifest = await syncMods(GAME_DIR, emitter, {
+        modpackId,
+        enabledOptionalMods: enabledOptionalMods || []
       });
     } catch (err) {
-      throw new Error(
-        "No se pudo instalar Java 21 automáticamente: " + err.message +
-        "\nInstálalo manualmente desde https://adoptium.net/"
+      console.warn("[main] Error al actualizar mods:", err.message);
+      if (win && !win.isDestroyed()) {
+        win.webContents.send("progress", { phase: "done", current: 0, total: 0 });
+        win.webContents.send("log", "[UPDATER] Error sincronizando mods: " + err.message);
+      }
+      manifest = { minecraft: "1.20.1", loader: "fabric", loaderVersion: "0.18.4", mods: [] };
+    }
+
+    if (manifest._noManifest && win && !win.isDestroyed()) {
+      win.webContents.send(
+        "log",
+        "[UPDATER] ⚠ No se pudo obtener la lista de mods. Los mods existentes se mantendrán pero no se verificará ni descargará nada nuevo."
       );
     }
-  }
-  console.log(`[main] Java ${javaInfo.version} encontrado: ${javaInfo.path}`);
 
-  // 2. Sync mods
-  const emitter = new EventEmitter();
-  emitter.on("progress", (data) => {
-    if (win && !win.isDestroyed()) win.webContents.send("progress", data);
-  });
-
-  let manifest;
-  try {
-    manifest = await syncMods(GAME_DIR, emitter);
-  } catch (err) {
-    console.warn("[main] Error al actualizar mods:", err.message);
-    if (win && !win.isDestroyed()) {
-      win.webContents.send("progress", { phase: "done", current: 0, total: 0 });
-      win.webContents.send("log", "[UPDATER] Error sincronizando mods: " + err.message);
+    if (manifest._failedMods && manifest._failedMods.length > 0) {
+      const failedNames = manifest._failedMods.map((entry) => entry.mod).join(", ");
+      const failedPreview = manifest._failedMods.slice(0, 12).map((entry) => entry.mod).join(", ");
+      const remainingFailed = manifest._failedMods.length - Math.min(manifest._failedMods.length, 12);
+      const distinctErrors = [...new Set(manifest._failedMods.map((entry) => entry.error).filter(Boolean))];
+      console.warn("[main] Mods que fallaron:", failedNames);
+      if (win && !win.isDestroyed()) {
+        win.webContents.send(
+          "log",
+          `[UPDATER] ⚠ ${manifest._failedMods.length} mod(s) no se pudieron descargar: ${failedPreview}${remainingFailed > 0 ? ` y ${remainingFailed} mas` : ""}`
+        );
+        if (distinctErrors.length > 0) {
+          win.webContents.send(
+            "log",
+            `[UPDATER] Motivos detectados: ${distinctErrors.slice(0, 3).join(" | ")}`
+          );
+        }
+        win.webContents.send(
+          "log",
+          "[UPDATER] Se reintentará en el próximo lanzamiento. El juego iniciará con los mods disponibles."
+        );
+        win.webContents.send("progress", {
+          phase: "status",
+          message: `⚠ ${manifest._failedMods.length} mod(s) fallaron. Se reintentará luego.`
+        });
+      }
     }
-    // Use default manifest so the game can still launch with whatever mods are on disk
-    manifest = { minecraft: "1.20.1", loader: "fabric", loaderVersion: "0.18.4", mods: [] };
-  }
 
-  // Report if manifest was unavailable
-  if (manifest._noManifest) {
-    if (win && !win.isDestroyed()) {
-      win.webContents.send("log",
-        "[UPDATER] ⚠ No se pudo obtener la lista de mods. Los mods existentes se mantendrán pero no se verificará ni descargará nada nuevo.");
-    }
-  }
+    await fsExtra.ensureDir(GAME_DIR);
 
-  // Report failed mods to user (syncMods now continues past individual failures)
-  if (manifest._failedMods && manifest._failedMods.length > 0) {
-    const failedNames = manifest._failedMods.map(f => f.mod).join(", ");
-    console.warn("[main] Mods que fallaron:", failedNames);
-    if (win && !win.isDestroyed()) {
-      win.webContents.send("log",
-        `[UPDATER] ⚠ ${manifest._failedMods.length} mod(s) no se pudieron descargar: ${failedNames}`);
-      win.webContents.send("log",
-        "[UPDATER] Se reintentará en el próximo lanzamiento. El juego iniciará con los mods disponibles.");
-      win.webContents.send("progress", {
-        phase: "status",
-        message: `⚠ ${manifest._failedMods.length} mod(s) fallaron. Se reintentará luego.`
-      });
-    }
-  }
+    const settings = loadSettings();
+    const mcVersion = manifest.minecraft || "1.20.1";
 
-  // 3. Crear directorio
-  await fsExtra.ensureDir(GAME_DIR);
-
-  // 4. Leer settings de RAM
-  const settings = loadSettings();
-
-  // 5. Instalar Fabric Loader si es necesario
-  const mcVersion = manifest.minecraft || "1.20.1";
-  const loaderVersion = manifest.loaderVersion || "0.18.4";
-  let fabricProfileName = null;
-
-  if (manifest.loader === "fabric" && loaderVersion) {
+    let loaderResult = { customProfile: null, forgeVersion: null };
     try {
-      setStatus(win, "Verificando Fabric Loader…");
-      fabricProfileName = await installFabric(GAME_DIR, mcVersion, loaderVersion);
+      loaderResult = await resolveLoader(GAME_DIR, manifest, (msg) => setStatus(win, msg));
     } catch (err) {
-      console.error("[main] Error instalando Fabric:", err.message);
-      throw new Error("No se pudo instalar Fabric Loader: " + err.message);
+      console.error("[main] Error resolviendo loader:", err.message);
+      throw new Error("No se pudo instalar el loader: " + err.message);
     }
-  }
 
-  // 6. Lanzar Minecraft
-  const launcher = new Client();
+    const launcher = new Client();
 
-  launcher.on("debug", (msg) => {
-    console.log("[MC debug]", msg);
-    if (win && !win.isDestroyed()) win.webContents.send("log", msg);
-  });
-  launcher.on("data", (msg) => {
-    console.log("[MC data]", msg);
-    if (win && !win.isDestroyed()) win.webContents.send("log", msg);
-  });
-  launcher.on("close", (code) => {
-    console.log("[MC] Cerrado con código:", code);
-    if (win && !win.isDestroyed()) win.webContents.send("mc-closed", code);
-  });
+    launcher.on("debug", (msg) => {
+      console.log("[MC debug]", msg);
+      if (win && !win.isDestroyed()) win.webContents.send("log", msg);
+    });
+    launcher.on("data", (msg) => {
+      console.log("[MC data]", msg);
+      if (win && !win.isDestroyed()) win.webContents.send("log", msg);
+    });
+    launcher.on("close", (code) => {
+      console.log(`[MC:${instanceKey}] Cerrado con código:`, code);
+      runningInstances.delete(instanceKey);
+      if (win && !win.isDestroyed()) win.webContents.send("mc-closed", { code, modpackId: instanceKey });
+    });
 
-  const launchOpts = {
-    authorization: auth,
-    root: GAME_DIR,
-    javaPath: javaInfo.path !== "java" ? javaInfo.path : undefined,
-    version: {
-      number: mcVersion,
-      type: "release"
-    },
-    memory: {
-      max: settings.ramMax + "G",
-      min: settings.ramMin + "G"
-    },
-    window: {
-      width: settings.width || 1280,
-      height: settings.height || 720
-    },
-    overrides: {
-      gameDirectory: GAME_DIR
+    const launchOpts = {
+      authorization: auth,
+      root: GAME_DIR,
+      javaPath: javaInfo.path !== "java" ? javaInfo.path : undefined,
+      version: {
+        number: mcVersion,
+        type: "release"
+      },
+      memory: {
+        max: settings.ramMax + "G",
+        min: settings.ramMin + "G"
+      },
+      window: {
+        width: settings.width || 1280,
+        height: settings.height || 720
+      },
+      overrides: {
+        gameDirectory: GAME_DIR
+      }
+    };
+
+    if (loaderResult.customProfile) {
+      launchOpts.version.custom = loaderResult.customProfile;
+    } else if (loaderResult.forgeVersion) {
+      launchOpts.forge = loaderResult.forgeVersion;
     }
-  };
 
-  // Fabric: usar version.custom con el perfil instalado
-  if (fabricProfileName) {
-    launchOpts.version.custom = fabricProfileName;
-  } else if (manifest.loader === "forge" && manifest.loaderVersion) {
-    launchOpts.forge = manifest.loaderVersion;
+    const loaderType = (manifest.loaderType || manifest.loader || "fabric").toLowerCase();
+    console.log("[main] Lanzando MC:", JSON.stringify({
+      instance: instanceKey,
+      version: mcVersion,
+      loader: loaderType,
+      profile: loaderResult.customProfile || "(vanilla/forge)",
+      ram: `${settings.ramMin}-${settings.ramMax}G`
+    }));
+
+    runningInstances.set(instanceKey, { launcher, pid: null, startTime: Date.now() });
+
+    launcher.launch(launchOpts);
+    return { ok: true, modpackId: instanceKey };
+  } finally {
+    pendingLaunches.delete(requestedInstanceKey);
   }
-
-  console.log("[main] Lanzando MC:", JSON.stringify({
-    version: launchOpts.version.number,
-    custom: launchOpts.version.custom || "(vanilla)",
-    ram: `${settings.ramMin}-${settings.ramMax}G`,
-    loader: manifest.loader,
-    loaderVersion: loaderVersion
-  }));
-
-  launcher.launch(launchOpts);
-  return { ok: true };
 });
 
 /** Helper para enviar estado a la ventana */

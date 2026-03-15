@@ -28,6 +28,7 @@ Set-Location $PSScriptRoot
 $ModpackDir   = Join-Path $PSScriptRoot "my-modpack"
 $ModsDir      = Join-Path $ModpackDir "mods"
 $ManifestPath = Join-Path $ModpackDir "manifest.json"
+$ManifestEncPath = Join-Path $ModpackDir "manifest.enc"
 
 # ── GitHub config ──────────────────────────────────────────────────────────────
 $RepoOwner = "juyliantamayo"
@@ -66,8 +67,10 @@ Write-Host "      Size : $size bytes"
 Write-Host "`n[2/5] Actualizando manifest.json..." -ForegroundColor Cyan
 $manifest = Get-Content $ManifestPath -Raw | ConvertFrom-Json
 
+$targetModpack = if ($manifest.formatVersion -eq 2 -and $manifest.modpacks.Count -gt 0) { $manifest.modpacks[0] } else { $manifest }
+
 # Buscar la entrada del mod viejo en el array de mods
-$modEntry = $manifest.mods | Where-Object { $_.file -eq "mods/$OldJar" }
+$modEntry = $targetModpack.mods | Where-Object { $_.file -eq "mods/$OldJar" }
 if (-not $modEntry) {
     Write-Error "No se encontró la entrada para 'mods/$OldJar' en manifest.json.`nVerifica que el nombre del archivo viejo sea exactamente correcto."
     exit 1
@@ -83,11 +86,11 @@ $modEntry.sha1 = $sha1
 $modEntry.size = [long]$size
 
 # Incrementar la última cifra de la versión del modpack
-$verParts      = $manifest.version -split '\.'
-$oldVersion    = $manifest.version
+$verParts      = $targetModpack.version -split '\.'
+$oldVersion    = $targetModpack.version
 $verParts[-1]  = ([int]$verParts[-1] + 1).ToString()
 $newVersion    = $verParts -join '.'
-$manifest.version = $newVersion
+$targetModpack.version = $newVersion
 
 # Generar texto de patch note si no se pasó uno
 $months = "Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"
@@ -114,10 +117,15 @@ $newNote = [PSCustomObject]@{
 }
 
 # Insertar al inicio del array patchNotes
-$manifest.patchNotes = @($newNote) + @($manifest.patchNotes)
+$targetModpack.patchNotes = @($newNote) + @($targetModpack.patchNotes)
 
 # Guardar manifest con indentación
 $manifest | ConvertTo-Json -Depth 20 | Set-Content $ManifestPath -Encoding UTF8
+
+Write-Host "      Regenerando manifest cifrado..."
+Push-Location $ModpackDir
+node generate-manifest.js
+Pop-Location
 
 Write-Host "      Version : $oldVersion -> $newVersion"
 Write-Host "      Nota    : $PatchNote"
@@ -145,7 +153,15 @@ for ($p = 1; $p -le 5; $p++) {
 }
 
 # Eliminar jar viejo y manifest viejo
-foreach ($assetName in @($OldJar, "manifest.json")) {
+$iconAssets = @()
+if ($manifest.formatVersion -eq 2 -and $manifest.modpacks) {
+    $iconAssets = $manifest.modpacks |
+        ForEach-Object { $_.image } |
+        Where-Object { $_ -and -not ($_ -match '^https?://') } |
+        Select-Object -Unique
+}
+
+foreach ($assetName in @($OldJar, "manifest.json", "manifest.enc") + $iconAssets) {
     $asset = $allAssets | Where-Object { $_.name -eq $assetName }
     if ($asset) {
         Write-Host "      Eliminando : $($asset.name) (id=$($asset.id))"
@@ -164,6 +180,21 @@ Write-Host "      OK          : $($r1.name) ($($r1.size) bytes)"
 Write-Host "      Subiendo   : manifest.json"
 $r2 = Invoke-RestMethod -Method Post -Uri "$uploadBase`?name=manifest.json" -Headers $jsonHeaders -InFile $ManifestPath
 Write-Host "      OK          : $($r2.name)"
+
+Write-Host "      Subiendo   : manifest.enc"
+$r3 = Invoke-RestMethod -Method Post -Uri "$uploadBase`?name=manifest.enc" -Headers $jsonHeaders -InFile $ManifestEncPath
+Write-Host "      OK          : $($r3.name)"
+
+foreach ($iconName in $iconAssets) {
+    $iconPath = Join-Path $ModpackDir $iconName
+    if (Test-Path $iconPath) {
+        Write-Host "      Subiendo   : $iconName"
+        $encodedIconName = [Uri]::EscapeDataString($iconName)
+        $iconHeaders = @{ Authorization = "token $token"; "Content-Type" = "application/octet-stream" }
+        $iconResp = Invoke-RestMethod -Method Post -Uri "$uploadBase`?name=$encodedIconName" -Headers $iconHeaders -InFile $iconPath
+        Write-Host "      OK          : $($iconResp.name)"
+    }
+}
 
 # ── Resumen final ──────────────────────────────────────────────────────────────
 Write-Host "`n[5/5] Completado." -ForegroundColor Green

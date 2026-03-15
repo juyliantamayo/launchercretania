@@ -1,1384 +1,295 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
-  <title>Cretania Launcher</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Lucerion Launcher</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Rajdhani:wght@400;600;700&display=swap" rel="stylesheet">
-  <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-
-    :root {
-      --copper: #d4874e;
-      --copper-light: #e8a96e;
-      --copper-dark: #a85d2a;
-      --brass: #c9a84c;
-      --brass-light: #e0c56e;
-      --steel: #8a9bae;
-      --dark-bg: #0c0e14;
-      --panel-bg: rgba(15, 18, 28, 0.95);
-      --panel-border: rgba(212, 135, 78, 0.25);
-      --glow: rgba(212, 135, 78, 0.4);
-    }
-
-    body {
-      background: var(--dark-bg);
-      color: #e0ddd5;
-      font-family: 'Rajdhani', 'Segoe UI', sans-serif;
-      height: 100vh;
-      overflow: hidden;
-      display: flex;
-      flex-direction: column;
-      user-select: none;
-      position: relative;
-    }
-
-    /* ── GLOBAL SCROLLBAR ── */
-    ::-webkit-scrollbar { width: 6px; }
-    ::-webkit-scrollbar-track { background: rgba(0,0,0,.2); border-radius: 3px; }
-    ::-webkit-scrollbar-thumb { background: var(--copper-dark); border-radius: 3px; transition: background .2s; }
-    ::-webkit-scrollbar-thumb:hover { background: var(--copper); }
-
-    /* ── TITLE BAR ── */
-    .titlebar {
-      -webkit-app-region: drag;
-      height: 36px;
-      background: rgba(8,10,16,0.97);
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 0 12px;
-      flex-shrink: 0;
-      border-bottom: 1px solid rgba(212,135,78,0.12);
-    }
-    .titlebar-label {
-      font-family: 'Orbitron', monospace;
-      font-size: 0.6rem;
-      color: var(--steel);
-      letter-spacing: 3px;
-    }
-    .titlebar-btns {
-      -webkit-app-region: no-drag;
-      display: flex; gap: 2px;
-    }
-    .titlebar-btns button {
-      background: none; border: none; color: var(--steel);
-      width: 36px; height: 32px; font-size: 1rem;
-      cursor: pointer; transition: background 0.15s;
-      display: flex; align-items: center; justify-content: center;
-      border-radius: 3px;
-    }
-    .titlebar-btns button:hover { background: rgba(212,135,78,0.15); color: var(--copper-light); }
-    .titlebar-btns .close-btn:hover { background: #c43; color: #fff; }
-
-    /* ── MAIN LAYOUT ── */
-    .main-content {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      padding: 14px 20px 10px;
-      position: relative;
-      gap: 10px;
-      overflow: hidden;
-    }
-
-    /* ── BG GRID ── */
-    .main-content::before {
-      content: '';
-      position: absolute; inset: 0;
-      background:
-        repeating-linear-gradient(0deg, transparent, transparent 59px, rgba(212,135,78,0.03) 60px),
-        repeating-linear-gradient(90deg, transparent, transparent 59px, rgba(212,135,78,0.03) 60px);
-      animation: gridPulse 8s ease-in-out infinite;
-      pointer-events: none;
-    }
-    @keyframes gridPulse { 0%,100%{opacity:.4} 50%{opacity:1} }
-
-    /* ── PARTICLES ── */
-    .particle {
-      position: absolute; width: 2px; height: 2px;
-      background: var(--copper); border-radius: 50%;
-      opacity: 0; pointer-events: none;
-      animation: floatUp linear infinite;
-    }
-    @keyframes floatUp {
-      0%{opacity:0;transform:translateY(0) scale(1)}
-      10%{opacity:.5}
-      90%{opacity:.05}
-      100%{opacity:0;transform:translateY(-200px) scale(.3)}
-    }
-
-    /* ── GEARS BG ── */
-    .gears-container { position:absolute; inset:0; pointer-events:none; overflow:hidden; }
-    .gear { position:absolute; opacity:.04; fill:none; stroke:var(--copper); stroke-width:1.5; }
-    .gear-1{width:200px;top:-40px;left:-50px;animation:spinCW 30s linear infinite}
-    .gear-2{width:140px;top:0;left:90px;animation:spinCCW 24s linear infinite}
-    .gear-3{width:250px;bottom:-70px;right:-70px;animation:spinCW 40s linear infinite}
-    .gear-4{width:100px;bottom:40px;right:100px;animation:spinCCW 20s linear infinite}
-    @keyframes spinCW{to{transform:rotate(360deg)}}
-    @keyframes spinCCW{to{transform:rotate(-360deg)}}
-
-    /* ── HERO ── */
-    .hero-section {
-      text-align: center;
-      flex-shrink: 0;
-      z-index: 1;
-      animation: fadeSlideDown .7s ease-out both;
-    }
-    @keyframes fadeSlideDown { from{opacity:0;transform:translateY(-15px)} to{opacity:1;transform:translateY(0)} }
-
-    .logo-icon {
-      display: block; margin: 0 auto 2px;
-      width: 170px; height: auto;
-      filter: drop-shadow(0 0 14px var(--glow));
-      animation: logoBob 4s ease-in-out infinite;
-    }
-    @keyframes logoBob { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-3px)} }
-
-    .subtitle {
-      font-size: .66rem; font-weight: 600; color: var(--steel);
-      letter-spacing: 3px; text-transform: uppercase;
-    }
-
-    /* ── MAIN PANEL ── */
-    .panel {
-      background: var(--panel-bg);
-      border: 1px solid var(--panel-border);
-      border-radius: 6px;
-      width: 100%;
-      max-width: 640px;
-      display: flex;
-      flex-direction: column;
-      position: relative;
-      z-index: 1;
-      animation: fadeSlideUp .7s ease-out .15s both;
-      box-shadow: 0 0 40px rgba(0,0,0,.5), inset 0 1px 0 rgba(212,135,78,.08);
-      flex: 1;
-      min-height: 0;
-      overflow: hidden;
-    }
-    @keyframes fadeSlideUp { from{opacity:0;transform:translateY(15px)} to{opacity:1;transform:translateY(0)} }
-
-    /* ── TAB BAR ── */
-    .tab-bar {
-      display: flex;
-      flex-shrink: 0;
-      background: rgba(0,0,0,.25);
-      border-bottom: 1px solid rgba(212,135,78,.1);
-    }
-    .tab-btn {
-      flex: 1;
-      padding: 11px 16px;
-      background: none;
-      border: none;
-      border-bottom: 2px solid transparent;
-      color: var(--steel);
-      font-family: 'Orbitron', monospace;
-      font-size: .58rem;
-      font-weight: 700;
-      letter-spacing: 2px;
-      cursor: pointer;
-      transition: all .25s;
-      opacity: .45;
-      position: relative;
-    }
-    .tab-btn:hover { opacity: .75; color: var(--copper-light); background: rgba(212,135,78,.03); }
-    .tab-btn.active {
-      opacity: 1;
-      color: var(--copper-light);
-      border-bottom-color: var(--copper);
-      background: rgba(212,135,78,.05);
-    }
-    .tab-dot {
-      display: inline-block;
-      width: 5px; height: 5px;
-      background: var(--copper-light);
-      border-radius: 50%;
-      margin-left: 6px;
-      vertical-align: middle;
-      animation: dotPulse 1.5s ease-in-out infinite;
-      visibility: hidden;
-    }
-    .tab-dot.visible { visibility: visible; }
-    @keyframes dotPulse { 0%,100%{opacity:.4;transform:scale(1)} 50%{opacity:1;transform:scale(1.5)} }
-
-    /* ── TAB CONTENT ── */
-    .tab-content {
-      flex: 1;
-      min-height: 0;
-      overflow: hidden;
-      position: relative;
-    }
-    .tab-panel {
-      display: none;
-      flex-direction: column;
-      gap: 14px;
-      padding: 18px 24px;
-      height: 100%;
-      overflow-y: auto;
-      overflow-x: hidden;
-    }
-    .tab-panel.active {
-      display: flex;
-    }
-
-    /* ── ACTION BAR ── */
-    .action-bar {
-      flex-shrink: 0;
-      padding: 10px 24px 14px;
-      border-top: 1px solid rgba(212,135,78,.12);
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-      background: rgba(8,10,16,.5);
-    }
-    .action-buttons {
-      display: flex;
-      gap: 10px;
-    }
-    .action-buttons .btn-launch { flex: 1; }
-    .action-buttons .btn-secondary { white-space: nowrap; }
-
-    /* ── SEPARATOR ── */
-    .separator { height: 1px; background: linear-gradient(90deg,transparent,var(--copper-dark),transparent); opacity: .2; }
-
-    /* ── SECTION LABEL ── */
-    .section-label {
-      font-family: 'Orbitron', monospace; font-size: .58rem; font-weight: 700;
-      color: var(--steel); letter-spacing: 3px; text-transform: uppercase; opacity: .55;
-      margin-bottom: 2px;
-    }
-
-    /* ── ACCOUNT SECTION ── */
-    .account-section { display: flex; flex-direction: column; gap: 8px; }
-    .account-list {
-      display: flex; flex-direction: column; gap: 5px;
-      max-height: 210px; overflow-y: auto;
-      padding-right: 4px;
-    }
-
-    .account-item {
-      display: flex; align-items: center; gap: 10px;
-      padding: 10px 14px; border-radius: 5px;
-      background: rgba(212,135,78,.04); border: 1px solid rgba(212,135,78,.08);
-      cursor: pointer; transition: all .2s;
-    }
-    .account-item:hover { background: rgba(212,135,78,.1); border-color: rgba(212,135,78,.25); }
-    .account-item.selected {
-      background: rgba(212,135,78,.12); border-color: var(--copper);
-      box-shadow: 0 0 12px rgba(212,135,78,.08);
-    }
-
-    .account-avatar {
-      width: 34px; height: 34px; border-radius: 4px;
-      background: var(--copper-dark); display: flex; align-items: center; justify-content: center;
-      font-family: 'Orbitron', monospace; font-size: .8rem; font-weight: 700; color: #fff;
-      flex-shrink: 0;
-    }
-    .account-name { font-weight: 700; font-size: .9rem; flex: 1; }
-    .account-remove {
-      background: none; border: none; color: var(--steel); cursor: pointer;
-      font-size: .9rem; opacity: .3; transition: all .2s; padding: 4px 8px;
-      border-radius: 3px;
-    }
-    .account-remove:hover { opacity: 1; color: #c43; background: rgba(204,68,51,.08); }
-
-    .btn-add-account {
-      background: transparent; color: var(--copper-light);
-      border: 1px dashed rgba(212,135,78,.2); border-radius: 5px;
-      padding: 11px; font-family: 'Rajdhani', sans-serif; font-size: .82rem;
-      font-weight: 600; cursor: pointer; transition: all .25s;
-      letter-spacing: 1px;
-    }
-    .btn-add-account:hover { border-color: var(--copper); background: rgba(212,135,78,.05); }
-    .btn-add-account:disabled { opacity: .3; cursor: not-allowed; }
-
-    .no-accounts { color: var(--steel); font-size: .78rem; text-align: center; padding: 12px 0; opacity: .55; }
-
-    /* ── ACCOUNT BADGE ── */
-    .account-badge {
-      font-size: .55rem; font-weight: 700; letter-spacing: 1px; text-transform: uppercase;
-      padding: 2px 6px; border-radius: 2px; font-family: 'Orbitron', monospace;
-    }
-    .badge-premium { background: rgba(76,175,80,.12); color: #81c784; }
-
-    /* ── BUTTONS ── */
-    .btn {
-      padding: 13px 20px; border: none; border-radius: 5px;
-      font-family: 'Orbitron', monospace; font-size: .78rem; font-weight: 700;
-      letter-spacing: 1.5px; text-transform: uppercase;
-      cursor: pointer; position: relative; overflow: hidden; transition: all .3s ease;
-    }
-    .btn:active { transform: scale(.97); }
-    .btn:disabled { opacity: .3; cursor: not-allowed; filter: grayscale(.5); }
-    .btn::after {
-      content: ''; position: absolute; top: 0; left: -100%;
-      width: 100%; height: 100%;
-      background: linear-gradient(90deg,transparent,rgba(255,255,255,.08),transparent);
-      transition: left .5s ease;
-    }
-    .btn:hover:not(:disabled)::after { left: 100%; }
-
-    .btn-launch {
-      background: linear-gradient(135deg, var(--copper), var(--copper-dark));
-      color: #fff; border: 1px solid rgba(232,169,110,.3);
-      box-shadow: 0 3px 16px rgba(212,135,78,.2), inset 0 1px 0 rgba(255,255,255,.1);
-    }
-    .btn-launch:hover:not(:disabled) {
-      background: linear-gradient(135deg, var(--copper-light), var(--copper));
-      box-shadow: 0 4px 24px rgba(212,135,78,.4);
-      transform: translateY(-1px);
-    }
-
-    .btn-secondary {
-      background: transparent; color: var(--steel);
-      border: 1px solid rgba(138,155,174,.15);
-      font-size: .68rem; padding: 11px 16px; letter-spacing: 2px;
-    }
-    .btn-secondary:hover:not(:disabled) {
-      border-color: var(--copper); color: var(--copper-light);
-      box-shadow: 0 0 12px rgba(212,135,78,.1);
-    }
-
-    /* ── SETTINGS ── */
-    .settings-group {
-      display: flex; flex-direction: column; gap: 12px;
-    }
-    .settings-row {
-      display: flex; align-items: center; gap: 12px;
-    }
-    .settings-row label {
-      font-size: .8rem; font-weight: 600; color: var(--steel);
-      min-width: 78px; letter-spacing: .5px;
-    }
-    .settings-row input[type="range"] {
-      flex: 1; -webkit-appearance: none; appearance: none; height: 5px;
-      background: rgba(212,135,78,.12); border-radius: 3px; outline: none;
-    }
-    .settings-row input[type="range"]::-webkit-slider-thumb {
-      -webkit-appearance: none; width: 16px; height: 16px; border-radius: 50%;
-      background: var(--copper); cursor: pointer;
-      box-shadow: 0 0 8px var(--glow); transition: background .2s;
-    }
-    .settings-row input[type="range"]::-webkit-slider-thumb:hover { background: var(--copper-light); }
-    .ram-value {
-      font-family: 'Orbitron', monospace; font-size: .78rem; font-weight: 700;
-      color: var(--copper-light); min-width: 36px; text-align: right;
-    }
-
-    /* ── INSTALL PATH ── */
-    .install-path-row {
-      display: flex; align-items: center; gap: 8px;
-    }
-    .install-path-display {
-      flex: 1; padding: 9px 12px; border-radius: 4px;
-      background: rgba(212,135,78,.04); border: 1px solid rgba(212,135,78,.1);
-      color: var(--steel); font-family: 'Rajdhani', sans-serif; font-size: .76rem;
-      font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
-      min-width: 0;
-    }
-    .btn-path {
-      background: transparent; color: var(--copper-light);
-      border: 1px solid rgba(212,135,78,.18); border-radius: 4px;
-      padding: 8px 12px; font-family: 'Rajdhani', sans-serif; font-size: .74rem;
-      font-weight: 600; cursor: pointer; transition: all .2s;
-      white-space: nowrap; letter-spacing: .5px;
-    }
-    .btn-path:hover { border-color: var(--copper); background: rgba(212,135,78,.06); }
-
-    /* ── JAVA ── */
-    .java-row {
-      display: flex; align-items: center; gap: 10px;
-    }
-    .java-status {
-      flex: 1; font-size: .7rem; font-weight: 600; letter-spacing: .8px;
-      padding: 2px 0; opacity: .6;
-    }
-    .java-ok { color: #81c784; opacity: 1; }
-    .java-error { color: #ef5350; opacity: 1; }
-
-    /* ── PROGRESS ── */
-    #progressBar {
-      height: 4px; background: rgba(212,135,78,.08);
-      border-radius: 3px; overflow: hidden; display: none;
-    }
-    #progressFill {
-      height: 100%; width: 0%;
-      background: linear-gradient(90deg, var(--copper-dark), var(--copper-light), var(--brass));
-      transition: width .4s ease; border-radius: 3px;
-      box-shadow: 0 0 8px var(--glow); position: relative;
-    }
-
-    /* ── STATUS ── */
-    #status {
-      font-size: .72rem; font-weight: 600; color: var(--steel);
-      text-align: center; min-height: 16px; letter-spacing: .5px;
-      transition: color .3s;
-    }
-
-    /* ── UPDATE BANNER ── */
-    .update-banner {
-      display: none; padding: 10px 16px; border-radius: 5px;
-      background: rgba(76,175,80,.08); border: 1px solid rgba(76,175,80,.2);
-      color: #81c784; font-size: .76rem; font-weight: 600;
-      letter-spacing: .5px; text-align: center;
-      animation: fadeSlideDown .5s ease-out;
-    }
-    .update-banner.warning {
-      background: rgba(255,167,38,.08); border-color: rgba(255,167,38,.2); color: #ffb74d;
-    }
-    .update-banner.error {
-      background: rgba(229,57,53,.08); border-color: rgba(229,57,53,.2); color: #ef5350;
-    }
-    .update-banner.visible { display: block; }
-
-    /* ── CONSOLE ── */
-    .console-header {
-      display: flex; align-items: center; justify-content: space-between;
-      flex-shrink: 0;
-    }
-    .console-clear {
-      background: none; border: 1px solid rgba(212,135,78,.12); color: var(--steel); cursor: pointer;
-      font-size: .6rem; font-family: 'Orbitron', monospace; letter-spacing: 1px;
-      opacity: .5; transition: all .2s; padding: 5px 12px; border-radius: 3px;
-    }
-    .console-clear:hover { opacity: 1; color: var(--copper-light); border-color: var(--copper); }
-
-    .console-output {
-      flex: 1;
-      background: rgba(0,0,0,.35); border: 1px solid rgba(212,135,78,.08);
-      border-radius: 4px; padding: 10px 12px;
-      font-family: 'Consolas', 'Courier New', monospace; font-size: .68rem;
-      color: #a0a8b0; line-height: 1.6;
-      overflow-y: auto; white-space: pre-wrap; word-break: break-all;
-      min-height: 0;
-    }
-    .console-output { user-select: text; -webkit-user-select: text; cursor: text; }
-    .console-output .log-info { color: #a0a8b0; }
-    .console-output .log-warn { color: #ffb74d; }
-    .console-output .log-error { color: #ef5350; }
-    .console-output .log-debug { color: #78909c; }
-    .console-output .log-system { color: var(--copper-light); font-weight: 600; }
-
-    /* ── VERSION BADGE ── */
-    .version-badge {
-      display: inline-flex; align-items: center; gap: 6px;
-      margin-top: 5px;
-      padding: 4px 14px;
-      background: rgba(212,135,78,.08);
-      border: 1px solid rgba(212,135,78,.18);
-      border-radius: 20px;
-      cursor: pointer;
-      transition: all .3s ease;
-      position: relative;
-    }
-    .version-badge:hover {
-      background: rgba(212,135,78,.15);
-      border-color: var(--copper);
-      box-shadow: 0 0 16px rgba(212,135,78,.15);
-      transform: translateY(-1px);
-    }
-    .version-badge .vb-tag {
-      font-family: 'Orbitron', monospace;
-      font-size: .56rem; font-weight: 700;
-      color: var(--copper-light);
-      letter-spacing: 1.5px;
-    }
-    .version-badge .vb-label {
-      font-family: 'Rajdhani', sans-serif;
-      font-size: .64rem; font-weight: 600;
-      color: var(--steel);
-      letter-spacing: .5px;
-    }
-    .version-badge .vb-new {
-      width: 6px; height: 6px;
-      background: #81c784;
-      border-radius: 50%;
-      animation: dotPulse 1.5s ease-in-out infinite;
-    }
-
-    /* ── PATCH NOTES MODAL ── */
-    .pn-overlay {
-      position: fixed; inset: 0;
-      background: rgba(4,6,10,.85);
-      backdrop-filter: blur(8px);
-      z-index: 100;
-      display: flex; align-items: center; justify-content: center;
-      opacity: 0; visibility: hidden;
-      transition: opacity .35s, visibility .35s;
-    }
-    .pn-overlay.open { opacity: 1; visibility: visible; }
-
-    .pn-modal {
-      background: var(--panel-bg);
-      border: 1px solid var(--panel-border);
-      border-radius: 8px;
-      width: 520px; max-height: 80vh;
-      display: flex; flex-direction: column;
-      box-shadow: 0 8px 60px rgba(0,0,0,.6), 0 0 40px rgba(212,135,78,.08);
-      transform: translateY(20px) scale(.97);
-      transition: transform .35s ease;
-      overflow: hidden;
-    }
-    .pn-overlay.open .pn-modal { transform: translateY(0) scale(1); }
-
-    .pn-modal-header {
-      display: flex; align-items: center; justify-content: space-between;
-      padding: 18px 24px 14px;
-      border-bottom: 1px solid rgba(212,135,78,.1);
-      flex-shrink: 0;
-    }
-    .pn-modal-title {
-      font-family: 'Orbitron', monospace;
-      font-size: .72rem; font-weight: 700;
-      color: var(--copper-light);
-      letter-spacing: 3px;
-    }
-    .pn-modal-version {
-      font-family: 'Orbitron', monospace;
-      font-size: .58rem; font-weight: 700;
-      color: var(--brass-light);
-      background: rgba(201,168,76,.1);
-      border: 1px solid rgba(201,168,76,.2);
-      padding: 3px 10px;
-      border-radius: 12px;
-      letter-spacing: 1px;
-    }
-    .pn-close {
-      background: none; border: 1px solid rgba(212,135,78,.12);
-      color: var(--steel); cursor: pointer;
-      width: 30px; height: 30px;
-      border-radius: 50%; font-size: .85rem;
-      display: flex; align-items: center; justify-content: center;
-      transition: all .2s;
-    }
-    .pn-close:hover { background: rgba(204,68,51,.1); border-color: #c43; color: #ef5350; }
-
-    .pn-body {
-      flex: 1; overflow-y: auto;
-      padding: 18px 24px 24px;
-      display: flex; flex-direction: column; gap: 18px;
-    }
-
-    .pn-date {
-      font-size: .64rem; color: var(--steel); opacity: .5;
-      font-weight: 600; letter-spacing: 1px;
-      text-align: center; margin-bottom: -6px;
-    }
-
-    /* ── Patch Category ── */
-    .pn-category {
-      display: flex; flex-direction: column; gap: 8px;
-    }
-    .pn-cat-header {
-      display: flex; align-items: center; gap: 8px;
-    }
-    .pn-cat-icon {
-      width: 22px; height: 22px;
-      border-radius: 5px;
-      display: flex; align-items: center; justify-content: center;
-      font-size: .7rem; flex-shrink: 0;
-    }
-    .pn-cat-icon.added { background: rgba(76,175,80,.12); color: #81c784; }
-    .pn-cat-icon.changed { background: rgba(255,167,38,.12); color: #ffb74d; }
-    .pn-cat-icon.fixed { background: rgba(100,180,255,.12); color: #64b5f6; }
-    .pn-cat-icon.removed { background: rgba(229,57,53,.12); color: #ef5350; }
-
-    .pn-cat-title {
-      font-family: 'Orbitron', monospace;
-      font-size: .52rem; font-weight: 700;
-      letter-spacing: 2.5px; text-transform: uppercase;
-    }
-    .pn-cat-title.added { color: #81c784; }
-    .pn-cat-title.changed { color: #ffb74d; }
-    .pn-cat-title.fixed { color: #64b5f6; }
-    .pn-cat-title.removed { color: #ef5350; }
-
-    .pn-cat-count {
-      font-family: 'Orbitron', monospace;
-      font-size: .48rem; font-weight: 700;
-      color: var(--steel); opacity: .4;
-      margin-left: auto;
-    }
-
-    .pn-entries {
-      display: flex; flex-direction: column; gap: 4px;
-      padding-left: 30px;
-    }
-    .pn-entry {
-      display: flex; align-items: flex-start; gap: 8px;
-      padding: 6px 10px;
-      background: rgba(255,255,255,.015);
-      border-radius: 4px;
-      border-left: 2px solid transparent;
-      transition: all .2s;
-    }
-    .pn-entry:hover {
-      background: rgba(212,135,78,.04);
-    }
-    .pn-entry.added { border-left-color: rgba(76,175,80,.4); }
-    .pn-entry.changed { border-left-color: rgba(255,167,38,.4); }
-    .pn-entry.fixed { border-left-color: rgba(100,180,255,.4); }
-    .pn-entry.removed { border-left-color: rgba(229,57,53,.4); }
-
-    .pn-entry-text {
-      font-size: .76rem; font-weight: 600;
-      color: #c8c5bd; line-height: 1.45;
-    }
-    .pn-entry-detail {
-      font-size: .66rem; color: var(--steel); opacity: .5;
-      margin-top: 1px;
-    }
-
-    /* ── FOOTER ── */
-    .footer-deco {
-      display: flex; align-items: center; gap: 8px; opacity: .15;
-      z-index: 1; flex-shrink: 0; justify-content: center; padding-top: 2px;
-    }
-    .footer-line { width: 30px; height: 1px; background: var(--copper); }
-    .footer-dot { width: 3px; height: 3px; background: var(--copper); border-radius: 50%; }
-  </style>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Sora:wght@600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="renderer/styles/main.css">
 </head>
 <body>
 
-  <!-- TITLE BAR -->
-  <div class="titlebar">
-    <span class="titlebar-label">CRETANIA LAUNCHER</span>
-    <div class="titlebar-btns">
-      <button id="btnMin" title="Minimizar">&#x2500;</button>
-      <button id="btnClose" class="close-btn" title="Cerrar">&#x2715;</button>
-    </div>
+<!-- â”€â”€ TITLEBAR â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ -->
+<div class="titlebar">
+  <div class="tb-left">
+    <img src="LOGO_CRETANIA_2.png" class="tb-logo" alt="" draggable="false"
+         onerror="this.style.display='none'">
+    <span class="tb-title">Lucerion Launcher</span>
   </div>
-
-  <div class="main-content">
-    <!-- GEARS BG -->
-    <div class="gears-container">
-      <svg class="gear gear-1" viewBox="0 0 100 100"><path d="M50 15 L53 5 L58 5 L55 15 A35 35 0 0 1 68 20 L75 12 L80 16 L72 24 A35 35 0 0 1 78 35 L88 33 L90 38 L80 40 A35 35 0 0 1 80 50 L90 53 L88 58 L78 55 A35 35 0 0 1 72 68 L80 75 L75 80 L68 72 A35 35 0 0 1 55 78 L58 88 L53 90 L50 80 A35 35 0 0 1 40 78 L38 88 L33 90 L35 80 A35 35 0 0 1 24 72 L16 80 L12 75 L20 68 A35 35 0 0 1 15 55 L5 58 L5 53 L15 50 A35 35 0 0 1 15 40 L5 38 L5 33 L15 35 A35 35 0 0 1 20 24 L12 16 L16 12 L24 20 A35 35 0 0 1 35 15 L33 5 L38 5 L40 15 A35 35 0 0 1 50 15Z"/><circle cx="50" cy="50" r="18"/></svg>
-      <svg class="gear gear-2" viewBox="0 0 100 100"><path d="M50 15 L53 5 L58 5 L55 15 A35 35 0 0 1 68 20 L75 12 L80 16 L72 24 A35 35 0 0 1 78 35 L88 33 L90 38 L80 40 A35 35 0 0 1 80 50 L90 53 L88 58 L78 55 A35 35 0 0 1 72 68 L80 75 L75 80 L68 72 A35 35 0 0 1 55 78 L58 88 L53 90 L50 80 A35 35 0 0 1 40 78 L38 88 L33 90 L35 80 A35 35 0 0 1 24 72 L16 80 L12 75 L20 68 A35 35 0 0 1 15 55 L5 58 L5 53 L15 50 A35 35 0 0 1 15 40 L5 38 L5 33 L15 35 A35 35 0 0 1 20 24 L12 16 L16 12 L24 20 A35 35 0 0 1 35 15 L33 5 L38 5 L40 15 A35 35 0 0 1 50 15Z"/><circle cx="50" cy="50" r="18"/></svg>
-      <svg class="gear gear-3" viewBox="0 0 100 100"><path d="M50 15 L53 5 L58 5 L55 15 A35 35 0 0 1 68 20 L75 12 L80 16 L72 24 A35 35 0 0 1 78 35 L88 33 L90 38 L80 40 A35 35 0 0 1 80 50 L90 53 L88 58 L78 55 A35 35 0 0 1 72 68 L80 75 L75 80 L68 72 A35 35 0 0 1 55 78 L58 88 L53 90 L50 80 A35 35 0 0 1 40 78 L38 88 L33 90 L35 80 A35 35 0 0 1 24 72 L16 80 L12 75 L20 68 A35 35 0 0 1 15 55 L5 58 L5 53 L15 50 A35 35 0 0 1 15 40 L5 38 L5 33 L15 35 A35 35 0 0 1 20 24 L12 16 L16 12 L24 20 A35 35 0 0 1 35 15 L33 5 L38 5 L40 15 A35 35 0 0 1 50 15Z"/><circle cx="50" cy="50" r="18"/></svg>
-      <svg class="gear gear-4" viewBox="0 0 100 100"><path d="M50 15 L53 5 L58 5 L55 15 A35 35 0 0 1 68 20 L75 12 L80 16 L72 24 A35 35 0 0 1 78 35 L88 33 L90 38 L80 40 A35 35 0 0 1 80 50 L90 53 L88 58 L78 55 A35 35 0 0 1 72 68 L80 75 L75 80 L68 72 A35 35 0 0 1 55 78 L58 88 L53 90 L50 80 A35 35 0 0 1 40 78 L38 88 L33 90 L35 80 A35 35 0 0 1 24 72 L16 80 L12 75 L20 68 A35 35 0 0 1 15 55 L5 58 L5 53 L15 50 A35 35 0 0 1 15 40 L5 38 L5 33 L15 35 A35 35 0 0 1 20 24 L12 16 L16 12 L24 20 A35 35 0 0 1 35 15 L33 5 L38 5 L40 15 A35 35 0 0 1 50 15Z"/><circle cx="50" cy="50" r="18"/></svg>
-    </div>
-    <div id="particles"></div>
-
-    <!-- HERO -->
-    <div class="hero-section">
-      <img class="logo-icon" src="LOGO_CRETANIA_2.png" alt="Cretania" draggable="false" />
-      <p class="subtitle">Mundo de Ingenieros</p>
-      <div class="version-badge" id="btnPatchNotes" title="Ver notas de parche">
-        <span class="vb-new" id="pnNewDot"></span>
-        <span class="vb-tag" id="pnVersionTag">v1.0.1</span>
-        <span class="vb-label">Notas de parche</span>
-      </div>
-    </div>
-
-    <!-- MAIN PANEL -->
-    <div class="panel">
-      <!-- TAB BAR -->
-      <div class="tab-bar">
-        <button class="tab-btn active" data-tab="home">&#9881; INICIO</button>
-        <button class="tab-btn" data-tab="settings">&#9881; AJUSTES</button>
-        <button class="tab-btn" data-tab="console">&#9002; CONSOLA <span class="tab-dot" id="consoleDot"></span></button>
-      </div>
-
-      <!-- TAB CONTENT -->
-      <div class="tab-content">
-        <!-- HOME TAB -->
-        <div class="tab-panel active" data-tab-panel="home">
-          <div class="section-label">CUENTAS</div>
-          <div class="account-section">
-            <div class="account-list" id="accountList">
-              <div class="no-accounts" id="noAccounts">Sin cuentas. Agrega una cuenta Microsoft para jugar.</div>
-            </div>
-            <button class="btn-add-account" id="btnAddAccount">+ Agregar cuenta Microsoft</button>
-          </div>
-
-          <!-- UPDATE BANNER -->
-          <div class="update-banner" id="updateBanner"></div>
-        </div>
-
-        <!-- SETTINGS TAB -->
-        <div class="tab-panel" data-tab-panel="settings" id="settingsPanel">
-          <div class="section-label">MEMORIA RAM</div>
-          <div class="settings-group">
-            <div class="settings-row">
-              <label>RAM mín.</label>
-              <input type="range" id="ramMin" min="1" max="8" step="1" value="2">
-              <span class="ram-value" id="ramMinVal">2G</span>
-            </div>
-            <div class="settings-row">
-              <label>RAM máx.</label>
-              <input type="range" id="ramMax" min="2" max="16" step="1" value="4">
-              <span class="ram-value" id="ramMaxVal">4G</span>
-            </div>
-          </div>
-
-          <div class="separator"></div>
-
-          <div class="section-label">CARPETA DE INSTALACIÓN</div>
-          <div class="install-path-row">
-            <div class="install-path-display" id="installPathDisplay" title="Haz clic en Cambiar para elegir otra carpeta">Por defecto</div>
-            <button class="btn-path" id="btnChangePath">Cambiar</button>
-            <button class="btn-path" id="btnOpenPath" title="Abrir carpeta">&#128194;</button>
-            <button class="btn-path" id="btnResetPath" title="Restablecer ruta por defecto">&#8634;</button>
-          </div>
-
-          <div class="separator"></div>
-
-          <div class="section-label">JAVA</div>
-          <div class="java-row">
-            <div class="java-status" id="javaStatus">Verificando Java…</div>
-            <button class="btn-path" id="btnInstallJava" style="display:none">Instalar Java 21</button>
-          </div>
-          <div id="javaProgress" style="display:none">
-            <div id="javaProgressBar" style="height:4px;background:rgba(212,135,78,.08);border-radius:3px;overflow:hidden;margin-top:6px">
-              <div id="javaProgressFill" style="height:100%;width:0%;background:linear-gradient(90deg,var(--copper-dark),var(--copper-light));transition:width .3s;border-radius:3px"></div>
-            </div>
-            <div id="javaProgressText" style="font-size:.66rem;color:var(--steel);margin-top:4px;text-align:center"></div>
-          </div>
-        </div>
-
-        <!-- CONSOLE TAB -->
-        <div class="tab-panel" data-tab-panel="console" id="consolePanel">
-          <div class="console-header">
-            <span class="section-label">CONSOLA DE MINECRAFT</span>
-            <button class="console-clear" id="btnConsoleClear">&#x2715; LIMPIAR</button>
-          </div>
-          <div class="console-output" id="consoleOutput"></div>
-        </div>
-      </div>
-
-      <!-- ACTION BAR (always visible) -->
-      <div class="action-bar">
-        <div class="action-buttons">
-          <button class="btn btn-launch" id="btnLaunch" disabled>&#9654; JUGAR</button>
-          <button class="btn btn-secondary" id="btnDownload">&#8595; Modpack</button>
-        </div>
-        <div id="progressBar"><div id="progressFill"></div></div>
-        <div id="status">Sistemas operativos.</div>
-      </div>
-    </div>
-
-    <div class="footer-deco">
-      <div class="footer-line"></div>
-      <div class="footer-dot"></div>
-      <div class="footer-line"></div>
-    </div>
+  <div class="tb-btns">
+    <button class="tb-btn" id="btnMin">&#x2500;</button>
+    <button class="tb-btn close" id="btnClose">&#x2715;</button>
   </div>
+</div>
 
-  <!-- PATCH NOTES MODAL -->
-  <div class="pn-overlay" id="pnOverlay">
-    <div class="pn-modal">
-      <div class="pn-modal-header">
-        <span class="pn-modal-title">NOTAS DE PARCHE</span>
-        <span class="pn-modal-version" id="pnModalVersion">v1.0.1</span>
-        <button class="pn-close" id="btnPnClose">&#x2715;</button>
+<!-- â”€â”€ SHELL â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ -->
+<div class="shell">
+
+  <!-- â”€â”€ SIDEBAR â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ -->
+  <aside class="sidebar">
+    <div class="sb-brand">
+      <div class="sb-brand-row">
+        <img src="LOGO_CRETANIA_2.png" class="sb-logo" alt="Cretania" draggable="false"
+             onerror="this.style.display='none'; document.getElementById('sbLogoFb').style.display='flex'">
+        <div id="sbLogoFb" class="sb-logo-fb" style="display:none">C</div>
+        <div class="sb-brand-text">
+          <div class="eyebrow">Launcher Modular</div>
+          <h1>Cretania</h1>
+        </div>
       </div>
-      <div class="pn-body" id="pnBody">
-        <!-- Populated by JS -->
+      <div class="version-chip" id="btnPatchNotes">
+        <span class="v-dot" id="pnDot" style="display:none"></span>
+        <span id="pnTag">v0.0.0</span>
+        <span style="color:var(--muted2)">Parche</span>
       </div>
     </div>
+
+    <div class="sb-scroll">
+      <!-- Accounts -->
+      <div>
+        <div class="sb-label">Cuentas</div>
+        <div id="accList"></div>
+        <div id="noAccounts" class="empty" style="padding:10px 0;text-align:left;display:none;font-size:11px">
+          Sin cuentas. Agrega una cuenta Microsoft.
+        </div>
+        <button class="btn-add-acc" id="btnAddAcc">+ Agregar cuenta</button>
+      </div>
+
+      <!-- Modpacks -->
+      <div>
+        <div class="sb-label">Modpacks</div>
+        <div id="sbMpList"></div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- â”€â”€ MAIN â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ -->
+  <div class="main">
+
+    <!-- â”€â”€ TAB BAR â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ -->
+    <div class="tabbar">
+      <button class="tab-btn active" data-tab="explore">&#9783; Explorar</button>
+      <button class="tab-btn" data-tab="settings">
+        &#9881; Ajustes
+        <span class="tab-badge" id="consoleDot"></span>
+      </button>
+    </div>
+
+    <!-- â”€â”€ VIEW WRAP â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ -->
+    <div class="view-wrap">
+
+      <!-- â”€â”€ EXPLORE VIEW â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ -->
+      <div class="view active" data-view="explore">
+        <!-- Update toast -->
+        <div class="up-toast" id="upToast"></div>
+
+        <!-- Browse sub-view -->
+        <div id="vBrowse">
+          <div class="search-bar">
+            <div class="search-wrap">
+              <span class="search-ico">&#128269;</span>
+              <input type="search" id="searchInput" class="search-input"
+                     placeholder="Buscar por nombre, loader, versión..."
+                     autocomplete="off" spellcheck="false">
+            </div>
+            <div class="search-pill" id="searchPill">0 packs</div>
+          </div>
+          <div class="mp-grid" id="mpGrid"></div>
+        </div>
+
+        <!-- Detail sub-view -->
+        <div id="vDetail" style="display:none">
+          <button class="det-back" id="btnBack">&#8592; Catálogo</button>
+
+          <div class="det-layout">
+
+            <!-- LEFT: hero + stats -->
+            <div class="det-left">
+              <div class="det-hero">
+                <div class="det-banner">
+                  <div class="det-banner-fb" id="detBannerFb"></div>
+                  <img id="detBannerImg" src="" alt="" style="display:none"
+                       onerror="this.style.display='none';document.getElementById('detBannerFb').style.display='flex'">
+                  <div class="det-banner-overlay"></div>
+                  <div class="det-hero-body">
+                    <div class="det-icon" id="detIcon"></div>
+                    <div class="det-meta">
+                      <div class="det-eyebrow" id="detEyebrow">Pack público</div>
+                      <div class="det-name" id="detName">Modpack</div>
+                      <div class="det-sub" id="detSub">Sin subtítulo</div>
+                      <div class="det-tag-row" id="detTags"></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Compact single stats card -->
+              <div class="det-stats-card">
+                <div class="dsc-stat">
+                  <span class="dsc-lbl">Mods</span>
+                  <span class="dsc-val dsc-blue" id="mMods">0</span>
+                </div>
+                <div class="dsc-div"></div>
+                <div class="dsc-stat">
+                  <span class="dsc-lbl">Loader</span>
+                  <span class="dsc-val dsc-purple" id="mLoader">-</span>
+                </div>
+                <div class="dsc-div"></div>
+                <div class="dsc-stat">
+                  <span class="dsc-lbl">Minecraft</span>
+                  <span class="dsc-val dsc-green" id="mMC">-</span>
+                </div>
+                <div class="dsc-div"></div>
+                <div class="dsc-stat">
+                  <span class="dsc-lbl">Versión</span>
+                  <span class="dsc-val" id="iVer">-</span>
+                </div>
+                <div class="dsc-div"></div>
+                <div class="dsc-stat">
+                  <span class="dsc-lbl">Acceso</span>
+                  <span class="dsc-val" id="iAcc">-</span>
+                </div>
+                <div class="dsc-div"></div>
+                <div class="dsc-stat">
+                  <span class="dsc-lbl">Instancia</span>
+                  <span class="dsc-val dsc-accent" id="mInstance">Inactiva</span>
+                </div>
+              </div>
+
+              <!-- Description -->
+              <div class="det-desc-card" id="detDescCard" style="display:none">
+                <div class="det-section-lbl">Descripción</div>
+                <p class="det-desc-text" id="detDesc"></p>
+              </div>
+
+              <!-- Gallery -->
+              <div class="det-gallery-wrap" id="detGalleryWrap" style="display:none">
+                <div class="det-section-lbl">Galería</div>
+                <div class="det-gallery" id="detGallery"></div>
+              </div>
+            </div>
+
+            <!-- RIGHT: actions + mods opcionales -->
+            <div class="det-right">
+              <button class="det-pn-btn" id="btnDetPatchNotes">
+                <span class="det-pn-ico">&#128221;</span>
+                <div class="det-pn-info">
+                  <span class="det-pn-lbl">Notas de Parche</span>
+                  <span class="det-pn-ver" id="detPnVer">v0.0.0</span>
+                </div>
+                <span class="det-pn-arrow">&#8594;</span>
+              </button>
+
+              <div class="access-banner ab-ok" id="accessBanner">
+                <span class="ab-ico" id="abIcon">&#10004;</span>
+                <span class="ab-text" id="abText">Acceso habilitado.</span>
+              </div>
+
+              <div id="optSection" style="display:none">
+                <div class="sec-head">
+                  Mods opcionales
+                  <span class="sec-count" id="optCount">0 seleccionados</span>
+                </div>
+                <div class="opt-list" id="optList"></div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+      <!-- â”€â”€ SETTINGS VIEW â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ -->
+      <div class="view" data-view="settings">
+        <div class="set-grid">
+          <!-- RAM -->
+          <div class="set-card">
+            <h3>Memoria RAM</h3>
+            <div class="set-row">
+              <label class="set-lbl" for="ramMin">RAM mínima</label>
+              <div class="slider-row">
+                <input type="range" id="ramMin" min="1" max="8" step="1" value="2">
+                <span class="ram-val" id="ramMinVal">2G</span>
+              </div>
+            </div>
+            <div class="set-row">
+              <label class="set-lbl" for="ramMax">RAM máxima</label>
+              <div class="slider-row">
+                <input type="range" id="ramMax" min="2" max="32" step="1" value="4">
+                <span class="ram-val" id="ramMaxVal">4G</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Path -->
+          <div class="set-card">
+            <h3>Ruta de instalación</h3>
+            <div class="path-disp" id="pathDisp">Por defecto (%APPDATA%/.cretania-minecraft)</div>
+            <div class="path-acts">
+              <button class="btn btn-solid btn-sm" id="btnChPath">Cambiar</button>
+              <button class="btn btn-solid btn-sm" id="btnOpBase">Abrir base</button>
+              <button class="btn btn-solid btn-sm" id="btnOpPack">Abrir pack</button>
+              <button class="btn btn-ghost btn-sm" id="btnRstPath">Restablecer</button>
+            </div>
+          </div>
+
+          <!-- Java -->
+          <div class="set-card">
+            <h3>Java</h3>
+            <div id="javaStatus" class="java-chk">Verificando Java...</div>
+            <button class="btn btn-solid btn-sm" id="btnJavaInst" style="display:none">Instalar Java 21</button>
+            <div id="javaProgress">
+              <div class="pbar-wrap"><div class="pbar-fill" id="javaPFill"></div></div>
+              <div class="pbar-text" id="javaPText"></div>
+            </div>
+          </div>
+
+          <!-- Pack info -->
+          <div class="set-card">
+            <h3>Pack activo</h3>
+            <p class="set-lbl" id="setPackInfo">Selecciona un modpack.</p>
+          </div>
+        </div>
+
+        <!-- Console -->
+        <div class="console-wrap">
+          <div class="console-head">
+            <span class="console-title">&#128187; Consola</span>
+            <button class="btn btn-ghost btn-sm" id="btnClrConsole">Limpiar</button>
+          </div>
+          <div class="console-out" id="consoleOut"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- â”€â”€ ACTION BAR â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ -->
+    <div class="action-bar">
+      <div class="ab-progress" id="abProgress">
+        <div class="pbar-wrap"><div class="pbar-fill" id="abFill"></div></div>
+      </div>
+      <div class="ab-bottom">
+        <span class="ab-status" id="abStatus">Listo.</span>
+        <button class="btn btn-solid" id="btnDownload">&#8659; Descargar</button>
+        <button class="btn btn-solid" id="btnRefresh">&#8635; Actualizar</button>
+        <button class="btn btn-primary" id="btnLaunch" disabled>&#9658; Jugar</button>
+      </div>
+    </div>
+
   </div>
-
-  <script>
-    const ipc = window.cretania;
-
-    // ── PARTICLES ────────────────────────────────────────────────────
-    const particlesEl = document.getElementById("particles");
-    function spawnParticle() {
-      const p = document.createElement("div");
-      p.className = "particle";
-      p.style.left = Math.random() * 100 + "%";
-      p.style.bottom = "-5px";
-      p.style.width = (1 + Math.random() * 3) + "px";
-      p.style.height = p.style.width;
-      p.style.animationDuration = (4 + Math.random() * 6) + "s";
-      particlesEl.appendChild(p);
-      setTimeout(() => p.remove(), 10000);
-    }
-    setInterval(spawnParticle, 350);
-
-    // ── REFS ─────────────────────────────────────────────────────────
-    const btnAddAccount = document.getElementById("btnAddAccount");
-    const btnLaunch = document.getElementById("btnLaunch");
-    const btnDownload = document.getElementById("btnDownload");
-    const accountListEl = document.getElementById("accountList");
-    const noAccountsEl = document.getElementById("noAccounts");
-    const statusEl = document.getElementById("status");
-    const progressBar = document.getElementById("progressBar");
-    const progressFill = document.getElementById("progressFill");
-    const ramMinSlider = document.getElementById("ramMin");
-    const ramMaxSlider = document.getElementById("ramMax");
-    const ramMinVal = document.getElementById("ramMinVal");
-    const ramMaxVal = document.getElementById("ramMaxVal");
-    const updateBanner = document.getElementById("updateBanner");
-    const installPathDisplay = document.getElementById("installPathDisplay");
-    const javaStatusEl = document.getElementById("javaStatus");
-    const btnInstallJava = document.getElementById("btnInstallJava");
-    const javaProgressEl = document.getElementById("javaProgress");
-    const javaProgressFill = document.getElementById("javaProgressFill");
-    const javaProgressText = document.getElementById("javaProgressText");
-    const consoleDot = document.getElementById("consoleDot");
-
-    let selectedAccount = null;
-    let accounts = [];
-
-    function setStatus(msg) { statusEl.textContent = msg; }
-    function setLoading(on) {
-      btnLaunch.disabled = on || !selectedAccount;
-      btnDownload.disabled = on;
-      btnAddAccount.disabled = on;
-    }
-
-    // ── WINDOW CONTROLS ──────────────────────────────────────────────
-    document.getElementById("btnMin").addEventListener("click", () => ipc.send("win-minimize"));
-    document.getElementById("btnClose").addEventListener("click", () => ipc.send("win-close"));
-
-    // ── TAB NAVIGATION ───────────────────────────────────────────────
-    const tabBtns = document.querySelectorAll(".tab-btn");
-    const tabPanels = document.querySelectorAll(".tab-panel");
-
-    function switchTab(tabName) {
-      tabBtns.forEach(btn => {
-        btn.classList.toggle("active", btn.dataset.tab === tabName);
-      });
-      tabPanels.forEach(panel => {
-        panel.classList.toggle("active", panel.dataset.tabPanel === tabName);
-      });
-      if (tabName === "console") {
-        consoleDot.classList.remove("visible");
-      }
-    }
-
-    tabBtns.forEach(btn => {
-      btn.addEventListener("click", () => switchTab(btn.dataset.tab));
-    });
-
-    // ── SETTINGS ─────────────────────────────────────────────────────
-    async function loadSettings() {
-      const s = await ipc.invoke("get-settings");
-      ramMinSlider.value = s.ramMin || 2;
-      ramMaxSlider.value = s.ramMax || 4;
-      ramMinVal.textContent = ramMinSlider.value + "G";
-      ramMaxVal.textContent = ramMaxSlider.value + "G";
-      installPathDisplay.textContent = s.gameDir && s.gameDir.trim() ? s.gameDir : "Por defecto (%APPDATA%/.cretania-minecraft)";
-      installPathDisplay.title = s.gameDir && s.gameDir.trim() ? s.gameDir : "Carpeta por defecto";
-    }
-
-    async function saveSettings() {
-      const currentSettings = await ipc.invoke("get-settings");
-      await ipc.invoke("save-settings", {
-        ramMin: parseInt(ramMinSlider.value),
-        ramMax: parseInt(ramMaxSlider.value),
-        width: 1280, height: 720,
-        gameDir: currentSettings.gameDir || ""
-      });
-    }
-
-    ramMinSlider.addEventListener("input", () => {
-      if (parseInt(ramMinSlider.value) > parseInt(ramMaxSlider.value)) {
-        ramMaxSlider.value = ramMinSlider.value;
-        ramMaxVal.textContent = ramMaxSlider.value + "G";
-      }
-      ramMinVal.textContent = ramMinSlider.value + "G";
-      saveSettings();
-    });
-    ramMaxSlider.addEventListener("input", () => {
-      if (parseInt(ramMaxSlider.value) < parseInt(ramMinSlider.value)) {
-        ramMinSlider.value = ramMaxSlider.value;
-        ramMinVal.textContent = ramMinSlider.value + "G";
-      }
-      ramMaxVal.textContent = ramMaxSlider.value + "G";
-      saveSettings();
-    });
-
-    // ── INSTALL PATH ─────────────────────────────────────────────────
-    document.getElementById("btnChangePath").addEventListener("click", async () => {
-      const result = await ipc.invoke("select-game-dir");
-      if (result.cancelled) return;
-      const currentSettings = await ipc.invoke("get-settings");
-      currentSettings.gameDir = result.path;
-      await ipc.invoke("save-settings", currentSettings);
-      installPathDisplay.textContent = result.path;
-      installPathDisplay.title = result.path;
-      setStatus("Carpeta de instalación cambiada.");
-    });
-
-    document.getElementById("btnOpenPath").addEventListener("click", () => {
-      ipc.invoke("open-game-dir");
-    });
-
-    document.getElementById("btnResetPath").addEventListener("click", async () => {
-      const currentSettings = await ipc.invoke("get-settings");
-      currentSettings.gameDir = "";
-      await ipc.invoke("save-settings", currentSettings);
-      installPathDisplay.textContent = "Por defecto (%APPDATA%/.cretania-minecraft)";
-      installPathDisplay.title = "Carpeta por defecto";
-      setStatus("Carpeta restablecida al valor por defecto.");
-    });
-
-    // ── ACCOUNTS ─────────────────────────────────────────────────────
-    function renderAccounts() {
-      accountListEl.querySelectorAll(".account-item").forEach(el => el.remove());
-
-      if (accounts.length === 0) {
-        noAccountsEl.style.display = "block";
-        btnLaunch.disabled = true;
-        selectedAccount = null;
-        return;
-      }
-
-      noAccountsEl.style.display = "none";
-
-      if (!selectedAccount || !accounts.find(a => a.uuid === selectedAccount)) {
-        selectedAccount = accounts[0].uuid;
-      }
-
-      accounts.forEach(acc => {
-        const el = document.createElement("div");
-        el.className = "account-item" + (acc.uuid === selectedAccount ? " selected" : "");
-
-        const avatar = document.createElement("div");
-        avatar.className = "account-avatar";
-        avatar.textContent = acc.name.charAt(0).toUpperCase();
-
-        const name = document.createElement("div");
-        name.className = "account-name";
-        name.textContent = acc.name;
-
-        const badge = document.createElement("span");
-        badge.className = "account-badge badge-premium";
-        badge.textContent = "PREMIUM";
-
-        const removeBtn = document.createElement("button");
-        removeBtn.className = "account-remove";
-        removeBtn.textContent = "\u2715";
-        removeBtn.title = "Eliminar cuenta";
-        removeBtn.addEventListener("click", async (e) => {
-          e.stopPropagation();
-          await ipc.invoke("remove-account", acc.uuid);
-          await refreshAccounts();
-        });
-
-        el.appendChild(avatar);
-        el.appendChild(name);
-        el.appendChild(badge);
-        el.appendChild(removeBtn);
-
-        el.addEventListener("click", () => {
-          selectedAccount = acc.uuid;
-          renderAccounts();
-          btnLaunch.disabled = false;
-        });
-
-        accountListEl.appendChild(el);
-      });
-
-      btnLaunch.disabled = !selectedAccount;
-    }
-
-    async function refreshAccounts() {
-      accounts = await ipc.invoke("get-accounts");
-      accounts = accounts.filter(a => !a.offline);
-      renderAccounts();
-    }
-
-    // ── ADD ACCOUNT ──────────────────────────────────────────────────
-    btnAddAccount.addEventListener("click", async () => {
-      btnAddAccount.disabled = true;
-      setStatus("Abriendo login de Microsoft\u2026");
-      try {
-        const result = await ipc.invoke("login-microsoft");
-        setStatus("Cuenta agregada: " + result.profile.name);
-        await refreshAccounts();
-      } catch (err) {
-        setStatus("Error: " + err.message);
-      }
-      btnAddAccount.disabled = false;
-    });
-
-    // ── PROGRESS ─────────────────────────────────────────────────────
-    ipc.on("progress", (data) => {
-      if (data.phase === "verify") {
-        const pct = Math.round((data.current / data.total) * 100);
-        progressBar.style.display = "block";
-        progressFill.style.width = pct + "%";
-        const pendingText = data.pending > 0 ? " (" + data.pending + " pendientes)" : "";
-        setStatus("Verificando mods\u2026 " + data.current + "/" + data.total + pendingText);
-        appendConsole("[UPDATER] Verificando " + data.current + "/" + data.total + (data.mod ? " \u2014 " + data.mod : "") + pendingText, "system");
-      } else if (data.phase === "check") {
-        if (data.total === 0) {
-          setStatus("\u2713 Todos los mods est\u00e1n actualizados.");
-          appendConsole("[UPDATER] \u2713 Todos los mods verificados. Sin cambios necesarios.", "system");
-        } else {
-          setStatus("Actualizando componentes\u2026 (" + data.total + " pendientes)");
-          appendConsole("[UPDATER] " + data.total + " mod(s) necesitan descarga.", "system");
-        }
-        progressBar.style.display = data.total > 0 ? "block" : "none";
-        progressFill.style.width = "0%";
-      } else if (data.phase === "download" || data.phase === "copy") {
-        const pct = Math.round((data.current / data.total) * 100);
-        progressFill.style.width = pct + "%";
-        const action = data.phase === "copy" ? "Copiando" : "Descargando";
-        setStatus(action + " " + data.mod + " (" + data.current + "/" + data.total + ")");
-        appendConsole("[UPDATER] " + action + " " + data.mod + " (" + data.current + "/" + data.total + ")", "info");
-      } else if (data.phase === "status") {
-        setStatus(data.message);
-        appendConsole("[UPDATER] " + data.message, "system");
-      } else if (data.phase === "done") {
-        progressFill.style.width = "100%";
-        setStatus("Encendiendo motores\u2026");
-        appendConsole("[UPDATER] Sincronizaci\u00f3n completa.", "system");
-      }
-    });
-
-    ipc.on("log", (msg) => {
-      console.log("[MC]", msg);
-      appendConsole(msg, "info");
-    });
-
-    ipc.on("mc-closed", (code) => {
-      if (code === 0) {
-        setStatus("Minecraft cerrado correctamente.");
-        appendConsole("[LAUNCHER] Minecraft cerrado correctamente.", "system");
-      } else {
-        setStatus("Minecraft cerr\u00f3 con error (c\u00f3digo " + code + "). Revisa que tienes Java 21+ y suficiente RAM.");
-        showBanner("Minecraft cerr\u00f3 con error. Verifica Java 21+ y RAM en Ajustes.", "error");
-        appendConsole("[LAUNCHER] Minecraft cerr\u00f3 con c\u00f3digo " + code, "error");
-      }
-      setLoading(false);
-    });
-
-    // ── LAUNCH ───────────────────────────────────────────────────────
-    btnLaunch.addEventListener("click", async () => {
-      if (!selectedAccount) return;
-      setLoading(true);
-
-      // Última verificación de actualizaciones antes de lanzar
-      setStatus("Verificando actualizaciones\u2026");
-      appendConsole("[LAUNCHER] Verificando actualizaciones antes de lanzar\u2026", "system");
-      try {
-        const upd = await ipc.invoke("check-updates");
-        if (upd && upd.hasUpdate) {
-          showBanner("\u26a0 Nueva versi\u00f3n v" + upd.remoteVersion + " detectada. Actualizando mods al lanzar\u2026", "warning");
-          appendConsole("[LAUNCHER] Nueva versi\u00f3n detectada: v" + upd.remoteVersion, "system");
-        }
-        // También refrescar patch notes y badge
-        loadPatchNotes();
-      } catch (e) {
-        console.warn("Pre-launch update check failed:", e);
-      }
-
-      setStatus("Preparando lanzamiento\u2026");
-      appendConsole("[LAUNCHER] Preparando lanzamiento\u2026", "system");
-      try {
-        await ipc.invoke("launch", { accountUuid: selectedAccount });
-        setStatus("\u00a1Buen viaje, ingeniero! \u2699");
-        appendConsole("[LAUNCHER] Minecraft iniciado.", "system");
-      } catch (err) {
-        setStatus("Error: " + err.message);
-        appendConsole("[LAUNCHER] ERROR: " + err.message, "error");
-        if (err.message.includes("Java") || err.message.includes("java")) {
-          showBanner("Error con Java: " + err.message, "error");
-          checkJava();
-          switchTab("settings");
-        }
-        setLoading(false);
-      }
-    });
-
-    // ── DOWNLOAD MODPACK ─────────────────────────────────────────────
-    btnDownload.addEventListener("click", async () => {
-      setLoading(true);
-      setStatus("Selecciona destino\u2026");
-      try {
-        const result = await ipc.invoke("download-modpack");
-        if (result.cancelled) {
-          setStatus("Descarga cancelada.");
-        } else {
-          setStatus("Modpack descargado \u2192 " + result.folder);
-        }
-      } catch (err) {
-        setStatus("Error: " + err.message);
-      }
-      setLoading(false);
-    });
-
-    // ── UPDATE BANNER ────────────────────────────────────────────────
-    function showBanner(msg, type = "info") {
-      updateBanner.textContent = msg;
-      updateBanner.className = "update-banner visible" + (type !== "info" ? " " + type : "");
-      // Ensure home tab is active to see the banner
-      switchTab("home");
-    }
-
-    async function checkForUpdates() {
-      try {
-        const result = await ipc.invoke("check-updates");
-        if (result.error) return;
-        if (result.hasUpdate) {
-          showBanner("\u26a0 Nueva versi\u00f3n del modpack disponible (v" + result.remoteVersion + "). Se actualizar\u00e1 al jugar.", "warning");
-        } else if (result.isFirstRun) {
-          showBanner("Modpack v" + result.remoteVersion + " \u2014 " + result.modCount + " mods. \u00a1Listo para jugar!");
-        }
-      } catch (err) {
-        console.warn("Update check failed:", err);
-      }
-    }
-
-    // ── JAVA CHECK & INSTALL ────────────────────────────────────────
-    async function checkJava() {
-      try {
-        const info = await ipc.invoke("check-java");
-        if (info.found) {
-          javaStatusEl.textContent = "\u2713 Java " + info.version + " detectado";
-          javaStatusEl.className = "java-status java-ok";
-          btnInstallJava.style.display = "none";
-          javaProgressEl.style.display = "none";
-        } else {
-          javaStatusEl.textContent = "\u2717 Java 21+ no encontrado";
-          javaStatusEl.className = "java-status java-error";
-          btnInstallJava.style.display = "inline-block";
-          showBanner("Java 21+ no detectado. Se instalar\u00e1 autom\u00e1ticamente al jugar, o puedes instalarlo desde Ajustes.", "warning");
-        }
-      } catch (err) {
-        javaStatusEl.textContent = "No se pudo verificar Java";
-        javaStatusEl.className = "java-status";
-        btnInstallJava.style.display = "inline-block";
-      }
-    }
-
-    btnInstallJava.addEventListener("click", async () => {
-      btnInstallJava.disabled = true;
-      btnInstallJava.textContent = "Instalando\u2026";
-      javaProgressEl.style.display = "block";
-      javaProgressFill.style.width = "0%";
-      // Switch to settings tab to show progress
-      switchTab("settings");
-      try {
-        const result = await ipc.invoke("install-java");
-        javaStatusEl.textContent = "\u2713 Java " + result.version + " instalado correctamente";
-        javaStatusEl.className = "java-status java-ok";
-        btnInstallJava.style.display = "none";
-        javaProgressEl.style.display = "none";
-        showBanner("\u2713 Java " + result.version + " instalado correctamente. \u00a1Listo para jugar!");
-        updateBanner.className = "update-banner visible";
-      } catch (err) {
-        javaStatusEl.textContent = "\u2717 Error: " + err.message;
-        javaStatusEl.className = "java-status java-error";
-        btnInstallJava.disabled = false;
-        btnInstallJava.textContent = "Reintentar";
-        showBanner("Error instalando Java: " + err.message, "error");
-      }
-    });
-
-    ipc.on("java-install-progress", (data) => {
-      javaProgressEl.style.display = "block";
-      javaProgressFill.style.width = data.percent + "%";
-      javaProgressText.textContent = data.message;
-      setStatus(data.message);
-    });
-
-    // ── MC CONSOLE ────────────────────────────────────────────────────
-    const consoleOutput = document.getElementById("consoleOutput");
-    const btnConsoleClear = document.getElementById("btnConsoleClear");
-    const MAX_CONSOLE_LINES = 500;
-    let consoleLineCount = 0;
-
-    btnConsoleClear.addEventListener("click", () => {
-      consoleOutput.innerHTML = "";
-      consoleLineCount = 0;
-    });
-
-    function appendConsole(text, type) {
-      const line = document.createElement("div");
-      line.className = "log-" + classifyLog(text, type);
-      line.textContent = text;
-      consoleOutput.appendChild(line);
-      consoleLineCount++;
-      // Trim old lines if too many
-      while (consoleLineCount > MAX_CONSOLE_LINES) {
-        if (consoleOutput.firstChild) consoleOutput.removeChild(consoleOutput.firstChild);
-        consoleLineCount--;
-      }
-      // Auto-scroll to bottom
-      consoleOutput.scrollTop = consoleOutput.scrollHeight;
-      // Show notification dot on console tab if not currently active
-      const consoleTabPanel = document.querySelector('[data-tab-panel="console"]');
-      if (!consoleTabPanel.classList.contains("active") && consoleDot) {
-        consoleDot.classList.add("visible");
-      }
-    }
-
-    function classifyLog(text, defaultType) {
-      if (defaultType === "system") return "system";
-      if (defaultType === "error") return "error";
-      const lower = text.toLowerCase();
-      if (lower.includes("error") || lower.includes("exception") || lower.includes("crash")) return "error";
-      if (lower.includes("warn")) return "warn";
-      if (lower.includes("debug") || lower.includes("[debug]")) return "debug";
-      return "info";
-    }
-
-    // ── PATCH NOTES (loaded from manifest) ───────────────────────────
-    let patchNotesData = [];  // loaded from remote manifest
-    let patchNotesVersion = "";
-
-    const pnOverlay = document.getElementById("pnOverlay");
-    const pnBody = document.getElementById("pnBody");
-    const btnPatchNotes = document.getElementById("btnPatchNotes");
-    const pnNewDot = document.getElementById("pnNewDot");
-    const PN_SEEN_KEY = "cretania_last_seen_pn";
-
-    async function loadPatchNotes() {
-      try {
-        const result = await ipc.invoke("get-patch-notes");
-        patchNotesData = result.patchNotes || [];
-        patchNotesVersion = result.version || "";
-        document.getElementById("pnVersionTag").textContent = patchNotesVersion ? "v" + patchNotesVersion : "";
-        checkPnBadge();
-      } catch (err) {
-        console.warn("Failed to load patch notes:", err);
-      }
-    }
-
-    function renderPatchNotes() {
-      pnBody.innerHTML = "";
-      const latestVersion = patchNotesData[0]?.version || patchNotesVersion || "";
-      document.getElementById("pnVersionTag").textContent = latestVersion ? "v" + latestVersion : "";
-      document.getElementById("pnModalVersion").textContent = latestVersion ? "v" + latestVersion : "";
-
-      if (patchNotesData.length === 0) {
-        const empty = document.createElement("div");
-        empty.className = "pn-date";
-        empty.style.padding = "24px 0";
-        empty.textContent = "No hay notas de parche disponibles.";
-        pnBody.appendChild(empty);
-        return;
-      }
-
-      patchNotesData.forEach((pn, idx) => {
-        if (idx > 0) {
-          const sep = document.createElement("div");
-          sep.className = "separator";
-          sep.style.margin = "4px 0";
-          pnBody.appendChild(sep);
-          const verLabel = document.createElement("div");
-          verLabel.style.cssText = "font-family:'Orbitron',monospace;font-size:.56rem;font-weight:700;color:var(--copper-light);letter-spacing:2px;text-align:center;margin-top:4px";
-          verLabel.textContent = "v" + pn.version;
-          pnBody.appendChild(verLabel);
-        }
-
-        const dateEl = document.createElement("div");
-        dateEl.className = "pn-date";
-        dateEl.textContent = pn.date || "";
-        pnBody.appendChild(dateEl);
-
-        (pn.categories || []).forEach(cat => {
-          const catDiv = document.createElement("div");
-          catDiv.className = "pn-category";
-
-          const header = document.createElement("div");
-          header.className = "pn-cat-header";
-
-          const icon = document.createElement("div");
-          icon.className = "pn-cat-icon " + (cat.type || "added");
-          icon.textContent = cat.icon || "+";
-
-          const title = document.createElement("div");
-          title.className = "pn-cat-title " + (cat.type || "added");
-          title.textContent = cat.title || "";
-
-          const count = document.createElement("div");
-          count.className = "pn-cat-count";
-          count.textContent = (cat.entries || []).length;
-
-          header.appendChild(icon);
-          header.appendChild(title);
-          header.appendChild(count);
-          catDiv.appendChild(header);
-
-          const entriesDiv = document.createElement("div");
-          entriesDiv.className = "pn-entries";
-
-          (cat.entries || []).forEach(entry => {
-            const entryEl = document.createElement("div");
-            entryEl.className = "pn-entry " + (cat.type || "added");
-
-            const textEl = document.createElement("div");
-            textEl.className = "pn-entry-text";
-            textEl.textContent = entry.text || "";
-            entryEl.appendChild(textEl);
-
-            if (entry.detail) {
-              const detailEl = document.createElement("div");
-              detailEl.className = "pn-entry-detail";
-              detailEl.textContent = entry.detail;
-              entryEl.appendChild(detailEl);
-            }
-
-            entriesDiv.appendChild(entryEl);
-          });
-
-          catDiv.appendChild(entriesDiv);
-          pnBody.appendChild(catDiv);
-        });
-      });
-    }
-
-    function openPatchNotes() {
-      renderPatchNotes();
-      pnOverlay.classList.add("open");
-      const latestVersion = patchNotesData[0]?.version || patchNotesVersion || "";
-      try { localStorage.setItem(PN_SEEN_KEY, latestVersion); } catch(e) {}
-      pnNewDot.style.display = "none";
-    }
-
-    function closePatchNotes() {
-      pnOverlay.classList.remove("open");
-    }
-
-    btnPatchNotes.addEventListener("click", openPatchNotes);
-    document.getElementById("btnPnClose").addEventListener("click", closePatchNotes);
-    pnOverlay.addEventListener("click", (e) => {
-      if (e.target === pnOverlay) closePatchNotes();
-    });
-
-    function checkPnBadge() {
-      const latestVersion = patchNotesData[0]?.version || patchNotesVersion || "";
-      if (!latestVersion) { pnNewDot.style.display = "none"; return; }
-      try {
-        const seen = localStorage.getItem(PN_SEEN_KEY);
-        pnNewDot.style.display = (seen !== latestVersion) ? "block" : "none";
-      } catch(e) { pnNewDot.style.display = "block"; }
-    }
-
-    // ── INIT ─────────────────────────────────────────────────────────
-    let _lastFocusCheck = 0;
-    (async () => {
-      await loadSettings();
-      await refreshAccounts();
-      checkForUpdates();
-      checkJava();
-      loadPatchNotes();
-
-      // Polling: revisar actualizaciones y patch notes cada 5 minutos
-      setInterval(() => {
-        checkForUpdates();
-        loadPatchNotes();
-      }, 5 * 60 * 1000);
-
-      // También revisar al recuperar el foco (máx cada 60s)
-      window.addEventListener("focus", () => {
-        const now = Date.now();
-        if (now - _lastFocusCheck > 60_000) {
-          _lastFocusCheck = now;
-          checkForUpdates();
-          loadPatchNotes();
-        }
-      });
-    })();
-  </script>
+</div>
+
+<!-- â”€â”€ PATCH NOTES OVERLAY â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ -->
+<div class="overlay" id="pnOverlay">
+  <div class="ovl-modal">
+    <div class="ovl-head">
+      <span class="ovl-title">Notas de parche</span>
+      <button class="ovl-close" id="btnPnClose">&#x2715;</button>
+    </div>
+    <div class="ovl-body" id="pnBody"></div>
+  </div>
+</div>
+
+<script type="module" src="renderer/app.js"></script>
 </body>
 </html>

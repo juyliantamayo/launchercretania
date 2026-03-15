@@ -1,7 +1,7 @@
 {
-  "name": "mc-launcher-cretania",
+  "name": "lucerion-launcher",
   "version": "1.0.0",
-  "description": "Launcher Minecraft privado para Cretania",
+  "description": "Launcher Minecraft privado para Lucerion",
   "main": "main.js",
   "scripts": {
     "start": "electron .",
@@ -25,8 +25,8 @@
     "sharp": "^0.34.5"
   },
   "build": {
-    "appId": "com.cretania.launcher",
-    "productName": "Cretania Launcher",
+    "appId": "com.lucerion.launcher",
+    "productName": "Lucerion Launcher",
     "asar": false,
     "directories": {
       "output": "dist"
@@ -50,7 +50,7 @@
       ]
     },
     "portable": {
-      "artifactName": "CretaniaLauncher.exe"
+      "artifactName": "LucerionLauncher.exe"
     }
   }
 }

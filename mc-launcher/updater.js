@@ -1,14 +1,12 @@
 /**
- * updater.js — Actualizador diferencial de mods
+ * updater.js — Actualizador diferencial de contenido del modpack
  *
- * Características:
- *  - Descarga sólo los mods que cambiaron (comparación SHA1)
- *  - Soporta copia local cuando no hay URL remota configurada
- *  - Elimina mods que ya no están en el manifest
- *  - Descargas paralelas (límite 3 simultáneas)
- *  - Reintentos con backoff exponencial (3 intentos)
- *  - Validación SHA1 post-descarga/copia
- *  - Eventos de progreso (para mostrar en UI)
+ * Soporta:
+ *  - Modpacks múltiples con backward compatibility
+ *  - Mods opcionales
+ *  - Mods, resourcepacks, datasources, datapacks y archivos de folders/
+ *  - Descarga/copia diferencial por SHA1
+ *  - Limpieza de archivos obsoletos administrados por el launcher
  */
 
 const axios = require("axios");
@@ -16,45 +14,175 @@ const fs = require("fs-extra");
 const crypto = require("crypto");
 const path = require("path");
 const EventEmitter = require("events");
+const { parseManifestPayload } = require("./manifest-crypto");
 
-// ─── CONFIGURACIÓN ────────────────────────────────────────────────────────────
-// Pon la URL raw de tu manifest.json en GitHub Releases:
-// Ejemplo: https://github.com/TU_USUARIO/my-modpack/releases/latest/download/manifest.json
-//
-// Mientras no configures la URL, el launcher usará el manifest local y copiará los mods
-// directamente desde my-modpack/mods/ al directorio del juego.
+function isDevMode() {
+  try { return !require("electron").app.isPackaged; } catch { return false; }
+}
+
 const MANIFEST_URL =
   process.env.MANIFEST_URL ||
-  "https://github.com/juyliantamayo/launchercretania/releases/download/modpack-v1.0.0/manifest.json";
+  "https://github.com/juyliantamayo/launchercretania/releases/download/modpack-v1.0.0/manifest.enc";
 
-// Ruta a la carpeta local de mods del modpack
-// En desarrollo: ../my-modpack  |  En build: process.resourcesPath/my-modpack
 const LOCAL_MODPACK_DIR = (() => {
-  // Cuando está empaquetado con electron-builder, los extraResources van a resourcesPath
   const packed = path.join(process.resourcesPath || "", "my-modpack");
   if (fs.existsSync(packed)) return packed;
-  // Desarrollo: carpeta hermana
   return path.join(__dirname, "..", "my-modpack");
 })();
 
-const MAX_PARALLEL = 3;   // descargas/copias simultáneas máximas
-const MAX_RETRIES = 3;    // reintentos por archivo
-// ─────────────────────────────────────────────────────────────────────────────
+const MAX_PARALLEL = 3;
+const MAX_RETRIES = 3;
+const SYNC_STATE_FILE = ".launcher-sync-state.json";
 
-/** Calcula el SHA1 de un archivo local */
+function uniqueValues(values) {
+  return [...new Set(values.filter(Boolean))];
+}
+
+function getRemoteManifestCandidates() {
+  if (!MANIFEST_URL) return [];
+
+  if (MANIFEST_URL.endsWith("manifest.enc")) {
+    return uniqueValues([MANIFEST_URL, MANIFEST_URL.replace(/manifest\.enc$/, "manifest.json")]);
+  }
+
+  if (MANIFEST_URL.endsWith("manifest.json")) {
+    return uniqueValues([MANIFEST_URL.replace(/manifest\.json$/, "manifest.enc"), MANIFEST_URL]);
+  }
+
+  return [MANIFEST_URL];
+}
+
+function getLocalManifestCandidates() {
+  return uniqueValues([
+    path.join(LOCAL_MODPACK_DIR, "manifest.enc"),
+    path.join(LOCAL_MODPACK_DIR, "manifest.json")
+  ]);
+}
+
+function getManifestBaseUrl(manifestUrl) {
+  return String(manifestUrl || "").replace(/\/manifest\.(enc|json)(\?.*)?$/i, "");
+}
+
 function sha1File(filePath) {
   const data = fs.readFileSync(filePath);
   return crypto.createHash("sha1").update(data).digest("hex");
 }
 
-/** Descarga un archivo con reintentos y backoff exponencial */
+function normalizePath(filePath) {
+  return String(filePath || "").replace(/\\/g, "/").replace(/^\.\//, "");
+}
+
+function normalizeManifest(data) {
+  const launcher = data.launcher || {};
+
+  if (data.formatVersion === 2 && Array.isArray(data.modpacks)) {
+    return {
+      ...data,
+      launcher: {
+        version: launcher.version || "1.0.0",
+      assetName: launcher.assetName || "LucerionLauncher.exe",
+      releaseApiUrl: launcher.releaseApiUrl || "",
+      patchNotes: Array.isArray(launcher.patchNotes) ? launcher.patchNotes : []
+      }
+    };
+  }
+
+  return {
+    formatVersion: 2,
+    launcher: {
+      version: launcher.version || data.launcherVersion || "1.0.0",
+      assetName: launcher.assetName || "LucerionLauncher.exe",
+      releaseApiUrl: launcher.releaseApiUrl || "",
+      patchNotes: Array.isArray(launcher.patchNotes) ? launcher.patchNotes : []
+    },
+    modpacks: [{
+      id: "default",
+      name: data.name || "Modpack",
+      subtitle: "",
+      image: "",
+      public: true,
+      allowedUuids: [],
+      baseUrl: "",
+      version: data.version || "1.0.0",
+      minecraft: data.minecraft || "1.20.1",
+      loader: data.loader || "fabric",
+      loaderType: data.loaderType || data.loader || "fabric",
+      loaderVersion: data.loaderVersion || "0.18.4",
+      mods: data.mods || [],
+      optionalMods: data.optionalMods || [],
+      resourcepacks: data.resourcepacks || [],
+      datasources: data.datasources || [],
+      datapacks: data.datapacks || [],
+      folders: data.folders || [],
+      patchNotes: data.patchNotes || []
+    }]
+  };
+}
+
+async function fetchManifest(gameDir, emitter = new EventEmitter()) {
+  const remoteCandidates = getRemoteManifestCandidates();
+  const isRemote = !isDevMode() && remoteCandidates.length > 0 && !remoteCandidates[0].includes("TU_USUARIO");
+  const cachedManifestPath = path.join(gameDir, "manifest-cache.json");
+  let raw;
+
+  if (isRemote) {
+    emitter.emit("progress", { phase: "status", message: "Descargando lista de archivos..." });
+
+    for (const candidate of remoteCandidates) {
+      try {
+        const manifestUrl = `${candidate}${candidate.includes("?") ? "&" : "?"}t=${Date.now()}`;
+        const { data } = await axios.get(manifestUrl, {
+          timeout: 15000,
+          headers: { "Cache-Control": "no-cache" }
+        });
+        raw = parseManifestPayload(data);
+        try {
+          await fs.ensureDir(gameDir);
+          fs.writeFileSync(cachedManifestPath, JSON.stringify(raw, null, 2));
+        } catch (cacheErr) {
+          console.warn("[updater] No se pudo cachear manifest:", cacheErr.message);
+        }
+        break;
+      } catch (err) {
+        console.warn(`[updater] No se pudo descargar manifest remoto (${candidate}):`, err.message);
+      }
+    }
+
+    if (!raw) {
+      emitter.emit("progress", { phase: "status", message: "⚠ Error descargando manifest remoto." });
+      if (fs.existsSync(cachedManifestPath)) {
+        emitter.emit("progress", { phase: "status", message: "Usando manifest cacheado..." });
+        raw = JSON.parse(fs.readFileSync(cachedManifestPath, "utf-8"));
+      }
+    }
+  }
+
+  if (!raw) {
+    for (const localManifest of getLocalManifestCandidates()) {
+      if (fs.existsSync(localManifest)) {
+        emitter.emit("progress", { phase: "status", message: "Usando manifest local..." });
+        raw = parseManifestPayload(fs.readFileSync(localManifest, "utf-8"));
+        break;
+      }
+    }
+  }
+
+  if (!raw) {
+    emitter.emit("progress", { phase: "status", message: "⚠ No se pudo obtener la lista de archivos." });
+    emitter.emit("progress", { phase: "done", current: 0, total: 0 });
+    return { manifest: null, isRemote };
+  }
+
+  return { manifest: normalizeManifest(raw), isRemote };
+}
+
 async function downloadWithRetry(url, destPath, retries = MAX_RETRIES) {
   let lastError;
   for (let attempt = 1; attempt <= retries; attempt++) {
     try {
       const response = await axios.get(url, {
         responseType: "arraybuffer",
-        timeout: 30_000
+        timeout: 30000
       });
       await fs.ensureDir(path.dirname(destPath));
       fs.writeFileSync(destPath, Buffer.from(response.data));
@@ -62,32 +190,32 @@ async function downloadWithRetry(url, destPath, retries = MAX_RETRIES) {
     } catch (err) {
       lastError = err;
       if (attempt < retries) {
-        const delay = 1000 * Math.pow(2, attempt - 1); // 1s, 2s, 4s
+        const delay = 1000 * Math.pow(2, attempt - 1);
         console.warn(`[updater] Reintento ${attempt}/${retries} para ${url} en ${delay}ms`);
-        await new Promise((r) => setTimeout(r, delay));
+        await new Promise((resolve) => setTimeout(resolve, delay));
       }
     }
   }
   throw new Error(`No se pudo descargar ${url}: ${lastError.message}`);
 }
 
-/** Limita concurrencia a N promesas simultáneas (tolerante a fallos individuales) */
 async function limitedParallel(tasks, limit) {
   const results = [];
   const running = new Set();
 
   for (const task of tasks) {
-    const p = task()
-      .then((res) => {
-        running.delete(p);
-        return { status: "fulfilled", value: res };
+    const promise = task()
+      .then((value) => {
+        running.delete(promise);
+        return { status: "fulfilled", value };
       })
-      .catch((err) => {
-        running.delete(p);
-        return { status: "rejected", reason: err };
+      .catch((reason) => {
+        running.delete(promise);
+        return { status: "rejected", reason };
       });
-    running.add(p);
-    results.push(p);
+
+    running.add(promise);
+    results.push(promise);
 
     if (running.size >= limit) {
       await Promise.race(running);
@@ -97,118 +225,165 @@ async function limitedParallel(tasks, limit) {
   return Promise.all(results);
 }
 
-/**
- * Sincroniza la carpeta de mods con el manifest remoto o local.
- *
- * @param {string} gameDir   — ruta raíz de .minecraft
- * @param {EventEmitter} [emitter] — opcional, emite eventos "progress"
- *
- * Eventos emitidos:
- *   progress { phase: 'check'|'download'|'copy'|'done', current, total, mod }
- */
-async function syncMods(gameDir, emitter = new EventEmitter()) {
-  const isRemote = MANIFEST_URL && !MANIFEST_URL.includes("TU_USUARIO");
-  const cachedManifestPath = path.join(gameDir, "manifest-cache.json");
+function loadSyncState(gameDir) {
+  const statePath = path.join(gameDir, SYNC_STATE_FILE);
+  try {
+    if (fs.existsSync(statePath)) {
+      const parsed = JSON.parse(fs.readFileSync(statePath, "utf-8"));
+      return Array.isArray(parsed.files) ? parsed.files : [];
+    }
+  } catch (err) {
+    console.warn("[updater] No se pudo leer sync-state:", err.message);
+  }
+  return [];
+}
 
-  // 1. Descargar manifest (remoto o local)
-  let manifest;
+function saveSyncState(gameDir, files) {
+  const statePath = path.join(gameDir, SYNC_STATE_FILE);
+  fs.writeFileSync(statePath, JSON.stringify({ files }, null, 2));
+}
 
-  if (isRemote) {
+async function removeEmptyParents(targetPath, stopDir) {
+  let currentDir = path.dirname(targetPath);
+  const rootDir = path.resolve(stopDir);
+
+  while (currentDir.startsWith(rootDir) && currentDir !== rootDir) {
     try {
-      console.log("[updater] Descargando manifest remoto...");
-      emitter.emit("progress", { phase: "status", message: "Descargando lista de mods…" });
-      // Cache-busting: GitHub CDN puede cachear assets viejos por varios minutos
-      const manifestUrl = `${MANIFEST_URL}${MANIFEST_URL.includes("?") ? "&" : "?"}t=${Date.now()}`;
-      const { data } = await axios.get(manifestUrl, {
-        timeout: 15_000,
-        headers: { "Cache-Control": "no-cache" }
+      const entries = await fs.readdir(currentDir);
+      if (entries.length > 0) return;
+      await fs.remove(currentDir);
+      currentDir = path.dirname(currentDir);
+    } catch {
+      return;
+    }
+  }
+}
+
+function createSyncEntries(modpack, enabledOptionalMods) {
+  const enabledSet = new Set(enabledOptionalMods || []);
+  const entries = [];
+
+  const pushEntries = (items, kind, targetResolver) => {
+    for (const item of items || []) {
+      const file = normalizePath(item.file);
+      entries.push({
+        ...item,
+        kind,
+        file,
+        targetRelativePath: targetResolver(file)
       });
-      manifest = data;
-      // Cache manifest locally for offline use
-      try {
-        await fs.ensureDir(gameDir);
-        fs.writeFileSync(cachedManifestPath, JSON.stringify(data, null, 2));
-        console.log("[updater] Manifest cacheado localmente.");
-      } catch (cacheErr) {
-        console.warn("[updater] No se pudo cachear manifest:", cacheErr.message);
-      }
-    } catch (err) {
-      console.warn("[updater] No se pudo descargar manifest remoto:", err.message);
-      emitter.emit("progress", { phase: "status", message: "⚠ Error descargando manifest: " + err.message });
-      // Try cached manifest
-      if (fs.existsSync(cachedManifestPath)) {
-        console.log("[updater] Usando manifest cacheado.");
-        emitter.emit("progress", { phase: "status", message: "Usando manifest cacheado…" });
-        manifest = JSON.parse(fs.readFileSync(cachedManifestPath, "utf-8"));
-      }
     }
+  };
+
+  pushEntries(modpack.mods || [], "mods", (file) => `mods/${path.basename(file)}`);
+  pushEntries(
+    (modpack.optionalMods || []).filter((item) => enabledSet.has(item.id)),
+    "mods",
+    (file) => `mods/${path.basename(file)}`
+  );
+  pushEntries(modpack.resourcepacks || [], "resourcepacks", (file) => normalizePath(file));
+  pushEntries(modpack.datasources || [], "datasources", (file) => normalizePath(file));
+  pushEntries(modpack.datapacks || [], "datapacks", (file) => normalizePath(file));
+  pushEntries(modpack.folders || [], "folders", (file) => normalizePath(file).replace(/^folders\//, ""));
+
+  return entries;
+}
+
+async function syncMods(gameDir, emitter = new EventEmitter(), options = {}) {
+  const { modpackId, enabledOptionalMods = [] } = options;
+  const { manifest: fullManifest, isRemote } = await fetchManifest(gameDir, emitter);
+
+  if (!fullManifest) {
+    return { minecraft: "1.20.1", loader: "fabric", loaderVersion: "0.18.4", mods: [], _noManifest: true };
   }
 
-  // Fallback: manifest local
-  if (!manifest) {
-    const localManifest = path.join(LOCAL_MODPACK_DIR, "manifest.json");
-    if (fs.existsSync(localManifest)) {
-      console.log("[updater] Usando manifest local:", localManifest);
-      emitter.emit("progress", { phase: "status", message: "Usando manifest local…" });
-      manifest = JSON.parse(fs.readFileSync(localManifest, "utf-8"));
-    } else {
-      console.warn("[updater] Sin manifest disponible. Lanzando sin mods.");
-      emitter.emit("progress", { phase: "status", message: "⚠ No se pudo obtener la lista de mods. Verifica tu conexión a internet." });
-      emitter.emit("progress", { phase: "done", current: 0, total: 0 });
-      return { minecraft: "1.20.1", loader: "fabric", loaderVersion: "0.18.4", mods: [], _noManifest: true };
-    }
+  let modpack = modpackId
+    ? fullManifest.modpacks.find((entry) => entry.id === modpackId)
+    : fullManifest.modpacks[0];
+
+  if (!modpack) modpack = fullManifest.modpacks[0];
+  if (!modpack) {
+    emitter.emit("progress", { phase: "done", current: 0, total: 0 });
+    return { minecraft: "1.20.1", loader: "fabric", loaderVersion: "0.18.4", mods: [], _noManifest: true };
   }
 
-  const modsDir = path.join(gameDir, "mods");
-  await fs.ensureDir(modsDir);
+  const baseUrl = modpack.baseUrl || getManifestBaseUrl(MANIFEST_URL);
+  const syncEntries = createSyncEntries(modpack, enabledOptionalMods);
+  const managedFiles = new Set(syncEntries.map((entry) => entry.targetRelativePath));
+  const previousManagedFiles = loadSyncState(gameDir);
+  const appliedFiles = new Set();
 
-  // 2. Construir lista de archivos esperados (solo basename)
-  const expectedFiles = new Set(
-    manifest.mods.map((m) => path.basename(m.file))
+  const manifest = {
+    version: modpack.version,
+    minecraft: modpack.minecraft,
+    loader: modpack.loader,
+    loaderType: modpack.loaderType || modpack.loader,
+    loaderVersion: modpack.loaderVersion,
+    mods: syncEntries.filter((entry) => entry.kind === "mods"),
+    resourcepacks: syncEntries.filter((entry) => entry.kind === "resourcepacks"),
+    datasources: syncEntries.filter((entry) => entry.kind === "datasources"),
+    datapacks: syncEntries.filter((entry) => entry.kind === "datapacks"),
+    folders: syncEntries.filter((entry) => entry.kind === "folders"),
+    patchNotes: modpack.patchNotes,
+    _modpackId: modpack.id
+  };
+
+  await fs.ensureDir(gameDir);
+  await fs.ensureDir(path.join(gameDir, "mods"));
+
+  const expectedModFiles = new Set(
+    manifest.mods.map((entry) => path.basename(entry.file))
   );
 
-  // 3. Eliminar mods locales que ya no están en el manifest
-  const localFiles = await fs.readdir(modsDir);
-  for (const file of localFiles) {
-    if (file.endsWith(".jar") && !expectedFiles.has(file)) {
+  const localModFiles = await fs.readdir(path.join(gameDir, "mods"));
+  for (const file of localModFiles) {
+    if (file.endsWith(".jar") && !expectedModFiles.has(file)) {
       console.log("[updater] Eliminando mod obsoleto:", file);
-      await fs.remove(path.join(modsDir, file));
+      await fs.remove(path.join(gameDir, "mods", file));
     }
   }
 
-  // 4. Filtrar mods con SHA1 placeholder y determinar qué necesitan actualización
-  const validMods = manifest.mods.filter(
-    (m) => m.sha1 && !m.sha1.includes("PUT_REAL") && m.sha1 !== ""
+  for (const staleRelativePath of previousManagedFiles) {
+    if (managedFiles.has(staleRelativePath)) continue;
+    const absolutePath = path.join(gameDir, staleRelativePath);
+    if (await fs.pathExists(absolutePath)) {
+      console.log("[updater] Eliminando archivo obsoleto:", staleRelativePath);
+      await fs.remove(absolutePath);
+      await removeEmptyParents(absolutePath, gameDir);
+    }
+  }
+
+  const validEntries = syncEntries.filter(
+    (entry) => entry.sha1 && !String(entry.sha1).includes("PUT_REAL") && String(entry.sha1).trim() !== ""
   );
 
-  // Emit verification start
   emitter.emit("progress", {
     phase: "verify",
     current: 0,
-    total: validMods.length,
+    total: validEntries.length,
     mod: ""
   });
 
   const toSync = [];
-  for (let i = 0; i < validMods.length; i++) {
-    const mod = validMods[i];
-    const destPath = path.join(modsDir, path.basename(mod.file));
+  for (let index = 0; index < validEntries.length; index++) {
+    const entry = validEntries[index];
+    const destPath = path.join(gameDir, entry.targetRelativePath);
     let needsSync = true;
 
-    if (fs.existsSync(destPath)) {
+    if (await fs.pathExists(destPath)) {
       const localHash = sha1File(destPath);
-      needsSync = localHash.toLowerCase() !== mod.sha1.toLowerCase();
+      needsSync = localHash.toLowerCase() !== String(entry.sha1).toLowerCase();
+      if (!needsSync) appliedFiles.add(entry.targetRelativePath);
     }
 
-    if (needsSync) toSync.push(mod);
+    if (needsSync) toSync.push(entry);
 
-    // Emit verification progress every 5 mods (or on last one) to avoid flooding
-    if ((i + 1) % 5 === 0 || i === validMods.length - 1) {
+    if ((index + 1) % 5 === 0 || index === validEntries.length - 1) {
       emitter.emit("progress", {
         phase: "verify",
-        current: i + 1,
-        total: validMods.length,
-        mod: mod.id,
+        current: index + 1,
+        total: validEntries.length,
+        mod: entry.id,
         pending: toSync.length
       });
     }
@@ -221,71 +396,66 @@ async function syncMods(gameDir, emitter = new EventEmitter()) {
   });
 
   if (toSync.length === 0) {
+    saveSyncState(gameDir, Array.from(managedFiles).sort());
     console.log("[updater] Todo actualizado. Sin cambios necesarios.");
     emitter.emit("progress", { phase: "done", current: 0, total: 0 });
     return manifest;
   }
 
-  console.log(`[updater] Sincronizando ${toSync.length} mod(s)...`);
+  console.log(`[updater] Sincronizando ${toSync.length} archivo(s)...`);
 
-  // 5. Sincronizar: copiar localmente O descargar desde remoto
   let synced = 0;
   const failed = [];
 
-  const results = await limitedParallel(
-    toSync.map((mod) => async () => {
-      const destPath = path.join(modsDir, path.basename(mod.file));
-
+  await limitedParallel(
+    toSync.map((entry) => async () => {
+      const destPath = path.join(gameDir, entry.targetRelativePath);
       try {
         if (isRemote) {
-          // ── MODO REMOTO: descargar desde URL ──
-          const baseUrl = MANIFEST_URL.replace(/\/manifest\.json$/, "");
-          const url = mod.url || `${baseUrl}/${path.basename(mod.file)}`;
-          console.log("[updater] Descargando:", mod.id, "→", url);
+          const url = entry.url || `${baseUrl}/${path.basename(entry.file)}`;
+          console.log("[updater] Descargando:", entry.id, "→", url);
           await downloadWithRetry(url, destPath);
         } else {
-          // ── MODO LOCAL: copiar desde my-modpack/mods/ ──
-          const sourcePath = path.join(LOCAL_MODPACK_DIR, mod.file);
-          if (!fs.existsSync(sourcePath)) {
-            throw new Error(`Mod no encontrado localmente: ${sourcePath}`);
+          const sourcePath = path.join(LOCAL_MODPACK_DIR, entry.file);
+          if (!await fs.pathExists(sourcePath)) {
+            throw new Error(`Archivo no encontrado localmente: ${sourcePath}`);
           }
-          console.log("[updater] Copiando:", mod.id, "→", destPath);
+          console.log("[updater] Copiando:", entry.id, "→", destPath);
           await fs.ensureDir(path.dirname(destPath));
           await fs.copy(sourcePath, destPath, { overwrite: true });
         }
 
-        // 6. Validar SHA1 post-copia/descarga
         const resultHash = sha1File(destPath);
-        if (resultHash.toLowerCase() !== mod.sha1.toLowerCase()) {
+        if (resultHash.toLowerCase() !== String(entry.sha1).toLowerCase()) {
           await fs.remove(destPath);
-          throw new Error(
-            `SHA1 inválido para ${mod.id}: esperado ${mod.sha1}, obtenido ${resultHash}`
-          );
+          throw new Error(`SHA1 inválido para ${entry.id}: esperado ${entry.sha1}, obtenido ${resultHash}`);
         }
 
+        appliedFiles.add(entry.targetRelativePath);
         synced++;
-        console.log(`[updater] ✓ ${mod.id} (${synced}/${toSync.length})`);
+        console.log(`[updater] ✓ ${entry.id} (${synced}/${toSync.length})`);
         emitter.emit("progress", {
           phase: isRemote ? "download" : "copy",
           current: synced,
           total: toSync.length,
-          mod: mod.id
+          mod: entry.id
         });
       } catch (err) {
-        console.error(`[updater] ✗ Error con ${mod.id}: ${err.message}`);
-        failed.push({ mod: mod.id, error: err.message });
-        // Emit progress for this one too (so the counter advances)
+        console.error(`[updater] ✗ Error con ${entry.id}: ${err.message}`);
+        failed.push({ mod: entry.id, error: err.message, kind: entry.kind });
         synced++;
         emitter.emit("progress", {
           phase: isRemote ? "download" : "copy",
           current: synced,
           total: toSync.length,
-          mod: mod.id + " (ERROR)"
+          mod: `${entry.id} (ERROR)`
         });
       }
     }),
     MAX_PARALLEL
   );
+
+  saveSyncState(gameDir, Array.from(new Set([...Array.from(appliedFiles), ...Array.from(managedFiles)])).sort());
 
   emitter.emit("progress", {
     phase: "done",
@@ -294,8 +464,7 @@ async function syncMods(gameDir, emitter = new EventEmitter()) {
   });
 
   if (failed.length > 0) {
-    console.warn(`[updater] ${failed.length} mod(s) fallaron:`, failed.map(f => f.mod).join(", "));
-    // Attach failed list to manifest so the caller can report it
+    console.warn(`[updater] ${failed.length} archivo(s) fallaron:`, failed.map((entry) => entry.mod).join(", "));
     manifest._failedMods = failed;
   }
 
@@ -303,4 +472,4 @@ async function syncMods(gameDir, emitter = new EventEmitter()) {
   return manifest;
 }
 
-module.exports = { syncMods };
+module.exports = { syncMods, fetchManifest, normalizeManifest, getManifestBaseUrl };

@@ -63,9 +63,9 @@ describe("Window Controls (frameless)", () => {
 describe("Tab Navigation", () => {
   test("tiene tabs de INICIO, AJUSTES y CONSOLA", () => {
     expect(html).toContain("tab-btn");
-    expect(html).toMatch(/INICIO/i);
-    expect(html).toMatch(/AJUSTES/i);
-    expect(html).toMatch(/CONSOLA/i);
+    expect(html).toMatch(/Inicio/i);
+    expect(html).toMatch(/Ajustes/i);
+    expect(html).toMatch(/Consola/i);
   });
 
   test("tiene contenido para cada tab", () => {
@@ -148,6 +148,22 @@ describe("Account System UI", () => {
 
   test("usa IPC remove-account", () => {
     expect(html).toContain("remove-account");
+  });
+});
+
+describe("Modpack & Optional Mods UI", () => {
+  test("tiene contenedor para lista de modpacks", () => {
+    expect(html).toContain("modpackList");
+  });
+
+  test("tiene contenedor para mods opcionales", () => {
+    expect(html).toContain("optionalModsList");
+    expect(html).toContain("save-optional-mods");
+  });
+
+  test("usa IPC get-modpacks y get-optional-mods", () => {
+    expect(html).toContain("get-modpacks");
+    expect(html).toContain("get-optional-mods");
   });
 });
 
@@ -237,11 +253,11 @@ describe("IPC Integration (script integrity)", () => {
 // ═══════════════════════════════════════════════════════════════════════════════
 describe("Styles", () => {
   test("tiene CSS embebido con variables de tema", () => {
-    expect(html).toMatch(/--copper|--brass|--dark|--bg/i);
+    expect(html).toMatch(/--accent|--cyan|--bg/i);
   });
 
-  test("tiene fuente Orbitron (steampunk)", () => {
-    expect(html).toContain("Orbitron");
+  test("tiene tipografias personalizadas", () => {
+    expect(html).toMatch(/Sora|Space Grotesk/);
   });
 
   test("tiene estilos para patch notes modal", () => {
@@ -258,15 +274,8 @@ describe("Styles", () => {
 // TEST SUITE: CSS Categories for Patch Notes
 // ═══════════════════════════════════════════════════════════════════════════════
 describe("Patch Notes CSS categories", () => {
-  test("tiene estilos para categoría added", () => {
-    expect(html).toMatch(/\.pn-cat-icon\.added|\.pn-entry\.added/);
-  });
-
-  test("tiene estilos para categoría changed", () => {
-    expect(html).toMatch(/\.pn-cat-icon\.changed|\.pn-entry\.changed/);
-  });
-
-  test("tiene estilos para categoría fixed", () => {
-    expect(html).toMatch(/\.pn-cat-icon\.fixed|\.pn-entry\.fixed/);
+  test("tiene estilos base para el modal de notas", () => {
+    expect(html).toContain(".pn-entry");
+    expect(html).toContain(".pn-cat-title");
   });
 });
