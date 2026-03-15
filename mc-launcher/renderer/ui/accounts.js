@@ -1,6 +1,7 @@
 // Accounts sidebar rendering
 import { S, ini } from "../state.js";
 import { updateLaunch } from "./actionbar.js";
+import { showBrowse } from "./explore.js";
 
 const $ = id => document.getElementById(id);
 
@@ -24,9 +25,15 @@ export function renderAccs() {
 
     el.querySelector(".acc-rm").addEventListener("click", async e => {
       e.stopPropagation();
+      const wasSelected = a.uuid === S.selectedAcc;
       await window.cretania.invoke("remove-account", a.uuid);
-      const { refreshAccs } = await import("../data.js");
+      const { refreshAccs, refreshPacks } = await import("../data.js");
       await refreshAccs();
+      if (wasSelected) {
+        S.selectedId = null;
+        showBrowse();
+      }
+      await refreshPacks();
     });
 
     el.addEventListener("click", async () => {

@@ -5,8 +5,6 @@
       "id": "cretania",
       "name": "Cretania",
       "subtitle": "Mundo de Ingenieros",
-      "description": "Modpack de supervivencia técnica con más de 200 mods orientados a ingeniería, automatización y construcción. Incluye Create, Applied Energistics 2, Botania y docenas de mods de optimización y calidad de vida.",
-      "gallery": [],
       "image": "LOGO_CRETANIA_2.png",
       "public": true,
       "allowedUuids": [],
@@ -1489,7 +1487,48 @@
             }
           ]
         }
-      ]
+      ],
+      "allowUserMods": false,
+      "description": "Modpack de supervivencia técnica con más de 200 mods orientados a ingeniería, automatización y construcción. Incluye Create, Applied Energistics 2, Botania y docenas de mods de optimización y calidad de vida.",
+      "gallery": []
+    },
+    {
+      "id": "cretania-dev",
+      "name": "Cretania Dev",
+      "subtitle": "Build privado — solo juliantamayo19",
+      "description": "Versión de desarrollo privada del modpack Cretania. Acceso exclusivo para el administrador.",
+      "gallery": [],
+      "allowUserMods": true,
+      "image": "LOGO_CRETANIA_2.png",
+      "public": false,
+      "allowedUuids": [
+        "dfe1c19246c5463c8cfe9c3f77cfcd7b"
+      ],
+      "baseUrl": "https://github.com/juyliantamayo/launchercretania/releases/download/modpack-v1.0.0",
+      "version": "1.0.7",
+      "minecraft": "1.20.1",
+      "loader": "fabric",
+      "loaderType": "fabric",
+      "loaderVersion": "0.18.4",
+      "mods": []
+    },
+    {
+      "id": "cretania-custom",
+      "name": "Cretania Custom",
+      "subtitle": "Modpack abierto — agregá tus propios mods",
+      "description": "Versión pública del modpack sin lista de mods forzada. Podés subir tus propios JARs y jugar con mods personalizados.",
+      "gallery": [],
+      "image": "LOGO_CRETANIA_2.png",
+      "public": true,
+      "allowUserMods": true,
+      "allowedUuids": [],
+      "baseUrl": "https://github.com/juyliantamayo/launchercretania/releases/download/modpack-v1.0.0",
+      "version": "1.0.0",
+      "minecraft": "1.20.1",
+      "loader": "fabric",
+      "loaderType": "fabric",
+      "loaderVersion": "0.18.4",
+      "mods": []
     }
   ],
   "launcher": {

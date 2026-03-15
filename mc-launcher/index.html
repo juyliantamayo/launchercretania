@@ -11,15 +11,19 @@
 </head>
 <body>
 
-<!-- â”€â”€ TITLEBAR â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ -->
+<!-- STARS CANVAS -->
+<canvas id="starsCanvas" class="stars-canvas"></canvas>
+
+<!-- â"€â"€ TITLEBAR â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€ -->
 <div class="titlebar">
   <div class="tb-left">
-    <img src="LOGO_CRETANIA_2.png" class="tb-logo" alt="" draggable="false"
+    <img src="logoLucerion.png" class="tb-logo" alt="" draggable="false"
          onerror="this.style.display='none'">
-    <span class="tb-title">Lucerion Launcher</span>
+    <span class="tb-title"><span class="tb-brand">LUCERION</span> LAUNCHER</span>
   </div>
   <div class="tb-btns">
     <button class="tb-btn" id="btnMin">&#x2500;</button>
+    <button class="tb-btn" id="btnMax">&#x25A1;</button>
     <button class="tb-btn close" id="btnClose">&#x2715;</button>
   </div>
 </div>
@@ -30,21 +34,13 @@
   <!-- â”€â”€ SIDEBAR â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ -->
   <aside class="sidebar">
     <div class="sb-brand">
-      <div class="sb-brand-row">
-        <img src="LOGO_CRETANIA_2.png" class="sb-logo" alt="Cretania" draggable="false"
-             onerror="this.style.display='none'; document.getElementById('sbLogoFb').style.display='flex'">
-        <div id="sbLogoFb" class="sb-logo-fb" style="display:none">C</div>
-        <div class="sb-brand-text">
-          <div class="eyebrow">Launcher Modular</div>
-          <h1>Cretania</h1>
+        <img src="logoLucerion.png" class="sb-brand-logo" alt="Lucerion Studios" draggable="false">
+        <div class="version-chip" id="btnPatchNotes">
+          <span class="v-dot" id="pnDot" style="display:none"></span>
+          <span id="pnTag">v0.0.0</span>
+          <span style="color:var(--muted2)">Parche</span>
         </div>
       </div>
-      <div class="version-chip" id="btnPatchNotes">
-        <span class="v-dot" id="pnDot" style="display:none"></span>
-        <span id="pnTag">v0.0.0</span>
-        <span style="color:var(--muted2)">Parche</span>
-      </div>
-    </div>
 
     <div class="sb-scroll">
       <!-- Accounts -->
@@ -62,6 +58,13 @@
         <div class="sb-label">Modpacks</div>
         <div id="sbMpList"></div>
       </div>
+    </div>
+    <!-- Sidebar footer icons -->
+    <div class="sb-footer">
+      <button class="sb-foot-btn" id="sbBtnSettings" title="Ajustes">&#9881;</button>
+      <button class="sb-foot-btn" id="sbBtnAccounts" title="Cuentas">&#128100;</button>
+      <button class="sb-foot-btn" id="sbBtnAddAcc2" title="Agregar cuenta">&#43;</button>
+      <button class="sb-foot-btn" id="sbBtnMenu" title="Men&uacute;">&#9776;</button>
     </div>
   </aside>
 
@@ -191,6 +194,12 @@
                 <div class="sec-head">
                   Mods opcionales
                   <span class="sec-count" id="optCount">0 seleccionados</span>
+                  <button class="btn-upload-jar" id="btnUploadJar" title="Subir mod JAR propio">&#43; JAR</button>
+                </div>
+                <div class="opt-search-wrap">
+                  <span class="opt-search-ico">&#128269;</span>
+                  <input class="opt-search-input" id="optSearch" type="text" placeholder="Buscar mod..." autocomplete="off" spellcheck="false">
+                  <button class="opt-search-clear" id="optSearchClear" style="display:none">&#10005;</button>
                 </div>
                 <div class="opt-list" id="optList"></div>
               </div>
@@ -291,5 +300,6 @@
 </div>
 
 <script type="module" src="renderer/app.js"></script>
+<script src="stars.js"></script>
 </body>
 </html>

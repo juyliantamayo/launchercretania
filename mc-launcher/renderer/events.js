@@ -19,8 +19,16 @@ const $   = id => document.getElementById(id);
 export function initEvents() {
 
   // Window controls
-  $("btnMin").addEventListener("click",   () => ipc.send("win-minimize"));
-  $("btnClose").addEventListener("click", () => ipc.send("win-close"));
+  $('btnMin').addEventListener('click',   () => ipc.send('win-minimize'));
+  $('btnMax').addEventListener('click',   () => ipc.send('win-maximize'));
+  $('btnClose').addEventListener('click', () => ipc.send('win-close'));
+
+  // Sidebar footer: settings shortcut
+  const sbSettings = $('sbBtnSettings');
+  if (sbSettings) sbSettings.addEventListener('click', () => switchTab('settings'));
+  // Sidebar footer: add account shortcut
+  const sbAdd = $('sbBtnAddAcc2');
+  if (sbAdd) sbAdd.addEventListener('click', () => $('btnAddAcc')?.click());
 
   // Search
   $("searchInput").addEventListener("input", () => {

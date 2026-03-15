@@ -22,6 +22,8 @@ const INVOKE_CHANNELS = [
   "get-modpacks",
   "get-optional-mods",
   "save-optional-mods",
+  "pick-and-upload-user-mod",
+  "delete-user-mod",
   "get-instance-status",
   "launch",
   "download-modpack",
@@ -32,11 +34,14 @@ const INVOKE_CHANNELS = [
   "get-modpacks",
   "get-optional-mods",
   "save-optional-mods",
+  "pick-and-upload-user-mod",
+  "delete-user-mod",
   "get-instance-status"
 ];
 
 const SEND_CHANNELS = [
   "win-minimize",
+  "win-maximize",
   "win-close"
 ];
 

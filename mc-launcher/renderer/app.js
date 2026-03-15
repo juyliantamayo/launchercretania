@@ -29,15 +29,12 @@ async function init() {
   await checkJava();
   await loadPatchNotes();
 
-  // Restore last selected pack from settings
+  // Restore last selected pack from settings — stay on grid so all packs are visible
   if (S.settings.selectedModpack && S.modpacks.find(p => p.id === S.settings.selectedModpack)) {
-    S.selectedId  = S.settings.selectedModpack;
-    S.subview     = "detail";
-    document.getElementById("vBrowse").style.display = "none";
-    document.getElementById("vDetail").style.display = "";
-    renderDetail();
-    await checkUpdates();
+    S.selectedId = S.settings.selectedModpack;
   }
+  renderGrid();
+  await checkUpdates();
 
   // Periodic instance-status poll (every 15 s)
   setInterval(async () => {

@@ -290,7 +290,7 @@ function createSyncEntries(modpack, enabledOptionalMods) {
 }
 
 async function syncMods(gameDir, emitter = new EventEmitter(), options = {}) {
-  const { modpackId, enabledOptionalMods = [] } = options;
+  const { modpackId, enabledOptionalMods = [], userModFiles = [] } = options;
   const { manifest: fullManifest, isRemote } = await fetchManifest(gameDir, emitter);
 
   if (!fullManifest) {
@@ -334,6 +334,8 @@ async function syncMods(gameDir, emitter = new EventEmitter(), options = {}) {
   const expectedModFiles = new Set(
     manifest.mods.map((entry) => path.basename(entry.file))
   );
+  // Add user-uploaded JARs so they are never deleted by sync
+  for (const f of userModFiles) expectedModFiles.add(f);
 
   const localModFiles = await fs.readdir(path.join(gameDir, "mods"));
   for (const file of localModFiles) {

@@ -4,7 +4,8 @@ import { S, getPack } from "../state.js";
 const $ = id => document.getElementById(id);
 
 export function setStatus(msg) {
-  $("abStatus").textContent = msg;
+  const el = $("abStatus");
+  el.innerHTML = `<span class="ab-dot"></span>${msg}`;
 }
 
 export function showProg(pct) {

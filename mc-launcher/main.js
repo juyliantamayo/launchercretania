@@ -17,6 +17,7 @@ const { syncMods, fetchManifest, normalizeManifest } = require("./updater");
 const path = require("path");
 const fs = require("fs");
 const fsExtra = require("fs-extra");
+const zlib = require("zlib");
 const axios = require("axios");
 const EventEmitter = require("events");
 const { execSync, execFile, spawn } = require("child_process");
@@ -25,6 +26,7 @@ const { pathToFileURL } = require("url");
 const DEFAULT_GAME_DIR = path.join(app.getPath("appData"), ".lucerion-minecraft");
 const SETTINGS_FILE = path.join(app.getPath("userData"), "settings.json");
 const OPTIONAL_MODS_FILE = path.join(app.getPath("userData"), "optional-mods.json");
+const USER_MODS_BASE = path.join(app.getPath("userData"), "user-mods");
 const APP_VERSION = typeof app.getVersion === "function" ? app.getVersion() : require("./package.json").version;
 const DEFAULT_LAUNCHER_RELEASE_API = "https://api.github.com/repos/juyliantamayo/launchercretania/releases/latest";
 const DEFAULT_LAUNCHER_ASSET = "LucerionLauncher.exe";
@@ -264,7 +266,76 @@ function saveOptionalMods(data) {
   fs.writeFileSync(OPTIONAL_MODS_FILE, JSON.stringify(data, null, 2));
 }
 
-// ─── JAVA DETECTION ───────────────────────────────────────────────────────────
+// ─── USER MODS (uploaded JARs) ────────────────────────────────────────────────
+function getUserModsDir(modpackId) {
+  return path.join(USER_MODS_BASE, modpackId || "default");
+}
+
+/** Parse a single entry from a ZIP/JAR without external deps. Returns string content or null. */
+function readZipEntry(filePath, entryName) {
+  try {
+    const buf = fs.readFileSync(filePath);
+    // Locate End of Central Directory record
+    let eocdOffset = -1;
+    for (let i = buf.length - 22; i >= Math.max(0, buf.length - 65558); i--) {
+      if (buf.readUInt32LE(i) === 0x06054b50) { eocdOffset = i; break; }
+    }
+    if (eocdOffset === -1) return null;
+    const numEntries = buf.readUInt16LE(eocdOffset + 10);
+    const cdOffset   = buf.readUInt32LE(eocdOffset + 16);
+    let pos = cdOffset;
+    for (let i = 0; i < numEntries; i++) {
+      if (buf.readUInt32LE(pos) !== 0x02014b50) break;
+      const method      = buf.readUInt16LE(pos + 10);
+      const compSize    = buf.readUInt32LE(pos + 20);
+      const fnLen       = buf.readUInt16LE(pos + 28);
+      const extraLen    = buf.readUInt16LE(pos + 30);
+      const commentLen  = buf.readUInt16LE(pos + 32);
+      const localOffset = buf.readUInt32LE(pos + 42);
+      const name        = buf.toString("utf8", pos + 46, pos + 46 + fnLen);
+      pos += 46 + fnLen + extraLen + commentLen;
+      if (name !== entryName) continue;
+      const lhFnLen    = buf.readUInt16LE(localOffset + 26);
+      const lhExtraLen = buf.readUInt16LE(localOffset + 28);
+      const dataOffset = localOffset + 30 + lhFnLen + lhExtraLen;
+      const data = buf.slice(dataOffset, dataOffset + compSize);
+      if (method === 0) return data.toString("utf8");
+      if (method === 8) return zlib.inflateRawSync(data).toString("utf8");
+      return null;
+    }
+    return null;
+  } catch { return null; }
+}
+
+function readJarMeta(jarPath) {
+  const basename = path.basename(jarPath, ".jar");
+  let name = basename, description = "", version = "";
+  try {
+    const raw = readZipEntry(jarPath, "fabric.mod.json");
+    if (raw) {
+      const meta = JSON.parse(raw);
+      name        = meta.name || basename;
+      description = meta.description || "";
+      version     = meta.version || "";
+    }
+  } catch {}
+  return { name, description, version };
+}
+
+function listUserMods(modpackId) {
+  const dir = getUserModsDir(modpackId);
+  if (!fs.existsSync(dir)) return [];
+  return fs.readdirSync(dir)
+    .filter(f => f.endsWith(".jar"))
+    .map(f => {
+      const meta = readJarMeta(path.join(dir, f));
+      return { id: "__user__" + f, file: f, source: "user",
+               name: meta.name, description: meta.description,
+               version: meta.version, category: "user" };
+    });
+}
+
+
 /**
  * Busca Java 21+ en el sistema.
  * Retorna { found, version, path } o { found: false, error }
@@ -586,13 +657,13 @@ function createWindow() {
   const iconPath = path.join(__dirname, "icon.ico");
 
   win = new BrowserWindow({
-    width: 920,
-    height: 780,
+    width: 1040,
+    height: 700,
     resizable: true,
-    minWidth: 750,
+    minWidth: 860,
     minHeight: 600,
     show: false,
-    title: "Cretania Launcher",
+    title: "Lucerion Launcher",
     frame: false,
     transparent: false,
     ...(fs.existsSync(iconPath) ? { icon: iconPath } : {}),
@@ -633,7 +704,8 @@ app.on("window-all-closed", () => {
 
 // ─── IPC: WINDOW CONTROLS ────────────────────────────────────────────────────
 ipcMain.on("win-minimize", () => win && win.minimize());
-ipcMain.on("win-close", () => win && win.close());
+ipcMain.on("win-maximize", () => win && (win.isMaximized() ? win.unmaximize() : win.maximize()));
+ipcMain.on("win-close",    () => win && win.close());
 
 // ─── IPC: SETTINGS ───────────────────────────────────────────────────────────
 ipcMain.handle("get-settings", () => loadSettings());
@@ -695,24 +767,27 @@ ipcMain.handle("get-modpacks", async (_e, { accountUuid } = {}) => {
     const { manifest } = await fetchManifest(GAME_DIR);
     if (!manifest) return { modpacks: [], error: "No se pudo obtener el manifest" };
 
-    const modpacks = manifest.modpacks.map(mp => ({
-      id: mp.id,
-      name: mp.name,
-      subtitle: mp.subtitle || "",
-      description: mp.description || "",
-      gallery: Array.isArray(mp.gallery) ? mp.gallery : [],
-      image: mp.image || "",
-      imageUrl: resolveModpackImageUrl(mp),
-      public: mp.public !== false,
-      version: mp.version,
-      minecraft: mp.minecraft,
-      loader: mp.loader,
-      loaderType: mp.loaderType || mp.loader,
-      loaderVersion: mp.loaderVersion,
-      modCount: (mp.mods || []).length,
-      optionalModCount: (mp.optionalMods || []).length,
-      hasAccess: canAccessModpack(mp, accountUuid)
-    }));
+    const modpacks = manifest.modpacks
+      .filter(mp => mp.public !== false || canAccessModpack(mp, accountUuid))
+      .map(mp => ({
+        id: mp.id,
+        name: mp.name,
+        subtitle: mp.subtitle || "",
+        description: mp.description || "",
+        gallery: Array.isArray(mp.gallery) ? mp.gallery : [],
+        image: mp.image || "",
+        imageUrl: resolveModpackImageUrl(mp),
+        public: mp.public !== false,
+        version: mp.version,
+        minecraft: mp.minecraft,
+        loader: mp.loader,
+        loaderType: mp.loaderType || mp.loader,
+        loaderVersion: mp.loaderVersion,
+        modCount: (mp.mods || []).length,
+        optionalModCount: (mp.optionalMods || []).length,
+        hasAccess: canAccessModpack(mp, accountUuid),
+        allowUserMods: Boolean(mp.allowUserMods)
+      }));
     return { modpacks };
   } catch (err) {
     console.warn("[main] Error obteniendo modpacks:", err.message);
@@ -725,24 +800,33 @@ ipcMain.handle("get-optional-mods", async (_e, { modpackId } = {}) => {
   try {
     const GAME_DIR = getGameDir();
     const { manifest } = await fetchManifest(GAME_DIR);
-    if (!manifest) return { mods: [], enabled: {} };
 
-    const modpack = manifest.modpacks.find(mp => mp.id === modpackId) || manifest.modpacks[0];
-    if (!modpack) return { mods: [], enabled: {} };
+    const modpack = manifest
+      ? (manifest.modpacks.find(mp => mp.id === modpackId) || manifest.modpacks[0])
+      : null;
 
     const prefs = loadOptionalMods();
-    const modpackPrefs = prefs[modpack.id] || {};
+    const modpackPrefs = prefs[modpackId || (modpack && modpack.id) || "default"] || {};
 
-    const mods = (modpack.optionalMods || []).map(m => ({
-      id: m.id,
-      name: m.name || m.id,
-      description: m.description || "",
-      category: m.category || "general",
-      defaultEnabled: m.defaultEnabled || false,
-      enabled: modpackPrefs[m.id] !== undefined ? modpackPrefs[m.id] : (m.defaultEnabled || false)
+    const manifestMods = modpack
+      ? (modpack.optionalMods || []).map(m => ({
+          id: m.id,
+          name: m.name || m.id,
+          description: m.description || "",
+          category: m.category || "general",
+          source: "manifest",
+          defaultEnabled: m.defaultEnabled || false,
+          enabled: modpackPrefs[m.id] !== undefined ? modpackPrefs[m.id] : (m.defaultEnabled || false)
+        }))
+      : [];
+
+    const userMods = listUserMods(modpackId).map(m => ({
+      ...m,
+      defaultEnabled: false,
+      enabled: modpackPrefs[m.id] !== undefined ? modpackPrefs[m.id] : false
     }));
 
-    return { mods };
+    return { mods: [...manifestMods, ...userMods] };
   } catch (err) {
     console.warn("[main] Error obteniendo mods opcionales:", err.message);
     return { mods: [], error: err.message };
@@ -754,6 +838,35 @@ ipcMain.handle("save-optional-mods", (_e, { modpackId, modId, enabled }) => {
   if (!prefs[modpackId]) prefs[modpackId] = {};
   prefs[modpackId][modId] = enabled;
   saveOptionalMods(prefs);
+  return { ok: true };
+});
+
+ipcMain.handle("pick-and-upload-user-mod", async (_e, { modpackId } = {}) => {
+  const result = await dialog.showOpenDialog(win, {
+    title: "Seleccionar mod JAR",
+    filters: [{ name: "Mod JAR", extensions: ["jar"] }],
+    properties: ["openFile"]
+  });
+  if (result.canceled || !result.filePaths.length) return { canceled: true };
+  const srcPath = result.filePaths[0];
+  const filename = path.basename(srcPath);
+  const dir = getUserModsDir(modpackId);
+  fsExtra.ensureDirSync(dir);
+  const destPath = path.join(dir, filename);
+  fs.copyFileSync(srcPath, destPath);
+  const meta = readJarMeta(destPath);
+  return {
+    ok: true,
+    mod: { id: "__user__" + filename, file: filename, source: "user",
+           name: meta.name, description: meta.description,
+           version: meta.version, category: "user",
+           defaultEnabled: false, enabled: false }
+  };
+});
+
+ipcMain.handle("delete-user-mod", (_e, { modpackId, file } = {}) => {
+  const jarPath = path.join(getUserModsDir(modpackId), file);
+  if (fs.existsSync(jarPath)) fs.unlinkSync(jarPath);
   return { ok: true };
 });
 
@@ -923,11 +1036,21 @@ ipcMain.handle("launch", async (_event, { authData, accountUuid, modpackId, enab
       }
     });
 
+    // Separate manifest optional mods from user-uploaded mods
+    const allEnabled      = enabledOptionalMods || [];
+    const manifestOptIds  = allEnabled.filter(id => !id.startsWith("__user__"));
+    const userModIds      = allEnabled.filter(id => id.startsWith("__user__"));
+    const userModsDir     = getUserModsDir(modpackId);
+    const userModFiles    = userModIds
+      .map(id => id.replace("__user__", ""))
+      .filter(f => fs.existsSync(path.join(userModsDir, f)));
+
     let manifest;
     try {
       manifest = await syncMods(GAME_DIR, emitter, {
         modpackId,
-        enabledOptionalMods: enabledOptionalMods || []
+        enabledOptionalMods: manifestOptIds,
+        userModFiles
       });
     } catch (err) {
       console.warn("[main] Error al actualizar mods:", err.message);
@@ -936,6 +1059,19 @@ ipcMain.handle("launch", async (_event, { authData, accountUuid, modpackId, enab
         win.webContents.send("log", "[UPDATER] Error sincronizando mods: " + err.message);
       }
       manifest = { minecraft: "1.20.1", loader: "fabric", loaderVersion: "0.18.4", mods: [] };
+    }
+
+    // Copy enabled user-uploaded JARs into the game mods folder
+    for (const filename of userModFiles) {
+      try {
+        fs.copyFileSync(
+          path.join(userModsDir, filename),
+          path.join(GAME_DIR, "mods", filename)
+        );
+        console.log("[main] User mod copiado:", filename);
+      } catch (e) {
+        console.warn("[main] No se pudo copiar user mod:", filename, e.message);
+      }
     }
 
     if (manifest._noManifest && win && !win.isDestroyed()) {
