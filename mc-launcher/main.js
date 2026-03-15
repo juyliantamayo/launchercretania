@@ -690,6 +690,14 @@ app.whenReady().then(async () => {
   } catch (error) {
     emitLauncherUpdateStatus({ status: "error", error: error.message });
   }
+  // Periodic re-check every 30 minutes
+  setInterval(async () => {
+    try {
+      if (launcherUpdateState.status === "ready") return; // already downloaded
+      const { manifest } = await fetchManifest(getGameDir());
+      await checkLauncherAutoUpdate(manifest);
+    } catch {}
+  }, 30 * 60 * 1000);
 });
 
 app.on("before-quit", () => {
@@ -714,6 +722,15 @@ ipcMain.handle("save-settings", (_e, settings) => {
   return { ok: true };
 });
 ipcMain.handle("get-launcher-update-status", () => launcherUpdateState);
+
+ipcMain.handle("apply-launcher-update", () => {
+  if (launcherUpdateState.status === "ready" && launcherUpdateState.downloadedFile) {
+    scheduleLauncherReplacementOnQuit(launcherUpdateState.downloadedFile);
+    app.relaunch();
+    app.quit();
+  }
+  return { ok: true };
+});
 
 // ─── IPC: GAME DIRECTORY ─────────────────────────────────────────────────────
 ipcMain.handle("select-game-dir", async () => {

@@ -12,6 +12,7 @@ const INVOKE_CHANNELS = [
   "get-settings",
   "save-settings",
   "get-launcher-update-status",
+  "apply-launcher-update",
   "select-game-dir",
   "open-game-dir",
   "open-modpack-dir",

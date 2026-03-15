@@ -227,12 +227,27 @@ export function initEvents() {
   });
 
   ipc.on("launcher-update-status", d => {
+    const banner  = document.getElementById("tbUpdateBanner");
+    const txt     = document.getElementById("tbUpdateTxt");
+    const applyBtn = document.getElementById("btnApplyUpdate");
     if (d?.status === "ready" && d.remoteVersion) {
-      setStatus(`Launcher v${d.remoteVersion} listo para instalar al cerrar.`);
+      setStatus(`Launcher v${d.remoteVersion} listo — haz clic en "Reiniciar ahora"`);
+      if (banner) {
+        if (txt) txt.textContent = `v${d.remoteVersion} disponible`;
+        banner.style.display = "";
+        if (applyBtn && !applyBtn._wired) {
+          applyBtn._wired = true;
+          applyBtn.addEventListener("click", () => ipc.invoke("apply-launcher-update"));
+        }
+      }
     } else if (d?.status === "downloading" && typeof d.progress === "number") {
       setStatus(`Descargando actualización del launcher... ${d.progress}%`);
+      if (banner) banner.style.display = "none";
     } else if (d?.status === "error" && d.error) {
       log("[LAUNCHER] Error de auto-update: " + d.error, "warn");
+      if (banner) banner.style.display = "none";
+    } else {
+      if (banner) banner.style.display = "none";
     }
   });
 }

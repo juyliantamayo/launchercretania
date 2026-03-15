@@ -128,6 +128,22 @@ body {
 }
 .tb-left { display: flex; align-items: center; gap: 8px; }
 .tb-logo { width: 22px; height: 22px; border-radius: 4px; object-fit: contain; }
+.tb-update-banner {
+  display: flex; align-items: center; gap: 8px;
+  margin: 0 12px;
+  background: rgba(200,150,20,0.18); border: 1px solid rgba(200,150,20,0.45);
+  border-radius: 7px; padding: 3px 10px 3px 8px;
+  animation: fadeIn 0.3s ease;
+}
+.tb-update-ico { font-size: 13px; }
+.tb-update-txt { font-size: 11px; font-weight: 600; color: var(--accent2); white-space: nowrap; }
+.tb-update-btn {
+  font-size: 10.5px; font-weight: 700; font-family: 'Inter', sans-serif;
+  padding: 3px 10px; border-radius: 5px; cursor: pointer; white-space: nowrap;
+  background: var(--accent); border: none; color: #000;
+  transition: background 0.15s;
+}
+.tb-update-btn:hover { background: var(--accent2); }
 .tb-title {
   font-family: 'Sora', sans-serif;
   font-size: 10px; font-weight: 700;
