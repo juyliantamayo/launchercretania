@@ -7,8 +7,11 @@
     "start": "electron .",
     "test": "jest --verbose",
     "test:watch": "jest --watch --verbose",
+    "build:standalone": "electron-builder --win portable",
     "build:win": "electron-builder --win portable",
-    "build:all": "electron-builder --win --mac --linux"
+    "build:signed": "electron-builder --win portable",
+    "build:all": "electron-builder --win --mac --linux",
+    "build:store": "electron-builder --config electron-builder.store.json"
   },
   "dependencies": {
     "axios": "^1.6.0",
@@ -40,6 +43,8 @@
     ],
     "win": {
       "icon": "icon.ico",
+      "signingHashAlgorithms": ["sha256"],
+      "rfc3161TimeStampServer": "http://timestamp.digicert.com",
       "target": [
         {
           "target": "portable",

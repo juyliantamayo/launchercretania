@@ -5,7 +5,7 @@ import { setStatus }    from "./ui/actionbar.js";
 import { initEvents }   from "./events.js";
 import {
   loadSettings, refreshAccs, refreshPacks,
-  checkJava, loadPatchNotes, loadInstStatus, checkUpdates
+  checkJava, loadPatchNotes, loadInstStatus, checkUpdates, loadAppFlags
 } from "./data.js";
 import { renderGrid }   from "./ui/grid.js";
 import { renderDetail } from "./ui/detail.js";
@@ -16,6 +16,9 @@ const ipc = window.cretania;
 async function init() {
   initTabs();
   initEvents();
+
+  // Cargar flags de la variante de build primero — otros módulos pueden depender de S.storeBuild
+  await loadAppFlags();
 
   // Check if launcher update is already ready (non-blocking)
   ipc.invoke("get-launcher-update-status").then(d => {

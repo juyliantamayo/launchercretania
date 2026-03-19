@@ -33,5 +33,15 @@ export function updateLaunch() {
   const running = p && S.instanceStatus[p.id]?.running;
   const can     = Boolean(S.selectedAcc && p && p.hasAccess && !S.launchBusy && !running);
   $("btnLaunch").disabled  = !can;
-  $("btnDownload").disabled = !p;
+  // Store: el botón de exportar modpack no forma parte del flujo principal de Store
+  // (abrir → login → elegir pack → sincronizar → jugar)
+  const dlBtn = $('btnDownload');
+  if (dlBtn) {
+    if (S.storeBuild) {
+      dlBtn.style.display = 'none';
+    } else {
+      dlBtn.style.display = '';
+      dlBtn.disabled = !p;
+    }
+  }
 }

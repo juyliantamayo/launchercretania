@@ -1,0 +1,52 @@
+{
+  "_comment": "Configuración de electron-builder para la variante Microsoft Store (MSIX/AppX).",
+  "_usage": "Ejecutar con: npm run build:store",
+
+  "appId": "LucerionGames.LucerionLauncher",
+  "productName": "Lucerion Launcher",
+  "asar": false,
+
+  "extraMetadata": {
+    "storeBuild": true
+  },
+
+  "directories": {
+    "output": "dist/store"
+  },
+
+  "files": [
+    "**/*",
+    "!dist/**",
+    "!__tests__/**",
+    "!test-tmp-*/**",
+    "!jest.config.*",
+    "!electron-builder.store.json",
+    "!scripts/**"
+  ],
+
+  "win": {
+    "icon": "icon.ico",
+    "signingHashAlgorithms": ["sha256"],
+    "rfc3161TimeStampServer": "http://timestamp.digicert.com",
+    "target": [
+      {
+        "target": "appx",
+        "arch": ["x64"]
+      }
+    ]
+  },
+
+  "appx": {
+    "identityName": "LucerionGames.LucerionLauncher",
+    "publisherDisplayName": "Lucerion Games",
+    "publisher": "a330b816-e924-4f2a-b31a-c775c06814af",
+    "backgroundColor": "#1a1a2e",
+    "artifactName": "LucerionLauncher-Store.appx",
+    "applicationId": "LucerionLauncher",
+    "displayName": "Lucerion Launcher",
+
+    "_assets_note": "Los assets visuales deben proveerse antes de subir a la tienda. Ver sección de assets abajo.",
+
+    "assets": "store-assets"
+  }
+}

@@ -10,6 +10,19 @@ import { checkPnBadge }   from "./ui/patchnotes.js";
 
 const ipc = window.cretania;
 const $   = id => document.getElementById(id);
+// ── App flags (build variant) ─────────────────────────────────────────────────────
+/**
+ * Carga las flags de la variante de build desde el proceso principal.
+ * Popula S.storeBuild para que todos los módulos de UI puedan adaptaràrse.
+ */
+export async function loadAppFlags() {
+  try {
+    const flags = await ipc.invoke("get-app-flags");
+    S.storeBuild = !!(flags && flags.storeBuild);
+  } catch {
+    S.storeBuild = false;
+  }
+}
 
 // ── Settings ──────────────────────────────────────────────────────────────────
 export async function loadSettings() {

@@ -63,7 +63,10 @@ export function initEvents() {
       await refreshAccs();
       await refreshPacks();
     } catch (err) {
-      setStatus("Error: " + err.message);
+      // err.message siempre es legible gracias a la normalización en main.js
+      const msg = err.message || "Error desconocido al iniciar sesión.";
+      setStatus("Login fallido: " + msg);
+      log("[LOGIN] " + msg, "error");
     }
     $("btnAddAcc").disabled = false;
   });
@@ -177,8 +180,9 @@ export function initEvents() {
       });
       setStatus(p.name + " lanzado.");
     } catch (err) {
-      setStatus("Error: " + err.message);
-      log("[LAUNCHER] ERROR: " + err.message, "error");
+      const msg = err.message || "Error desconocido al lanzar el juego.";
+      setStatus("Error al lanzar: " + msg);
+      log("[LAUNCHER] ERROR: " + msg, "error");
     } finally {
       S.launchBusy = false;
       await loadInstStatus();
@@ -245,6 +249,9 @@ export function initEvents() {
       if (banner) banner.style.display = "none";
     } else if (d?.status === "error" && d.error) {
       log("[LAUNCHER] Error de auto-update: " + d.error, "warn");
+      if (banner) banner.style.display = "none";
+    } else if (d?.status === "store-managed") {
+      // Store: Microsoft Store gestiona las actualizaciones — ocultar cualquier banner
       if (banner) banner.style.display = "none";
     } else {
       if (banner) banner.style.display = "none";

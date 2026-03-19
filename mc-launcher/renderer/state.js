@@ -14,7 +14,9 @@ export const S = {
   launchBusy: false,
   conLines: 0,
   pnNotes: [],
-  pnVersion: ""
+  pnVersion: "",
+  // Flags de la variante de build (cargados en app init desde get-app-flags)
+  storeBuild: false   // true solo en la variante Microsoft Store
 };
 
 export const MAX_LOG = 600;

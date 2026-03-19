@@ -104,7 +104,8 @@ export function renderOptMods() {
   }
 
   if (uploadBtn) {
-    const canUpload = Boolean(p && p.allowUserMods);
+    // Store: user mods desactivados — ocultar botón de carga independientemente del manifest
+    const canUpload = !S.storeBuild && Boolean(p && p.allowUserMods);
     uploadBtn.style.display = canUpload ? "" : "none";
     if (canUpload) {
       // Replace node to drop old listener

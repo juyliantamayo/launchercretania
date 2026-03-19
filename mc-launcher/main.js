@@ -23,6 +23,25 @@ const EventEmitter = require("events");
 const { execSync, execFile, spawn } = require("child_process");
 const { pathToFileURL } = require("url");
 
+// ─── RUTAS DE PERSISTENCIA ───────────────────────────────────────────────────
+// Mapa de rutas usadas por el launcher.  Convención:
+//   userData  → %APPDATA%\lucerion-launcher  (safe para Store y standalone)
+//   appData   → %APPDATA%  (directorio raíz; gameDir puede personalizarse)
+//
+//  Clave                  Ruta                                     Store  Standalone
+//  ---------------------  ---------------------------------------  -----  ----------
+//  DEFAULT_GAME_DIR       %APPDATA%/.lucerion-minecraft            ✓      ✓
+//  SETTINGS_FILE          userData/settings.json                   ✓      ✓
+//  OPTIONAL_MODS_FILE     userData/optional-mods.json              ✓      ✓
+//  USER_MODS_BASE         userData/user-mods/                      ✗*     ✓
+//  accounts.json          userData/accounts.json   (auth.js)       ✓      ✓
+//  manifest-cache.json    gameDir/manifest-cache.json              ✓      ✓
+//  modpack-version-*.txt  userData/modpack-version-<id>.txt        ✓      ✓
+//  JAVA_INSTALL_DIR_NAME  userData/java-runtime/                   ✓      ✓
+//  LAUNCHER_UPDATE_DIR    userData/launcher-update/                ✗**    ✓
+//
+//  * USER_MODS_BASE existe pero nunca se lee/escribe en la variante Store.
+//  ** LAUNCHER_UPDATE_DIR no se usa en Store (self-update desactivado).
 const DEFAULT_GAME_DIR = path.join(app.getPath("appData"), ".lucerion-minecraft");
 const SETTINGS_FILE = path.join(app.getPath("userData"), "settings.json");
 const OPTIONAL_MODS_FILE = path.join(app.getPath("userData"), "optional-mods.json");
@@ -31,6 +50,25 @@ const APP_VERSION = typeof app.getVersion === "function" ? app.getVersion() : re
 const DEFAULT_LAUNCHER_RELEASE_API = "https://api.github.com/repos/juyliantamayo/launchercretania/releases/latest";
 const DEFAULT_LAUNCHER_ASSET = "LucerionLauncher.exe";
 const LAUNCHER_UPDATE_DIR = path.join(app.getPath("userData"), "launcher-update");
+
+// ─── BUILD VARIANT ───────────────────────────────────────────────────────────
+/**
+ * STORE_BUILD: true cuando el launcher fue compilado para Microsoft Store.
+ * Se inyecta en package.json via `extraMetadata.storeBuild: true` al ejecutar
+ * `npm run build:store` (usa electron-builder.store.json).
+ *
+ * Comportamiento diferenciado según canal de distribución:
+ *  - Self-update del launcher:      DESACTIVADO en Store (la tienda gestiona las actualizaciones)
+ *  - Reemplazo de ejecutable (.exe): DESACTIVADO en Store (incompatible con app container)
+ *  - User mods JAR del usuario:     DESACTIVADO en Store (solo contenido oficial del modpack)
+ *  - Overlays/funciones avanzadas:  SIMPLIFICADOS en Store (experiencia enfocada y certificable)
+ *
+ * La build standalone no es afectada por este flag (STORE_BUILD === false).
+ */
+const STORE_BUILD = !!(require("./package.json").storeBuild);
+if (STORE_BUILD) {
+  console.log("[main] Variante Microsoft Store activa — self-update y user mods JAR desactivados.");
+}
 
 // Adoptium JDK 17 para Windows x64 (portable zip)
 const JAVA_VERSION = "21";
@@ -147,6 +185,9 @@ function isPackagedApp() {
 }
 
 function scheduleLauncherReplacementOnQuit(downloadedFile) {
+  // Store: el reemplazo de ejecutable es incompatible con el sandbox de Microsoft Store.
+  // Las actualizaciones del launcher las gestiona la propia tienda, no el ejecutable.
+  if (STORE_BUILD) return;
   if (!downloadedFile || !fs.existsSync(downloadedFile) || !isPackagedApp()) return;
 
   const currentExe = process.execPath;
@@ -174,6 +215,12 @@ function scheduleLauncherReplacementOnQuit(downloadedFile) {
 async function checkLauncherAutoUpdate(manifest) {
   if (!isPackagedApp()) {
     emitLauncherUpdateStatus({ status: "dev-mode" });
+    return;
+  }
+  // Store: Microsoft Store gestiona las actualizaciones del launcher directamente.
+  // El launcher no debe descargarse ni reemplazarse a sí mismo en un entorno Store.
+  if (STORE_BUILD) {
+    emitLauncherUpdateStatus({ status: "store-managed" });
     return;
   }
 
@@ -723,7 +770,15 @@ ipcMain.handle("save-settings", (_e, settings) => {
 });
 ipcMain.handle("get-launcher-update-status", () => launcherUpdateState);
 
+// Expone flags de la variante de build al renderer para ajustar la UI según canal
+ipcMain.handle("get-app-flags", () => ({
+  storeBuild: STORE_BUILD,
+  appVersion: APP_VERSION
+}));
+
 ipcMain.handle("apply-launcher-update", () => {
+  // Store: el launcher no es responsable de aplicar actualizaciones en esta variante
+  if (STORE_BUILD) return { ok: false, reason: "store-managed" };
   if (launcherUpdateState.status === "ready" && launcherUpdateState.downloadedFile) {
     scheduleLauncherReplacementOnQuit(launcherUpdateState.downloadedFile);
     app.relaunch();
@@ -837,7 +892,8 @@ ipcMain.handle("get-optional-mods", async (_e, { modpackId } = {}) => {
         }))
       : [];
 
-    const userMods = listUserMods(modpackId).map(m => ({
+    // Store: user mods (JARs locales del usuario) desactivados — solo contenido oficial
+    const userMods = STORE_BUILD ? [] : listUserMods(modpackId).map(m => ({
       ...m,
       defaultEnabled: false,
       enabled: modpackPrefs[m.id] !== undefined ? modpackPrefs[m.id] : false
@@ -859,6 +915,14 @@ ipcMain.handle("save-optional-mods", (_e, { modpackId, modId, enabled }) => {
 });
 
 ipcMain.handle("pick-and-upload-user-mod", async (_e, { modpackId } = {}) => {
+  // Store: importación de mods locales desactivada — solo contenido oficial del modpack
+  if (STORE_BUILD) {
+    return {
+      ok: false,
+      reason: "not-available-in-store",
+      message: "La importación de mods locales no está disponible en la versión de Microsoft Store."
+    };
+  }
   const result = await dialog.showOpenDialog(win, {
     title: "Seleccionar mod JAR",
     filters: [{ name: "Mod JAR", extensions: ["jar"] }],
@@ -882,6 +946,8 @@ ipcMain.handle("pick-and-upload-user-mod", async (_e, { modpackId } = {}) => {
 });
 
 ipcMain.handle("delete-user-mod", (_e, { modpackId, file } = {}) => {
+  // Store: gestión de user mods desactivada
+  if (STORE_BUILD) return { ok: false, reason: "not-available-in-store" };
   const jarPath = path.join(getUserModsDir(modpackId), file);
   if (fs.existsSync(jarPath)) fs.unlinkSync(jarPath);
   return { ok: true };
@@ -967,8 +1033,12 @@ ipcMain.handle("login-microsoft", async () => {
     const result = await loginMicrosoft();
     return result;
   } catch (err) {
-    console.error("[main] Login error:", err.message);
-    throw err;
+    // Normalizar siempre a Error con message legible para evitar [object Object] en la UI
+    const msg = err instanceof Error
+      ? err.message
+      : (typeof err === "string" ? err : JSON.stringify(err));
+    console.error("[main] Login error:", msg, "\nDetalle completo:", err);
+    throw new Error(msg);
   }
 });
 
@@ -1056,7 +1126,8 @@ ipcMain.handle("launch", async (_event, { authData, accountUuid, modpackId, enab
     // Separate manifest optional mods from user-uploaded mods
     const allEnabled      = enabledOptionalMods || [];
     const manifestOptIds  = allEnabled.filter(id => !id.startsWith("__user__"));
-    const userModIds      = allEnabled.filter(id => id.startsWith("__user__"));
+    // Store: los user mods JAR no se procesan — solo contenido oficial del modpack
+    const userModIds      = STORE_BUILD ? [] : allEnabled.filter(id => id.startsWith("__user__"));
     const userModsDir     = getUserModsDir(modpackId);
     const userModFiles    = userModIds
       .map(id => id.replace("__user__", ""))
