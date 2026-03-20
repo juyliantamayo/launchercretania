@@ -1498,7 +1498,7 @@
       "description": "Versión pública del modpack sin lista de mods forzada. Podés subir tus propios JARs y jugar con mods personalizados.",
       "gallery": [],
       "image": "LOGO_CRETANIA_2.png",
-      "public": false,
+      "public": true,
       "allowUserMods": true,
       "allowedUuids": [],
       "baseUrl": "https://github.com/juyliantamayo/launchercretania/releases/download/modpack-v1.0.0",
