@@ -1234,28 +1234,7 @@
           "size": 825112
         }
       ],
-      "optionalMods": [
-        {
-          "id": "iris-shaders",
-          "name": "Iris Shaders",
-          "description": "Soporte para shaders (GLSL Shaders, Complementary, BSL, etc). Requiere más RAM y GPU potente.",
-          "category": "visual",
-          "defaultEnabled": false,
-          "file": "mods/iris-1.8.0+mc1.20.1.jar",
-          "sha1": "",
-          "size": 0
-        },
-        {
-          "id": "sodium",
-          "name": "Sodium",
-          "description": "Optimización de renderizado. Aumenta considerablemente los FPS.",
-          "category": "performance",
-          "defaultEnabled": false,
-          "file": "mods/sodium-fabric-0.5.11+mc1.20.1.jar",
-          "sha1": "",
-          "size": 0
-        }
-      ],
+      "optionalMods": [],
       "resourcepacks": [],
       "datasources": [],
       "datapacks": [],
@@ -1519,7 +1498,7 @@
       "description": "Versión pública del modpack sin lista de mods forzada. Podés subir tus propios JARs y jugar con mods personalizados.",
       "gallery": [],
       "image": "LOGO_CRETANIA_2.png",
-      "public": true,
+      "public": false,
       "allowUserMods": true,
       "allowedUuids": [],
       "baseUrl": "https://github.com/juyliantamayo/launchercretania/releases/download/modpack-v1.0.0",
