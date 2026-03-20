@@ -17,6 +17,7 @@ const EventEmitter = require("events");
 const { parseManifestPayload } = require("./manifest-crypto");
 
 function isDevMode() {
+  if (process.env.FORCE_REMOTE_MANIFEST === "1") return false;
   try { return !require("electron").app.isPackaged; } catch { return false; }
 }
 
