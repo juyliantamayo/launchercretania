@@ -45,6 +45,22 @@ export function renderDetail() {
   $("mMC").textContent       = p.minecraft || "-";
   $("mInstance").textContent = running ? "🟢 Activa" : "Inactiva";
 
+  // Kill instance button — solo visible si la instancia está activa
+  const killBtn = $("btnKillInstance");
+  if (running) {
+    killBtn.style.display = "";
+    killBtn.onclick = async () => {
+      killBtn.disabled = true;
+      killBtn.textContent = "Deteniendo…";
+      await window.cretania.invoke("kill-instance", p.id);
+      killBtn.disabled = false;
+      killBtn.innerHTML = "&#9632; Detener";
+    };
+  } else {
+    killBtn.style.display = "none";
+    killBtn.onclick = null;
+  }
+
   // Info grid
   $("iVer").textContent   = "v" + (p.version || "0.0.0");
   $("iAcc").textContent   = p.hasAccess ? "✔ Habilitado" : "✘ Sin permiso";

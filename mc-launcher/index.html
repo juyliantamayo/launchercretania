@@ -66,11 +66,24 @@
       </div>
     </div>
     <!-- Sidebar footer icons -->
-    <div class="sb-footer">
+    <div class="sb-footer" style="position:relative;">
       <button class="sb-foot-btn" id="sbBtnSettings" title="Ajustes">&#9881;</button>
       <button class="sb-foot-btn" id="sbBtnAccounts" title="Cuentas">&#128100;</button>
       <button class="sb-foot-btn" id="sbBtnAddAcc2" title="Agregar cuenta">&#43;</button>
       <button class="sb-foot-btn" id="sbBtnMenu" title="Men&uacute;">&#9776;</button>
+      <!-- Theme popup -->
+      <div class="theme-popup" id="themePopup">
+        <button class="theme-popup-item active" data-theme-val="dark">
+          <span class="theme-popup-ico">&#127761;</span>
+          Tema oscuro
+          <span class="theme-popup-check">&#10003;</span>
+        </button>
+        <button class="theme-popup-item" data-theme-val="light">
+          <span class="theme-popup-ico">&#9788;</span>
+          Tema claro
+          <span class="theme-popup-check">&#10003;</span>
+        </button>
+      </div>
     </div>
   </aside>
 
@@ -122,6 +135,9 @@
                   <img id="detBannerImg" src="" alt="" style="display:none"
                        onerror="this.style.display='none';document.getElementById('detBannerFb').style.display='flex'">
                   <div class="det-banner-overlay"></div>
+                  <button class="btn-kill-instance" id="btnKillInstance" style="display:none" title="Detener instancia">
+                    &#9632; Detener
+                  </button>
                   <div class="det-hero-body">
                     <div class="det-icon" id="detIcon"></div>
                     <div class="det-meta">

@@ -130,7 +130,7 @@ export function renderOptMods() {
     list.innerHTML = `<div class="empty" style="padding:18px 0">
       <div class="empty-ico">&#128190;</div>
       <div class="empty-ttl">Sin mods opcionales</div>
-      <div class="empty-txt">Este modpack no tiene mods opcionales en el manifest.<br>Podés subir tus propios JARs con <strong>+ JAR</strong>.</div>
+      <div class="empty-txt">Este modpack no tiene mods opcionales en el manifest.</div>
     </div>`;
     return;
   }

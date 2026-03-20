@@ -14,6 +14,19 @@ import { renderSbPacks } from "./ui/sidebar.js";
 const ipc = window.cretania;
 
 async function init() {
+  // Restore saved theme (dark is default)
+  try {
+    const saved = localStorage.getItem('lucerion-theme');
+    if (saved) {
+      document.documentElement.setAttribute('data-theme', saved);
+      const activeBtn = document.querySelector(`.theme-popup-item[data-theme-val="${saved}"]`);
+      if (activeBtn) {
+        document.querySelectorAll('.theme-popup-item').forEach(b => b.classList.remove('active'));
+        activeBtn.classList.add('active');
+      }
+    }
+  } catch {}
+
   initTabs();
   initEvents();
 

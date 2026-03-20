@@ -1,7 +1,8 @@
 {
   "name": "lucerion-launcher",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Launcher Minecraft privado para Lucerion",
+  "author": "Lucerion Studios",
   "main": "main.js",
   "scripts": {
     "start": "electron .",
@@ -11,7 +12,9 @@
     "build:win": "electron-builder --win portable",
     "build:signed": "electron-builder --win portable",
     "build:all": "electron-builder --win --mac --linux",
-    "build:store": "electron-builder --config electron-builder.store.json"
+    "build:store": "electron-builder --config electron-builder.store.json",
+    "gen:assets": "node scripts/generate-store-assets.js",
+    "validate:store": "powershell -ExecutionPolicy Bypass -File scripts/validate-store.ps1"
   },
   "dependencies": {
     "axios": "^1.6.0",

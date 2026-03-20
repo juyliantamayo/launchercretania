@@ -411,9 +411,11 @@ function detectJava() {
     return null;
   };
 
-  // Intentar java del PATH
+  // Intentar javaw del PATH (sin consola), luego java como fallback
+  const fromJavaw = tryJava("javaw");
+  if (fromJavaw) return fromJavaw;
   const fromPath = tryJava("java");
-  if (fromPath) return fromPath;
+  if (fromPath) return { ...fromPath, path: preferJavaw(fromPath.path) };
 
   // 2. Buscar en rutas comunes de Windows
   const programFiles = [
@@ -430,6 +432,8 @@ function detectJava() {
         try {
           const entries = fs.readdirSync(dir);
           for (const e of entries) {
+            const javawBin = path.join(dir, e, "bin", "javaw.exe");
+            if (fs.existsSync(javawBin)) { javaDirs.push(javawBin); continue; }
             const javaBin = path.join(dir, e, "bin", "java.exe");
             if (fs.existsSync(javaBin)) javaDirs.push(javaBin);
           }
@@ -446,7 +450,7 @@ function detectJava() {
         const items = fs.readdirSync(dir, { withFileTypes: true });
         for (const item of items) {
           const full = path.join(dir, item.name);
-          if (item.isFile() && item.name === "java.exe") javaDirs.push(full);
+          if (item.isFile() && (item.name === "javaw.exe" || item.name === "java.exe")) javaDirs.push(full);
           else if (item.isDirectory()) walkRuntime(full);
         }
       };
@@ -454,7 +458,11 @@ function detectJava() {
     } catch {}
   }
 
-  for (const jp of javaDirs) {
+  // Preferir javaw.exe para evitar ventana de consola
+  const javawDirs = javaDirs.map(preferJavaw);
+  // Deduplicar
+  const uniqueDirs = [...new Set(javawDirs)];
+  for (const jp of uniqueDirs) {
     const result = tryJava(jp);
     if (result) return result;
   }
@@ -563,14 +571,24 @@ async function installJava(onProgress = () => {}) {
   return result;
 }
 
-/** Busca java.exe recursivamente dentro de un directorio */
+/** Prefiere javaw.exe (sin consola) sobre java.exe */
+function preferJavaw(javaExePath) {
+  if (!javaExePath) return javaExePath;
+  const javawPath = javaExePath.replace(/java\.exe$/i, "javaw.exe");
+  if (javawPath !== javaExePath && fs.existsSync(javawPath)) return javawPath;
+  return javaExePath;
+}
+
+/** Busca javaw.exe (o java.exe) recursivamente dentro de un directorio */
 function findJavaExeIn(baseDir) {
   try {
     const items = fs.readdirSync(baseDir, { withFileTypes: true });
     for (const item of items) {
       const full = path.join(baseDir, item.name);
       if (item.isDirectory()) {
-        // Buscar en bin/java.exe directamente
+        // Buscar en bin/ — preferir javaw.exe sobre java.exe
+        const javawBin = path.join(full, "bin", "javaw.exe");
+        if (fs.existsSync(javawBin)) return javawBin;
         const javaBin = path.join(full, "bin", "java.exe");
         if (fs.existsSync(javaBin)) return javaBin;
         // Recursivo un nivel más
@@ -727,6 +745,20 @@ function createWindow() {
   });
   win.loadFile("index.html");
   // win.webContents.openDevTools();
+}
+
+// ─── SINGLE-INSTANCE LOCK ─────────────────────────────────────────────────────
+// La Store requiere que solo haya una instancia activa del launcher.
+const gotTheLock = app.requestSingleInstanceLock();
+if (!gotTheLock) {
+  app.quit();
+} else {
+  app.on("second-instance", () => {
+    if (win) {
+      if (win.isMinimized()) win.restore();
+      win.focus();
+    }
+  });
 }
 
 app.whenReady().then(async () => {
@@ -1024,6 +1056,24 @@ ipcMain.handle("get-instance-status", () => {
   return result;
 });
 
+// ─── IPC: KILL INSTANCE ──────────────────────────────────────────────────────
+ipcMain.handle("kill-instance", (_e, modpackId) => {
+  const inst = runningInstances.get(modpackId);
+  if (!inst) return { ok: false, error: "Instancia no encontrada" };
+  try {
+    if (inst.process && !inst.process.killed) {
+      inst.process.kill();
+    }
+    runningInstances.delete(modpackId);
+    if (win && !win.isDestroyed()) {
+      win.webContents.send("mc-closed", { code: null, modpackId });
+    }
+    return { ok: true };
+  } catch (err) {
+    return { ok: false, error: err.message };
+  }
+});
+
 // ─── IPC: ACCOUNTS ───────────────────────────────────────────────────────────
 ipcMain.handle("get-accounts", () => getAccountList());
 ipcMain.handle("remove-account", (_e, uuid) => removeAccount(uuid));
@@ -1226,10 +1276,13 @@ ipcMain.handle("launch", async (_event, { authData, accountUuid, modpackId, enab
       if (win && !win.isDestroyed()) win.webContents.send("mc-closed", { code, modpackId: instanceKey });
     });
 
+    // Asegurar que siempre usamos javaw (sin consola) si está disponible
+    const resolvedJava = javaInfo.path !== "java" ? preferJavaw(javaInfo.path) : "javaw";
+
     const launchOpts = {
       authorization: auth,
       root: GAME_DIR,
-      javaPath: javaInfo.path !== "java" ? javaInfo.path : undefined,
+      javaPath: resolvedJava,
       version: {
         number: mcVersion,
         type: "release"
@@ -1262,9 +1315,8 @@ ipcMain.handle("launch", async (_event, { authData, accountUuid, modpackId, enab
       ram: `${settings.ramMin}-${settings.ramMax}G`
     }));
 
-    runningInstances.set(instanceKey, { launcher, pid: null, startTime: Date.now() });
-
-    launcher.launch(launchOpts);
+    const mcProcess = launcher.launch(launchOpts);
+    runningInstances.set(instanceKey, { launcher, process: mcProcess, startTime: Date.now() });
     return { ok: true, modpackId: instanceKey };
   } finally {
     pendingLaunches.delete(requestedInstanceKey);

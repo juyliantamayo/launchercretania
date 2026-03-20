@@ -30,6 +30,34 @@ export function initEvents() {
   const sbAdd = $('sbBtnAddAcc2');
   if (sbAdd) sbAdd.addEventListener('click', () => $('btnAddAcc')?.click());
 
+  // ── Theme toggle ─────────────────────────────────────────────
+  const themePopup = $('themePopup');
+  const sbMenu     = $('sbBtnMenu');
+  if (sbMenu && themePopup) {
+    sbMenu.addEventListener('click', e => {
+      e.stopPropagation();
+      themePopup.classList.toggle('open');
+    });
+    // Close popup on outside click
+    document.addEventListener('click', e => {
+      if (!themePopup.contains(e.target) && e.target !== sbMenu) {
+        themePopup.classList.remove('open');
+      }
+    });
+    // Theme option buttons
+    themePopup.querySelectorAll('.theme-popup-item').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const val = btn.dataset.themeVal;
+        document.documentElement.setAttribute('data-theme', val);
+        try { localStorage.setItem('lucerion-theme', val); } catch {}
+        // Update active state
+        themePopup.querySelectorAll('.theme-popup-item').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        themePopup.classList.remove('open');
+      });
+    });
+  }
+
   // Search
   $("searchInput").addEventListener("input", () => {
     S.query = $("searchInput").value;

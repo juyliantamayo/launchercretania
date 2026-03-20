@@ -27,6 +27,7 @@ const INVOKE_CHANNELS = [
   "pick-and-upload-user-mod",
   "delete-user-mod",
   "get-instance-status",
+  "kill-instance",
   "launch",
   "download-modpack",
   "check-java",
