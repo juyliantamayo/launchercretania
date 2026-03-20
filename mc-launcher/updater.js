@@ -17,12 +17,13 @@ const EventEmitter = require("events");
 const { parseManifestPayload } = require("./manifest-crypto");
 
 function isDevMode() {
+  if (process.env.FORCE_REMOTE_MANIFEST === "1") return false;
   try { return !require("electron").app.isPackaged; } catch { return false; }
 }
 
 const MANIFEST_URL =
   process.env.MANIFEST_URL ||
-  "https://github.com/juyliantamayo/launchercretania/releases/download/modpack-v1.0.0/manifest.enc";
+  "https://raw.githubusercontent.com/juyliantamayo/launchercretania/main/my-modpack/manifest.enc";
 
 const LOCAL_MODPACK_DIR = (() => {
   const packed = path.join(process.resourcesPath || "", "my-modpack");
