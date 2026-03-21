@@ -796,12 +796,6 @@
           "size": 237573
         },
         {
-          "id": "mods-iris-1-7-6-mc1-20-1",
-          "file": "mods/iris-1.7.6+mc1.20.1.jar",
-          "sha1": "880c0b9ce38bb4997645793407c1801df83f4233",
-          "size": 2726899
-        },
-        {
           "id": "mods-item-merger-1-0-4",
           "file": "mods/item-merger-1.0.4.jar",
           "sha1": "1f090d64bacbe4f5da48e0ca01a3f7a1c64bdb9c",
@@ -1084,12 +1078,6 @@
           "size": 370701
         },
         {
-          "id": "mods-sodium-fabric-0-5-13-mc1-20-1",
-          "file": "mods/sodium-fabric-0.5.13+mc1.20.1.jar",
-          "sha1": "bcdbf37d9494e405cba210d7a80ed58e756297b5",
-          "size": 971552
-        },
-        {
           "id": "mods-sodiumextras-fabric-1-0-7-1-20-1",
           "file": "mods/sodiumextras-fabric-1.0.7-1.20.1.jar",
           "sha1": "415f6d815b673f6d719c55a7caaa44e03f62bf56",
@@ -1234,7 +1222,28 @@
           "size": 825112
         }
       ],
-      "optionalMods": [],
+      "optionalMods": [
+        {
+          "id": "iris-shaders",
+          "name": "Iris Shaders",
+          "description": "Soporte para shaders (GLSL Shaders, Complementary, BSL, etc). Requiere más RAM y GPU potente.",
+          "category": "visual",
+          "defaultEnabled": false,
+          "file": "mods/iris-1.7.6+mc1.20.1.jar",
+          "sha1": "880c0b9ce38bb4997645793407c1801df83f4233",
+          "size": 2726899
+        },
+        {
+          "id": "sodium",
+          "name": "Sodium",
+          "description": "Optimización de renderizado. Aumenta considerablemente los FPS.",
+          "category": "performance",
+          "defaultEnabled": false,
+          "file": "mods/sodium-fabric-0.5.13+mc1.20.1.jar",
+          "sha1": "bcdbf37d9494e405cba210d7a80ed58e756297b5",
+          "size": 971552
+        }
+      ],
       "resourcepacks": [],
       "datasources": [],
       "datapacks": [],
