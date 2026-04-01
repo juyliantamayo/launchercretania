@@ -101,7 +101,7 @@
           "file": "mods/Atlas Lib-1.20.1-1.1.12.jar",
           "sha1": "17534bfd6878afc2da5d990fe6fc348b2606530c",
           "size": 124436,
-          "url": "https://github.com/juyliantamayo/launchercretania/releases/download/cretaniaTF4-v1.0.0/mods.Atlas%20Lib-1.20.1-1.1.12.jar"
+          "url": "https://github.com/juyliantamayo/launchercretania/releases/download/cretaniaTF4-v1.0.0/mods.Atlas.Lib-1.20.1-1.1.12.jar"
         },
         {
           "id": "cretania-auroras-1-20-1-1-6-2",
@@ -150,21 +150,21 @@
           "file": "mods/Butchersdelight Foods beta 1.20.1 1.0.3.jar",
           "sha1": "26d05418d4f6e683946a9096f9250d9fbd4ff453",
           "size": 167877,
-          "url": "https://github.com/juyliantamayo/launchercretania/releases/download/cretaniaTF4-v1.0.0/mods.Butchersdelight%20Foods%20beta%201.20.1%201.0.3.jar"
+          "url": "https://github.com/juyliantamayo/launchercretania/releases/download/cretaniaTF4-v1.0.0/mods.Butchersdelight.Foods.beta.1.20.1.1.0.3.jar"
         },
         {
           "id": "cretania-butchersdelight-beta-1-20-1-2-1-0",
           "file": "mods/Butchersdelight beta 1.20.1 2.1.0.jar",
           "sha1": "eefde2b0a35ae4380c131ac083116b8f797afe56",
           "size": 3942918,
-          "url": "https://github.com/juyliantamayo/launchercretania/releases/download/cretaniaTF4-v1.0.0/mods.Butchersdelight%20beta%201.20.1%202.1.0.jar"
+          "url": "https://github.com/juyliantamayo/launchercretania/releases/download/cretaniaTF4-v1.0.0/mods.Butchersdelight.beta.1.20.1.2.1.0.jar"
         },
         {
           "id": "cretania-cgm-unofficial-1-4-19-forge-1-20-1",
           "file": "mods/CGM-Unofficial-1.4.19+Forge+1.20.1.jar",
           "sha1": "8db26b200a0be3946a6b3415c94c434c31f17d05",
           "size": 1706478,
-          "url": "https://github.com/juyliantamayo/launchercretania/releases/download/cretaniaTF4-v1.0.0/mods.CGM-Unofficial-1.4.19%2BForge%2B1.20.1.jar"
+          "url": "https://github.com/juyliantamayo/launchercretania/releases/download/cretaniaTF4-v1.0.0/mods.CGM-Unofficial-1.4.19+Forge+1.20.1.jar"
         },
         {
           "id": "cretania-carbonconfig-1-20-1-2-8-2",
@@ -416,7 +416,7 @@
           "file": "mods/ImmediatelyFast-Forge-1.5.4+1.20.4.jar",
           "sha1": "e2e60485a0c3efa72f1948c952b095150e3ba4fc",
           "size": 538992,
-          "url": "https://github.com/juyliantamayo/launchercretania/releases/download/cretaniaTF4-v1.0.0/mods.ImmediatelyFast-Forge-1.5.4%2B1.20.4.jar"
+          "url": "https://github.com/juyliantamayo/launchercretania/releases/download/cretaniaTF4-v1.0.0/mods.ImmediatelyFast-Forge-1.5.4+1.20.4.jar"
         },
         {
           "id": "cretania-immersiveengineering-1-20-1-10-2-0-183",
@@ -556,7 +556,7 @@
           "file": "mods/Sacks 'N Such-1.20.1-1.2.6.jar",
           "sha1": "9be6b9e8d43584493b4d49b35f9b14668926fcab",
           "size": 1279751,
-          "url": "https://github.com/juyliantamayo/launchercretania/releases/download/cretaniaTF4-v1.0.0/mods.Sacks%20'N%20Such-1.20.1-1.2.6.jar"
+          "url": "https://github.com/juyliantamayo/launchercretania/releases/download/cretaniaTF4-v1.0.0/mods.Sacks.N.Such-1.20.1-1.2.6.jar"
         },
         {
           "id": "cretania-searchables-forge-1-20-1-1-0-3",
@@ -605,7 +605,7 @@
           "file": "mods/Steam_Rails-1.7.1+forge-mc1.20.1.jar",
           "sha1": "93c32e96f463f5d4758e939916c7a8de79bd6212",
           "size": 16748161,
-          "url": "https://github.com/juyliantamayo/launchercretania/releases/download/cretaniaTF4-v1.0.0/mods.Steam_Rails-1.7.1%2Bforge-mc1.20.1.jar"
+          "url": "https://github.com/juyliantamayo/launchercretania/releases/download/cretaniaTF4-v1.0.0/mods.Steam_Rails-1.7.1+forge-mc1.20.1.jar"
         },
         {
           "id": "cretania-stylisheffects-v8-0-2-1-20-1-forge",
@@ -682,7 +682,7 @@
           "file": "mods/TaxDeepVillager+M.1.20.1+ForM.2.0.0.jar",
           "sha1": "2037625989b94e04bf56a372e48efb6bcab7c85a",
           "size": 641387,
-          "url": "https://github.com/juyliantamayo/launchercretania/releases/download/cretaniaTF4-v1.0.0/mods.TaxDeepVillager%2BM.1.20.1%2BForM.2.0.0.jar"
+          "url": "https://github.com/juyliantamayo/launchercretania/releases/download/cretaniaTF4-v1.0.0/mods.TaxDeepVillager+M.1.20.1+ForM.2.0.0.jar"
         },
         {
           "id": "cretania-terrafirmacraft-forge-1-20-1-3-2-21",
@@ -780,14 +780,14 @@
           "file": "mods/[1.20.1-Forge] Additional Placements-2.3.1.jar",
           "sha1": "536363d54e2902c7e5ba2d2901f4c9b30a96e4c5",
           "size": 420054,
-          "url": "https://github.com/juyliantamayo/launchercretania/releases/download/cretaniaTF4-v1.0.0/mods.%5B1.20.1-Forge%5D%20Additional%20Placements-2.3.1.jar"
+          "url": "https://github.com/juyliantamayo/launchercretania/releases/download/cretaniaTF4-v1.0.0/mods.1.20.1-Forge.Additional.Placements-2.3.1.jar"
         },
         {
           "id": "cretania-1-20-1-securitycraft-v1-10-1",
           "file": "mods/[1.20.1] SecurityCraft v1.10.1.jar",
           "sha1": "98e4af60aa0f272105b7ffcdf154d7ab670a73bc",
           "size": 4769715,
-          "url": "https://github.com/juyliantamayo/launchercretania/releases/download/cretaniaTF4-v1.0.0/mods.%5B1.20.1%5D%20SecurityCraft%20v1.10.1.jar"
+          "url": "https://github.com/juyliantamayo/launchercretania/releases/download/cretaniaTF4-v1.0.0/mods.1.20.1.SecurityCraft.v1.10.1.jar"
         },
         {
           "id": "cretania-ad-astra-forge-1-20-1-1-15-20",
@@ -878,7 +878,7 @@
           "file": "mods/bettercombat-forge-1.9.0+1.20.1.jar",
           "sha1": "ea7e7247132cb3acacadd96b2b6b635c4cc63a74",
           "size": 1054339,
-          "url": "https://github.com/juyliantamayo/launchercretania/releases/download/cretaniaTF4-v1.0.0/mods.bettercombat-forge-1.9.0%2B1.20.1.jar"
+          "url": "https://github.com/juyliantamayo/launchercretania/releases/download/cretaniaTF4-v1.0.0/mods.bettercombat-forge-1.9.0+1.20.1.jar"
         },
         {
           "id": "cretania-betterfpsdist-1-20-1-6-0",
@@ -983,7 +983,7 @@
           "file": "mods/comforts-forge-6.4.0+1.20.1.jar",
           "sha1": "e7b9fe89566bb1ee013e33745f22f309f679536e",
           "size": 382083,
-          "url": "https://github.com/juyliantamayo/launchercretania/releases/download/cretaniaTF4-v1.0.0/mods.comforts-forge-6.4.0%2B1.20.1.jar"
+          "url": "https://github.com/juyliantamayo/launchercretania/releases/download/cretaniaTF4-v1.0.0/mods.comforts-forge-6.4.0+1.20.1.jar"
         },
         {
           "id": "cretania-compactmachines-forge-6-0-3",
@@ -1032,7 +1032,7 @@
           "file": "mods/copycats-3.0.7+mc.1.20.1-forge.jar",
           "sha1": "5d0f497695fc2ee4ef89f1898458882b9d2d3aad",
           "size": 1996097,
-          "url": "https://github.com/juyliantamayo/launchercretania/releases/download/cretaniaTF4-v1.0.0/mods.copycats-3.0.7%2Bmc.1.20.1-forge.jar"
+          "url": "https://github.com/juyliantamayo/launchercretania/releases/download/cretaniaTF4-v1.0.0/mods.copycats-3.0.7+mc.1.20.1-forge.jar"
         },
         {
           "id": "cretania-corals-tfc-1-0-0-forge-1-20-1",
@@ -1095,7 +1095,7 @@
           "file": "mods/create-new-age-1.1.7f+forge-mc1.20.1.jar",
           "sha1": "5731a275007fc8236414829358e4a100783927cb",
           "size": 1145493,
-          "url": "https://github.com/juyliantamayo/launchercretania/releases/download/cretaniaTF4-v1.0.0/mods.create-new-age-1.1.7f%2Bforge-mc1.20.1.jar"
+          "url": "https://github.com/juyliantamayo/launchercretania/releases/download/cretaniaTF4-v1.0.0/mods.create-new-age-1.1.7f+forge-mc1.20.1.jar"
         },
         {
           "id": "cretania-create-stuff-additions1-20-1-v2-1-1",
@@ -1242,7 +1242,7 @@
           "file": "mods/curios-forge-5.14.1+1.20.1.jar",
           "sha1": "452175b95ad3db6ff58bb8968f6bf7a9d1e0f480",
           "size": 398066,
-          "url": "https://github.com/juyliantamayo/launchercretania/releases/download/cretaniaTF4-v1.0.0/mods.curios-forge-5.14.1%2B1.20.1.jar"
+          "url": "https://github.com/juyliantamayo/launchercretania/releases/download/cretaniaTF4-v1.0.0/mods.curios-forge-5.14.1+1.20.1.jar"
         },
         {
           "id": "cretania-curiouslanterns-1-20-1-1-3-7",
@@ -1312,7 +1312,7 @@
           "file": "mods/embeddium-0.3.31+mc1.20.1.jar",
           "sha1": "bb2fa8f3e493af16af9160d049f96c614a1faf2f",
           "size": 1320675,
-          "url": "https://github.com/juyliantamayo/launchercretania/releases/download/cretaniaTF4-v1.0.0/mods.embeddium-0.3.31%2Bmc1.20.1.jar"
+          "url": "https://github.com/juyliantamayo/launchercretania/releases/download/cretaniaTF4-v1.0.0/mods.embeddium-0.3.31+mc1.20.1.jar"
         },
         {
           "id": "cretania-enlightend-5-0-14-1-20-1",
@@ -1459,7 +1459,7 @@
           "file": "mods/cretaniaTF4-tfc-samples-forge-1.20.1-1.0.jar",
           "sha1": "9e8faa72cbff7384377a054eafe7a912ba86a0b5",
           "size": 239062,
-          "url": "https://github.com/juyliantamayo/launchercretania/releases/download/cretaniaTF4-v1.0.0/mods.cretaniaTF4-tfc-samples-forge-1.20.1-1.0.jar"
+          "url": "https://github.com/juyliantamayo/launchercretania/releases/download/cretaniaTF4-v1.0.0/mods.hardrock-tfc-samples-forge-1.20.1-1.0.jar"
         },
         {
           "id": "cretania-htm-1-20-1-forge-1-0-8",
@@ -1473,7 +1473,7 @@
           "file": "mods/hud_texts_v3.2_1.20.1_[FORGE].jar",
           "sha1": "378dce93f96682f82109f5ec446833c82edab288",
           "size": 411679,
-          "url": "https://github.com/juyliantamayo/launchercretania/releases/download/cretaniaTF4-v1.0.0/mods.hud_texts_v3.2_1.20.1_%5BFORGE%5D.jar"
+          "url": "https://github.com/juyliantamayo/launchercretania/releases/download/cretaniaTF4-v1.0.0/mods.hud_texts_v3.2_1.20.1_.FORGE.jar"
         },
         {
           "id": "cretania-ichunutil-1-20-1-forge-1-0-3",
@@ -1487,7 +1487,7 @@
           "file": "mods/immersive_aircraft-1.4.0+1.20.1-forge.jar",
           "sha1": "64e6c792c5208005ee6b099e8fb7d2738873737d",
           "size": 2428368,
-          "url": "https://github.com/juyliantamayo/launchercretania/releases/download/cretaniaTF4-v1.0.0/mods.immersive_aircraft-1.4.0%2B1.20.1-forge.jar"
+          "url": "https://github.com/juyliantamayo/launchercretania/releases/download/cretaniaTF4-v1.0.0/mods.immersive_aircraft-1.4.0+1.20.1-forge.jar"
         },
         {
           "id": "cretania-immersivefixes-1-0-4-all",
@@ -1704,7 +1704,7 @@
           "file": "mods/modernfix-forge-5.26.2+mc1.20.1.jar",
           "sha1": "0adfc122e9f632d8847688c4c3ed20a1af182afa",
           "size": 826829,
-          "url": "https://github.com/juyliantamayo/launchercretania/releases/download/cretaniaTF4-v1.0.0/mods.modernfix-forge-5.26.2%2Bmc1.20.1.jar"
+          "url": "https://github.com/juyliantamayo/launchercretania/releases/download/cretaniaTF4-v1.0.0/mods.modernfix-forge-5.26.2+mc1.20.1.jar"
         },
         {
           "id": "cretania-moonlight-1-20-2-16-28-forge",
@@ -1781,14 +1781,14 @@
           "file": "mods/player-animation-lib-forge-1.0.2-rc1+1.20.jar",
           "sha1": "16808f94a41d45d8e986b4e4ea6b02ba57fa058a",
           "size": 181437,
-          "url": "https://github.com/juyliantamayo/launchercretania/releases/download/cretaniaTF4-v1.0.0/mods.player-animation-lib-forge-1.0.2-rc1%2B1.20.jar"
+          "url": "https://github.com/juyliantamayo/launchercretania/releases/download/cretaniaTF4-v1.0.0/mods.player-animation-lib-forge-1.0.2-rc1+1.20.jar"
         },
         {
           "id": "cretania-pneumaticcraft-repressurized-6-0-22-mc1-20-1",
           "file": "mods/pneumaticcraft-repressurized-6.0.22+mc1.20.1.jar",
           "sha1": "cbe2d3c5df7c2770ac59eb6f02489d8917627c03",
           "size": 10790482,
-          "url": "https://github.com/juyliantamayo/launchercretania/releases/download/cretaniaTF4-v1.0.0/mods.pneumaticcraft-repressurized-6.0.22%2Bmc1.20.1.jar"
+          "url": "https://github.com/juyliantamayo/launchercretania/releases/download/cretaniaTF4-v1.0.0/mods.pneumaticcraft-repressurized-6.0.22+mc1.20.1.jar"
         },
         {
           "id": "cretania-polylib-forge-2000-0-3-build-143",
@@ -1802,7 +1802,7 @@
           "file": "mods/polymorph-forge-0.49.10+1.20.1.jar",
           "sha1": "e4afd6f512cc06311320357ed974cee586e031c3",
           "size": 299601,
-          "url": "https://github.com/juyliantamayo/launchercretania/releases/download/cretaniaTF4-v1.0.0/mods.polymorph-forge-0.49.10%2B1.20.1.jar"
+          "url": "https://github.com/juyliantamayo/launchercretania/releases/download/cretaniaTF4-v1.0.0/mods.polymorph-forge-0.49.10+1.20.1.jar"
         },
         {
           "id": "cretania-precisionprospecting-1-20-1-1-0-0",
@@ -1830,7 +1830,7 @@
           "file": "mods/radiantgear-forge-2.2.0+1.20.1.jar",
           "sha1": "525b3ebccece23ed6bf4945a1c054c21599fc083",
           "size": 47170,
-          "url": "https://github.com/juyliantamayo/launchercretania/releases/download/cretaniaTF4-v1.0.0/mods.radiantgear-forge-2.2.0%2B1.20.1.jar"
+          "url": "https://github.com/juyliantamayo/launchercretania/releases/download/cretaniaTF4-v1.0.0/mods.radiantgear-forge-2.2.0+1.20.1.jar"
         },
         {
           "id": "cretania-redstonepen-1-20-1-neoforge-1-3-33",
@@ -1907,7 +1907,7 @@
           "file": "mods/seamless-loading-screen-2.0.3+1.20.1-forge.jar",
           "sha1": "fb03054d727573029b2dbf5e78bd187491b8931d",
           "size": 1015562,
-          "url": "https://github.com/juyliantamayo/launchercretania/releases/download/cretaniaTF4-v1.0.0/mods.seamless-loading-screen-2.0.3%2B1.20.1-forge.jar"
+          "url": "https://github.com/juyliantamayo/launchercretania/releases/download/cretaniaTF4-v1.0.0/mods.seamless-loading-screen-2.0.3+1.20.1-forge.jar"
         },
         {
           "id": "cretania-servercountryflags-1-10-1-1-20-1-forge",
@@ -1921,7 +1921,7 @@
           "file": "mods/smoothboot(reloaded)-mc1.20.1-0.0.4.jar",
           "sha1": "3fd79132dba444bd109b5de4ad75dee06a48e130",
           "size": 41044,
-          "url": "https://github.com/juyliantamayo/launchercretania/releases/download/cretaniaTF4-v1.0.0/mods.smoothboot(reloaded)-mc1.20.1-0.0.4.jar"
+          "url": "https://github.com/juyliantamayo/launchercretania/releases/download/cretaniaTF4-v1.0.0/mods.smoothboot.reloaded.-mc1.20.1-0.0.4.jar"
         },
         {
           "id": "cretania-sodiumdynamiclights-forge-1-0-10-1-20-1",
