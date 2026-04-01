@@ -2338,6 +2338,29 @@
         }
       ],
       "optionalMods": [],
+      "zips": [
+        {
+          "id": "kubejs",
+          "url": "https://github.com/juyliantamayo/launchercretania/releases/download/cretaniaTF4-v1.0.0/kubejs.zip",
+          "sha1": "0a540f657a1be8153fef29d77d932f76f001ff7d",
+          "target": "kubejs",
+          "replace": true
+        },
+        {
+          "id": "config",
+          "url": "https://github.com/juyliantamayo/launchercretania/releases/download/cretaniaTF4-v1.0.0/config.zip",
+          "sha1": "0e8acb2417f7d24e37042cf5195be3be2323a25c",
+          "target": "config",
+          "replace": true
+        },
+        {
+          "id": "defaultconfigs",
+          "url": "https://github.com/juyliantamayo/launchercretania/releases/download/cretaniaTF4-v1.0.0/defaultconfigs.zip",
+          "sha1": "18925d419fb6d272b67eb18cba039a55c59bc552",
+          "target": "defaultconfigs",
+          "replace": true
+        }
+      ],
       "resourcepacks": [],
       "shaderpacks": [],
       "config": [],

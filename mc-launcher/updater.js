@@ -7,6 +7,7 @@
  *  - Mods, resourcepacks, shaderpacks, config, datasources, datapacks y archivos de folders/
  *  - Descarga/copia diferencial por SHA1
  *  - Limpieza de archivos obsoletos administrados por el launcher
+ *  - Sincronización de carpetas grandes mediante ZIPs (zips[])
  */
 
 const axios = require("axios");
@@ -14,6 +15,7 @@ const fs = require("fs-extra");
 const crypto = require("crypto");
 const path = require("path");
 const EventEmitter = require("events");
+const AdmZip = require("adm-zip");
 const { parseManifestPayload } = require("./manifest-crypto");
 
 function isDevMode() {
@@ -34,6 +36,7 @@ const LOCAL_MODPACK_DIR = (() => {
 const MAX_PARALLEL = 3;
 const MAX_RETRIES = 3;
 const SYNC_STATE_FILE = ".launcher-sync-state.json";
+const ZIP_STATE_FILE = ".launcher-zip-state.json";
 
 function uniqueValues(values) {
   return [...new Set(values.filter(Boolean))];
@@ -246,6 +249,81 @@ function saveSyncState(gameDir, files) {
   fs.writeFileSync(statePath, JSON.stringify({ files }, null, 2));
 }
 
+function loadZipState(gameDir) {
+  const statePath = path.join(gameDir, ZIP_STATE_FILE);
+  try {
+    if (fs.existsSync(statePath)) {
+      const parsed = JSON.parse(fs.readFileSync(statePath, "utf-8"));
+      return parsed.zips || {};
+    }
+  } catch (err) {
+    console.warn("[updater] No se pudo leer zip-state:", err.message);
+  }
+  return {};
+}
+
+function saveZipState(gameDir, zips) {
+  const statePath = path.join(gameDir, ZIP_STATE_FILE);
+  fs.writeFileSync(statePath, JSON.stringify({ zips }, null, 2));
+}
+
+async function syncZipsSection(gameDir, modpack, baseUrl, isRemote, emitter) {
+  const zips = modpack.zips || [];
+  if (zips.length === 0) return;
+
+  const zipState = loadZipState(gameDir);
+
+  for (const zipEntry of zips) {
+    const currentSha1 = zipState[zipEntry.id];
+    if (currentSha1 && currentSha1.toLowerCase() === String(zipEntry.sha1).toLowerCase()) {
+      console.log(`[updater] ZIP sin cambios: ${zipEntry.id}`);
+      continue;
+    }
+
+    const targetLabel = zipEntry.target || zipEntry.id;
+    emitter.emit("progress", { phase: "status", message: `Sincronizando ${targetLabel}...` });
+    console.log(`[updater] Descargando ZIP: ${zipEntry.id}`);
+
+    const tmpZipPath = path.join(gameDir, `.tmp-${zipEntry.id}.zip`);
+    try {
+      if (isRemote) {
+        const url = zipEntry.url || `${baseUrl}/${zipEntry.file || zipEntry.id + ".zip"}`;
+        await downloadWithRetry(url, tmpZipPath);
+      } else {
+        const sourcePath = path.join(LOCAL_MODPACK_DIR, zipEntry.file || `${zipEntry.id}.zip`);
+        if (!await fs.pathExists(sourcePath)) {
+          throw new Error(`ZIP no encontrado localmente: ${sourcePath}`);
+        }
+        await fs.copy(sourcePath, tmpZipPath, { overwrite: true });
+      }
+
+      const downloadedSha1 = sha1File(tmpZipPath);
+      if (downloadedSha1.toLowerCase() !== String(zipEntry.sha1).toLowerCase()) {
+        throw new Error(`SHA1 inválido para ${zipEntry.id}: esperado ${zipEntry.sha1}, obtenido ${downloadedSha1}`);
+      }
+
+      const targetDir = path.join(gameDir, targetLabel);
+      await fs.ensureDir(targetDir);
+
+      if (zipEntry.replace !== false) {
+        await fs.emptyDir(targetDir);
+      }
+
+      const zip = new AdmZip(tmpZipPath);
+      zip.extractAllTo(targetDir, true);
+
+      zipState[zipEntry.id] = downloadedSha1;
+      saveZipState(gameDir, zipState);
+      console.log(`[updater] ✓ ZIP extraído: ${zipEntry.id} → ${targetDir}`);
+    } catch (err) {
+      console.error(`[updater] ✗ Error con ZIP ${zipEntry.id}: ${err.message}`);
+      emitter.emit("progress", { phase: "status", message: `⚠ Error sincronizando ${targetLabel}: ${err.message}` });
+    } finally {
+      fs.remove(tmpZipPath).catch(() => {});
+    }
+  }
+}
+
 async function removeEmptyParents(targetPath, stopDir) {
   let currentDir = path.dirname(targetPath);
   const rootDir = path.resolve(stopDir);
@@ -437,7 +515,8 @@ async function syncMods(gameDir, emitter = new EventEmitter(), options = {}) {
 
   if (toSync.length === 0) {
     saveSyncState(gameDir, Array.from(managedFiles).sort());
-    console.log("[updater] Todo actualizado. Sin cambios necesarios.");
+    console.log("[updater] Mods actualizados. Verificando ZIPs...");
+    await syncZipsSection(gameDir, modpack, baseUrl, isRemote, emitter);
     emitter.emit("progress", { phase: "done", current: 0, total: 0 });
     return manifest;
   }
@@ -497,6 +576,9 @@ async function syncMods(gameDir, emitter = new EventEmitter(), options = {}) {
   );
 
   saveSyncState(gameDir, Array.from(new Set([...Array.from(appliedFiles), ...Array.from(managedFiles)])).sort());
+
+  // ── Sincronizar carpetas ZIP ──
+  await syncZipsSection(gameDir, modpack, baseUrl, isRemote, emitter);
 
   emitter.emit("progress", {
     phase: "done",
