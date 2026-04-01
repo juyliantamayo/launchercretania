@@ -1295,13 +1295,6 @@
           "url": "https://github.com/juyliantamayo/launchercretania/releases/download/cretaniaTF4-v1.0.0/mods.defaultoptions-forge-1.20.1-18.0.4.jar"
         },
         {
-          "id": "cretania-drippyloadingscreen-forge-3-1-0-mc-1-20-1",
-          "file": "mods/drippyloadingscreen_forge_3.1.0_MC_1.20.1.jar",
-          "sha1": "5c5e9dd39881b9b65dba7d7124690c51430a3ff1",
-          "size": 285003,
-          "url": "https://github.com/juyliantamayo/launchercretania/releases/download/cretaniaTF4-v1.0.0/mods.drippyloadingscreen_forge_3.1.0_MC_1.20.1.jar"
-        },
-        {
           "id": "cretania-dttfc-seeds-1-20-1-forge-1-0-0",
           "file": "mods/dttfc_seeds-1.20.1-forge-1.0.0.jar",
           "sha1": "560686dccbb43cb5fe7dea675faa7a2f2ee73349",
