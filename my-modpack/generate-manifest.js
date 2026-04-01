@@ -210,4 +210,15 @@ function generateManifest() {
   console.log(`   Folders      : ${folders.length}`);
 }
 
-generateManifest();
+// Si se pasa --enc-only, solo cifra el manifest.json existente sin regenerarlo
+if (process.argv.includes("--enc-only")) {
+  if (!fs.existsSync(MANIFEST_PATH)) {
+    console.error("❌ manifest.json no encontrado");
+    process.exit(1);
+  }
+  const manifest = JSON.parse(fs.readFileSync(MANIFEST_PATH, "utf-8"));
+  fs.writeFileSync(ENCRYPTED_MANIFEST_PATH, JSON.stringify(encryptManifestObject(manifest), null, 2) + "\n");
+  console.log("✅ manifest.enc generado desde manifest.json existente");
+} else {
+  generateManifest();
+}
