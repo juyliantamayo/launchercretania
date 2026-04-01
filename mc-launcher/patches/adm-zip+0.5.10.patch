@@ -1,0 +1,18 @@
+diff --git a/node_modules/adm-zip/util/fileSystem.js b/node_modules/adm-zip/util/fileSystem.js
+index dee5c2a..361f34b 100644
+--- a/node_modules/adm-zip/util/fileSystem.js
++++ b/node_modules/adm-zip/util/fileSystem.js
+@@ -1,11 +1,5 @@
+ exports.require = function () {
+-    if (typeof process === "object" && process.versions && process.versions["electron"]) {
+-        try {
+-            const originalFs = require("original-fs");
+-            if (Object.keys(originalFs).length > 0) {
+-                return originalFs;
+-            }
+-        } catch (e) {}
+-    }
++    // Always use standard fs (not original-fs) to ensure existsSync works correctly
++    // for regular file paths in Electron environments.
+     return require("fs");
+ };
