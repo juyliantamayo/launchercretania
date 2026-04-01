@@ -33,7 +33,7 @@ $ManifestEncPath = Join-Path $ModpackDir "manifest.enc"
 # ── GitHub config ──────────────────────────────────────────────────────────────
 $RepoOwner = "juyliantamayo"
 $RepoName  = "launchercretania"
-$ReleaseId = "293289533"   # ID de la release modpack-v1.0.0
+$ReleaseId = "303984033"   # ID de la release cretaniaTF4-v1.0.0
 
 # ── Token (desde git credential helper) ───────────────────────────────────────
 $credLines  = "protocol=https`nhost=github.com`n" | git credential fill
@@ -200,4 +200,4 @@ foreach ($iconName in $iconAssets) {
 Write-Host "`n[5/5] Completado." -ForegroundColor Green
 Write-Host "      Modpack v$newVersion desplegado correctamente." -ForegroundColor Green
 Write-Host "      - Repo   : https://github.com/$RepoOwner/$RepoName"
-Write-Host "      - Release: https://github.com/$RepoOwner/$RepoName/releases/tag/modpack-v1.0.0"
+Write-Host "      - Release: https://github.com/$RepoOwner/$RepoName/releases/tag/cretaniaTF4-v1.0.0"
