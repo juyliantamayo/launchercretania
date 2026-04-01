@@ -1344,13 +1344,6 @@
           "url": "https://github.com/juyliantamayo/launchercretania/releases/download/cretaniaTF4-v1.0.0/mods.exposure-1.20.1-1.7.16-forge.jar"
         },
         {
-          "id": "cretania-fancymenu-forge-3-8-1-mc-1-20-1",
-          "file": "mods/fancymenu_forge_3.8.1_MC_1.20.1.jar",
-          "sha1": "1fef1d8ab0dc2dec116bc6d6cb6f789fd33b23b0",
-          "size": 4472193,
-          "url": "https://github.com/juyliantamayo/launchercretania/releases/download/cretaniaTF4-v1.0.0/mods.fancymenu_forge_3.8.1_MC_1.20.1.jar"
-        },
-        {
           "id": "cretania-farmersrespite-1-20-1-2-1-2",
           "file": "mods/farmersrespite-1.20.1-2.1.2.jar",
           "sha1": "9ae5bc246cb1a8f3573ab685a4e9ddfaf869e2de",
