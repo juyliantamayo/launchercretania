@@ -4,7 +4,7 @@
  * Soporta:
  *  - Modpacks múltiples con backward compatibility
  *  - Mods opcionales
- *  - Mods, resourcepacks, datasources, datapacks y archivos de folders/
+ *  - Mods, resourcepacks, shaderpacks, config, datasources, datapacks y archivos de folders/
  *  - Descarga/copia diferencial por SHA1
  *  - Limpieza de archivos obsoletos administrados por el launcher
  */
@@ -81,9 +81,9 @@ function normalizeManifest(data) {
       ...data,
       launcher: {
         version: launcher.version || "1.0.0",
-      assetName: launcher.assetName || "LucerionLauncher.exe",
-      releaseApiUrl: launcher.releaseApiUrl || "",
-      patchNotes: Array.isArray(launcher.patchNotes) ? launcher.patchNotes : []
+        assetName: launcher.assetName || "LucerionLauncher.exe",
+        releaseApiUrl: launcher.releaseApiUrl || "",
+        patchNotes: Array.isArray(launcher.patchNotes) ? launcher.patchNotes : []
       }
     };
   }
@@ -112,6 +112,8 @@ function normalizeManifest(data) {
       mods: data.mods || [],
       optionalMods: data.optionalMods || [],
       resourcepacks: data.resourcepacks || [],
+      shaderpacks: data.shaderpacks || [],
+      config: data.config || [],
       datasources: data.datasources || [],
       datapacks: data.datapacks || [],
       folders: data.folders || [],
@@ -276,13 +278,41 @@ function createSyncEntries(modpack, enabledOptionalMods) {
     }
   };
 
+  // ── Mods (obligatorios + opcionales habilitados) ──
   pushEntries(modpack.mods || [], "mods", (file) => `mods/${path.basename(file)}`);
   pushEntries(
     (modpack.optionalMods || []).filter((item) => enabledSet.has(item.id)),
     "mods",
     (file) => `mods/${path.basename(file)}`
   );
+
+  // ── Resource packs ──
   pushEntries(modpack.resourcepacks || [], "resourcepacks", (file) => normalizePath(file));
+
+  // ── Shader packs ── NUEVO
+  // Destino: shaderpacks/<nombre_archivo>
+  pushEntries(
+    modpack.shaderpacks || [],
+    "shaderpacks",
+    (file) => `shaderpacks/${path.basename(file)}`
+  );
+
+  // ── Config ── NUEVO
+  // Los archivos de config mantienen su ruta relativa dentro de config/
+  // Ejemplo: config/sodium-options.json → config/sodium-options.json
+  // Ejemplo: config/mods/jade.json → config/mods/jade.json
+  pushEntries(
+    modpack.config || [],
+    "config",
+    (file) => {
+      // Si el archivo ya empieza con "config/", lo usamos tal cual
+      const normalized = normalizePath(file);
+      if (normalized.startsWith("config/")) return normalized;
+      return `config/${path.basename(file)}`;
+    }
+  );
+
+  // ── Datasources, datapacks, folders (existentes) ──
   pushEntries(modpack.datasources || [], "datasources", (file) => normalizePath(file));
   pushEntries(modpack.datapacks || [], "datapacks", (file) => normalizePath(file));
   pushEntries(modpack.folders || [], "folders", (file) => normalizePath(file).replace(/^folders\//, ""));
@@ -322,6 +352,8 @@ async function syncMods(gameDir, emitter = new EventEmitter(), options = {}) {
     loaderVersion: modpack.loaderVersion,
     mods: syncEntries.filter((entry) => entry.kind === "mods"),
     resourcepacks: syncEntries.filter((entry) => entry.kind === "resourcepacks"),
+    shaderpacks: syncEntries.filter((entry) => entry.kind === "shaderpacks"),
+    config: syncEntries.filter((entry) => entry.kind === "config"),
     datasources: syncEntries.filter((entry) => entry.kind === "datasources"),
     datapacks: syncEntries.filter((entry) => entry.kind === "datapacks"),
     folders: syncEntries.filter((entry) => entry.kind === "folders"),
@@ -329,13 +361,17 @@ async function syncMods(gameDir, emitter = new EventEmitter(), options = {}) {
     _modpackId: modpack.id
   };
 
+  // ── Crear directorios necesarios ──
   await fs.ensureDir(gameDir);
   await fs.ensureDir(path.join(gameDir, "mods"));
+  await fs.ensureDir(path.join(gameDir, "resourcepacks"));
+  await fs.ensureDir(path.join(gameDir, "shaderpacks"));  // NUEVO
+  await fs.ensureDir(path.join(gameDir, "config"));       // NUEVO
 
+  // ── Limpiar mods obsoletos ──
   const expectedModFiles = new Set(
     manifest.mods.map((entry) => path.basename(entry.file))
   );
-  // Add user-uploaded JARs so they are never deleted by sync
   for (const f of userModFiles) expectedModFiles.add(f);
 
   const localModFiles = await fs.readdir(path.join(gameDir, "mods"));
@@ -346,6 +382,7 @@ async function syncMods(gameDir, emitter = new EventEmitter(), options = {}) {
     }
   }
 
+  // ── Limpiar archivos obsoletos de runs anteriores ──
   for (const staleRelativePath of previousManagedFiles) {
     if (managedFiles.has(staleRelativePath)) continue;
     const absolutePath = path.join(gameDir, staleRelativePath);
@@ -415,7 +452,8 @@ async function syncMods(gameDir, emitter = new EventEmitter(), options = {}) {
       const destPath = path.join(gameDir, entry.targetRelativePath);
       try {
         if (isRemote) {
-          const url = entry.url || `${baseUrl}/${path.basename(entry.file)}`;
+          // URL explícita en el manifest, o construida desde baseUrl
+          const url = entry.url || `${baseUrl}/${entry.file}`;
           console.log("[updater] Descargando:", entry.id, "→", url);
           await downloadWithRetry(url, destPath);
         } else {

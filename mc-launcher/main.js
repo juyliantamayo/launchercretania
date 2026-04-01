@@ -699,8 +699,25 @@ async function resolveLoader(gameDir, modpack, statusCb = () => {}) {
     }
     case "forge": {
       statusCb("Verificando Forge…");
-      // MCLC handles Forge via opts.forge — pass it as forgeVersion
-      return { customProfile: null, forgeVersion: loaderVersion };
+      // Check if forge profile is already installed in versions/
+      const forgeProfileName = `${mcVersion}-forge-${loaderVersion}`;
+      const forgeProfileJson = path.join(gameDir, "versions", forgeProfileName, `${forgeProfileName}.json`);
+      if (fs.existsSync(forgeProfileJson)) {
+        console.log(`[forge] Perfil ya instalado: ${forgeProfileName}`);
+        return { customProfile: forgeProfileName, forgeVersion: null };
+      }
+      // Download forge installer jar so MCLC can install it
+      const forgeInstallerUrl = `https://maven.minecraftforge.net/net/minecraftforge/forge/${mcVersion}-${loaderVersion}/forge-${mcVersion}-${loaderVersion}-installer.jar`;
+      const installersDir = path.join(app.getPath("userData"), "forge-installers");
+      await fsExtra.ensureDir(installersDir);
+      const installerPath = path.join(installersDir, `forge-${mcVersion}-${loaderVersion}-installer.jar`);
+      if (!fs.existsSync(installerPath)) {
+        statusCb(`Descargando instalador Forge ${loaderVersion}…`);
+        console.log(`[forge] Descargando instalador: ${forgeInstallerUrl}`);
+        const resp = await axios.get(forgeInstallerUrl, { responseType: "arraybuffer", timeout: 120000 });
+        fs.writeFileSync(installerPath, Buffer.from(resp.data));
+      }
+      return { customProfile: null, forgeVersion: installerPath };
     }
     case "custom": {
       // loaderVersion IS the full custom profile name already installed in versions/
@@ -1249,6 +1266,11 @@ ipcMain.handle("launch", async (_event, { authData, accountUuid, modpackId, enab
 
     await fsExtra.ensureDir(GAME_DIR);
 
+    // ── Crear carpetas necesarias para shaderpacks y config ──
+    await fsExtra.ensureDir(path.join(GAME_DIR, "shaderpacks"));
+    await fsExtra.ensureDir(path.join(GAME_DIR, "config"));
+    await fsExtra.ensureDir(path.join(GAME_DIR, "resourcepacks"));
+
     const settings = loadSettings();
     const mcVersion = manifest.minecraft || "1.20.1";
 
@@ -1288,8 +1310,8 @@ ipcMain.handle("launch", async (_event, { authData, accountUuid, modpackId, enab
         type: "release"
       },
       memory: {
-        max: settings.ramMax + "G",
-        min: settings.ramMin + "G"
+        max: (requestedModpack && requestedModpack.ramMax ? requestedModpack.ramMax : settings.ramMax) + "G",
+        min: (requestedModpack && requestedModpack.ramMin ? requestedModpack.ramMin : settings.ramMin) + "G"
       },
       window: {
         width: settings.width || 1280,
@@ -1300,9 +1322,17 @@ ipcMain.handle("launch", async (_event, { authData, accountUuid, modpackId, enab
       }
     };
 
+    // Aplicar jvmArgs personalizados del modpack (ej: para Lite 4GB)
+    if (requestedModpack && requestedModpack.jvmArgs) {
+      const extraArgs = String(requestedModpack.jvmArgs).trim().split(/\s+/).filter(Boolean);
+      launchOpts.customArgs = extraArgs;
+      console.log("[main] jvmArgs del modpack aplicados:", String(requestedModpack.jvmArgs).substring(0, 80));
+    }
+
     if (loaderResult.customProfile) {
       launchOpts.version.custom = loaderResult.customProfile;
     } else if (loaderResult.forgeVersion) {
+      // forgeVersion is a path to the installer JAR; pass it directly to MCLC
       launchOpts.forge = loaderResult.forgeVersion;
     }
 
