@@ -30,6 +30,7 @@ const INVOKE_CHANNELS = [
   "kill-instance",
   "launch",
   "download-modpack",
+  "sync-mods-only",
   "check-java",
   "install-java",
   "get-patch-notes",

@@ -87,8 +87,8 @@ export function initEvents() {
     setStatus("Abriendo login de Microsoft...");
     try {
       const r = await ipc.invoke("login-microsoft");
-      setStatus("Cuenta agregada: " + r.profile.name);
-      await refreshAccs();
+      setStatus("Cuenta agregada: " + r.profile.name);      // Seleccionar automáticamente la cuenta recién agregada
+      if (r.profile && r.profile.uuid) S.selectedAcc = r.profile.uuid;      await refreshAccs();
       await refreshPacks();
     } catch (err) {
       // err.message siempre es legible gracias a la normalización en main.js
@@ -135,7 +135,7 @@ export function initEvents() {
     s.gameDir         = "";
     s.selectedModpack = S.selectedId || "";
     await ipc.invoke("save-settings", s);
-    $("pathDisp").textContent = "Por defecto (%APPDATA%/.cretania-minecraft)";
+    $('pathDisp').textContent = "Por defecto (%APPDATA%/.minecraft)";
     $("pathDisp").title       = $("pathDisp").textContent;
     setStatus("Ruta restablecida.");
   });
@@ -189,6 +189,32 @@ export function initEvents() {
     }
   });
 
+  // Sync mods only button
+  $("btnSyncMods").addEventListener("click", async () => {
+    const p = getPack(); if (!p) return;
+    if (S.launchBusy) return;
+    S.launchBusy = true;
+    $("btnSyncMods").disabled = true;
+    setStatus("Sincronizando mods de " + p.name + "...");
+    log("[SYNC] Descargando mods de " + p.name + " sin lanzar el juego...", "system");
+    try {
+      const r = await ipc.invoke("sync-mods-only", {
+        modpackId:           p.id,
+        enabledOptionalMods: getEnabledOpt()
+      });
+      if (r.cancelled) { setStatus("Descarga cancelada."); return; }
+      setStatus("Mods sincronizados en: " + r.folder);
+      log("[SYNC] " + r.modCount + " mods sincronizados en " + r.folder, "system");
+    } catch (err) {
+      const msg = err.message || "Error desconocido al sincronizar mods.";
+      setStatus("Error: " + msg);
+      log("[SYNC] ERROR: " + msg, "error");
+    } finally {
+      S.launchBusy = false;
+      updateLaunch();
+    }
+  });
+
   // Launch button
   $("btnLaunch").addEventListener("click", async () => {
     const p = getPack();
@@ -221,8 +247,12 @@ export function initEvents() {
     }
   });
 
-  // ── IPC events ───────────────────────────────────────────────────────────────
-  ipc.on("progress", d => {
+  // ── IPC events (guardar unsubs para evitar memory leaks) ─────────────────────
+  if (!window._ipcUnsubs) window._ipcUnsubs = [];
+  window._ipcUnsubs.forEach(fn => fn());
+  window._ipcUnsubs = [];
+
+  window._ipcUnsubs.push(ipc.on("progress", d => {
     if (d.phase === "verify") {
       showProg(Math.round((d.current / Math.max(d.total || 1, 1)) * 100));
       setStatus(`Verificando mods... ${d.current}/${d.total}`);
@@ -236,29 +266,50 @@ export function initEvents() {
       setStatus("Sincronización terminada.");
       setTimeout(hideProg, 900);
     }
-  });
+  }));
 
-  ipc.on("log", msg => log(msg));
+  window._ipcUnsubs.push(ipc.on("log", msg => log(msg)));
 
-  ipc.on("mc-closed", async payload => {
+  window._ipcUnsubs.push(ipc.on("mc-closed", async payload => {
     const code = typeof payload === "object" ? payload.code : payload;
-    setStatus(code === 0 ? "Minecraft cerrado." : "Minecraft cerró con errores.");
-    log("[LAUNCHER] Minecraft cerrado — código " + code, code === 0 ? "system" : "error");
+    const diagnostic = typeof payload === "object" ? payload.diagnostic : null;
+
+    if (code === 0) {
+      setStatus("Minecraft cerrado.");
+      log("[LAUNCHER] Minecraft cerrado normalmente.", "system");
+    } else if (diagnostic) {
+      log("[DIAGNÓSTICO] " + diagnostic.title + ": " + diagnostic.message, "error");
+      if (diagnostic.url) {
+        log("[DIAGNÓSTICO] Descarga: " + diagnostic.url, "error");
+      }
+      if (diagnostic.crashLog) {
+        log("[DIAGNÓSTICO] Crash log: " + diagnostic.crashLog, "error");
+      }
+      setStatus("⚠ " + diagnostic.title + " — revisa la consola para más info.");
+    } else if (code !== null) {
+      const hex = code < 0 ? "0x" + (code >>> 0).toString(16).toUpperCase() : "";
+      log(`[LAUNCHER] Minecraft cerró con código ${code}${hex ? " (" + hex + ")" : ""}. Revisa los logs para más detalles.`, "error");
+      setStatus("Minecraft cerró con errores (código " + code + ").");
+    } else {
+      log("[LAUNCHER] Minecraft fue cerrado.", "system");
+      setStatus("Minecraft cerrado.");
+    }
+
     await loadInstStatus();
     renderGrid();
     if (S.subview === "detail") renderDetail();
     renderSbPacks();
     updateLaunch();
-  });
+  }));
 
-  ipc.on("java-install-progress", d => {
+  window._ipcUnsubs.push(ipc.on("java-install-progress", d => {
     $("javaProgress").style.display = "block";
     $("javaPFill").style.width      = d.percent + "%";
     $("javaPText").textContent      = d.message;
     setStatus(d.message);
-  });
+  }));
 
-  ipc.on("launcher-update-status", d => {
+  window._ipcUnsubs.push(ipc.on("launcher-update-status", d => {
     const banner  = document.getElementById("tbUpdateBanner");
     const txt     = document.getElementById("tbUpdateTxt");
     const applyBtn = document.getElementById("btnApplyUpdate");
@@ -284,5 +335,5 @@ export function initEvents() {
     } else {
       if (banner) banner.style.display = "none";
     }
-  });
+  }));
 }

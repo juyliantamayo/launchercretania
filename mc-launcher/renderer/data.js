@@ -33,7 +33,7 @@ export async function loadSettings() {
   $("ramMaxVal").textContent = $("ramMax").value + "G";
   const p = S.settings.gameDir?.trim();
   const pathEl = $("pathDisp");
-  pathEl.textContent = p || "Por defecto (%APPDATA%/.cretania-minecraft)";
+  pathEl.textContent = p || "Por defecto (%APPDATA%/.minecraft)";
   pathEl.title       = pathEl.textContent;
 }
 

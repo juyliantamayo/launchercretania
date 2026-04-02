@@ -51,6 +51,6 @@
     "applicationId": "LucerionLauncher",
     "displayName": "Lucerion Launcher",
     "showNameOnTiles": true,
-    "minVersion": "10.0.17763.0"
+    "languages": ["es"]
   }
 }

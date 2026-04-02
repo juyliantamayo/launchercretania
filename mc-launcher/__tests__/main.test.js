@@ -20,7 +20,9 @@ jest.mock("electron", () => {
       },
       whenReady: () => ({ then: jest.fn() }),
       on: jest.fn(),
-      quit: jest.fn()
+      quit: jest.fn(),
+      requestSingleInstanceLock: jest.fn().mockReturnValue(true),
+      isPackaged: false
     },
     BrowserWindow: jest.fn().mockImplementation(() => ({
       once: jest.fn(), loadFile: jest.fn(), setMenu: jest.fn(), on: jest.fn(),
@@ -51,6 +53,17 @@ jest.mock("minecraft-launcher-core", () => ({
 jest.mock("msmc", () => ({
   Auth: jest.fn().mockImplementation(() => ({ createLink: jest.fn(), refresh: jest.fn() }))
 }));
+
+// Mock de updater — fetchManifest lee manifest local en dev mode, así que lo controlamos
+const mockFetchManifest = jest.fn();
+jest.mock("../updater", () => {
+  const actual = jest.requireActual("../updater");
+  return {
+    ...actual,
+    fetchManifest: mockFetchManifest,
+    syncMods: jest.fn().mockResolvedValue({ mods: [], manifest: {} })
+  };
+});
 
 jest.mock("axios");
 const axios = require("axios");
@@ -118,7 +131,10 @@ describe("check-updates IPC", () => {
     const vf = path.join(mockMainDir, "modpack-version-cretania.txt");
     if (fs.existsSync(vf)) fs.removeSync(vf);
 
-    axios.get.mockResolvedValueOnce({ data: { formatVersion: 2, modpacks: [{ id: "cretania", version: "1.0.1", mods: [{ id: "a" }, { id: "b" }] }] } });
+    mockFetchManifest.mockResolvedValueOnce({
+      manifest: { formatVersion: 2, launcher: { version: "1.0.0" }, modpacks: [{ id: "cretania", version: "1.0.1", mods: [{ id: "a" }, { id: "b" }] }] },
+      isRemote: true
+    });
     const r = await ipcHandlers["check-updates"](null, "cretania");
     expect(r.isFirstRun).toBe(true);
     expect(r.remoteVersion).toBe("1.0.1");
@@ -127,7 +143,10 @@ describe("check-updates IPC", () => {
 
   test("detecta actualización disponible", async () => {
     fs.writeFileSync(path.join(mockMainDir, "modpack-version-cretania.txt"), "1.0.0");
-    axios.get.mockResolvedValueOnce({ data: { formatVersion: 2, modpacks: [{ id: "cretania", version: "1.0.1", mods: [] }] } });
+    mockFetchManifest.mockResolvedValueOnce({
+      manifest: { formatVersion: 2, launcher: { version: "1.0.0" }, modpacks: [{ id: "cretania", version: "1.0.1", mods: [] }] },
+      isRemote: true
+    });
     const r = await ipcHandlers["check-updates"](null, "cretania");
     expect(r.hasUpdate).toBe(true);
     expect(r.currentVersion).toBe("1.0.0");
@@ -135,13 +154,16 @@ describe("check-updates IPC", () => {
 
   test("no detecta update si versiones iguales", async () => {
     fs.writeFileSync(path.join(mockMainDir, "modpack-version-cretania.txt"), "1.0.0");
-    axios.get.mockResolvedValueOnce({ data: { formatVersion: 2, modpacks: [{ id: "cretania", version: "1.0.0", mods: [] }] } });
+    mockFetchManifest.mockResolvedValueOnce({
+      manifest: { formatVersion: 2, launcher: { version: "1.0.0" }, modpacks: [{ id: "cretania", version: "1.0.0", mods: [] }] },
+      isRemote: true
+    });
     const r = await ipcHandlers["check-updates"](null, "cretania");
     expect(r.hasUpdate).toBe(false);
   });
 
   test("maneja error de red", async () => {
-    axios.get.mockRejectedValue(new Error("Timeout"));
+    mockFetchManifest.mockRejectedValueOnce(new Error("Timeout"));
     const r = await ipcHandlers["check-updates"]();
     expect(r).toBeDefined();
   });
@@ -151,7 +173,10 @@ describe("check-updates IPC", () => {
 describe("get-patch-notes IPC", () => {
   test("devuelve patch notes del manifest", async () => {
     const pn = [{ version: "1.0.1", date: "2026-03-06", categories: [{ type: "added", title: "Nuevos", icon: "+", entries: [{ text: "Algo" }] }] }];
-    axios.get.mockResolvedValueOnce({ data: { formatVersion: 2, launcher: { version: "1.0.0", patchNotes: pn }, modpacks: [{ id: "cretania", version: "1.0.1", patchNotes: pn }] } });
+    mockFetchManifest.mockResolvedValueOnce({
+      manifest: { formatVersion: 2, launcher: { version: "1.0.0", patchNotes: pn }, modpacks: [{ id: "cretania", version: "1.0.1", patchNotes: pn }] },
+      isRemote: true
+    });
     const r = await ipcHandlers["get-patch-notes"](null, "cretania");
     expect(r.version).toBe("1.0.1");
     expect(r.patchNotes).toEqual(pn);
@@ -159,14 +184,17 @@ describe("get-patch-notes IPC", () => {
   });
 
   test("devuelve array vacío si manifest no tiene patchNotes", async () => {
-    axios.get.mockResolvedValueOnce({ data: { formatVersion: 2, modpacks: [{ id: "cretania", version: "1.0.0" }] } });
+    mockFetchManifest.mockResolvedValueOnce({
+      manifest: { formatVersion: 2, launcher: { version: "1.0.0" }, modpacks: [{ id: "cretania", version: "1.0.0" }] },
+      isRemote: true
+    });
     const r = await ipcHandlers["get-patch-notes"](null, "cretania");
     expect(r.patchNotes).toEqual([]);
     expect(Array.isArray(r.launcherPatchNotes)).toBe(true);
   });
 
   test("maneja error total sin crash", async () => {
-    axios.get.mockRejectedValue(new Error("Network failure"));
+    mockFetchManifest.mockRejectedValueOnce(new Error("Network failure"));
     const r = await ipcHandlers["get-patch-notes"]();
     expect(r).toBeDefined();
     expect(Array.isArray(r.patchNotes)).toBe(true);
@@ -184,14 +212,16 @@ describe("check-java IPC", () => {
 
 describe("modpacks IPC", () => {
   test("lista modpacks con estado de acceso", async () => {
-    axios.get.mockResolvedValueOnce({
-      data: {
+    mockFetchManifest.mockResolvedValueOnce({
+      manifest: {
         formatVersion: 2,
+        launcher: { version: "1.0.0" },
         modpacks: [
           { id: "publico", name: "Publico", public: true, loader: "fabric", loaderType: "fabric", loaderVersion: "0.1", mods: [], optionalMods: [] },
           { id: "privado", name: "Privado", public: false, allowedUuids: ["u-1"], loader: "fabric", loaderType: "fabric", loaderVersion: "0.1", mods: [], optionalMods: [] }
         ]
-      }
+      },
+      isRemote: true
     });
 
     const result = await ipcHandlers["get-modpacks"](null, { accountUuid: "u-1" });
