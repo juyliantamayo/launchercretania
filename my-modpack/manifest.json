@@ -4,8 +4,8 @@
                      {
                          "id":  "cretaniaTF4",
                          "name":  "cretaniaTF4 ",
-                         "subtitle":  "Supervivencia hardcore con TFC â€” Forge 1.20.1",
-                         "description":  "Modpack de supervivencia extrema basado en TerraFirmaCraft 4. Incluye Create, Mekanism, Immersive Engineering y mÃ¡s de 300 mods. Requiere mÃ­nimo 6 GB de RAM.",
+                         "subtitle":  "Supervivencia hardcore con TFC Ã¢â‚¬â€ Forge 1.20.1",
+                         "description":  "Modpack de supervivencia extrema basado en TerraFirmaCraft 4. Incluye Create, Mekanism, Immersive Engineering y mÃƒÂ¡s de 300 mods. Requiere mÃƒÂ­nimo 6 GB de RAM.",
                          "image":  "hardrock-banner.png",
                          "public":  false,
                          "allowedUuids":  [
@@ -2412,9 +2412,9 @@
                      },
                      {
                          "id":  "cretaniaTF4-lite",
-                         "name":  "cretaniaTF4 â€” Lite",
-                         "subtitle":  "VersiÃ³n ligera para PCs con 4-6 GB de RAM",
-                         "description":  "VersiÃ³n optimizada de cretaniaTF4. Sin mods visuales pesados. Compatible 100% con el servidor.",
+                         "name":  "cretaniaTF4 Ã¢â‚¬â€ Lite",
+                         "subtitle":  "VersiÃƒÂ³n ligera para PCs con 4-6 GB de RAM",
+                         "description":  "VersiÃƒÂ³n optimizada de cretaniaTF4. Sin mods visuales pesados. Compatible 100% con el servidor.",
                          "image":  "cretania-banner.png",
                          "public":  false,
                          "allowedUuids":  [
@@ -4781,7 +4781,7 @@
                                                                        "icon":  "+",
                                                                        "entries":  [
                                                                                        {
-                                                                                           "text":  "VersiÃ³n Lite para PCs con 4-6 GB RAM"
+                                                                                           "text":  "VersiÃƒÂ³n Lite para PCs con 4-6 GB RAM"
                                                                                        },
                                                                                        {
                                                                                            "text":  "Sin Physics Mod, AmbientSounds, oculus"
@@ -6256,7 +6256,7 @@
                                                                    {
                                                                        "type":  "changed",
                                                                        "title":  "Mejoras",
-                                                                       "icon":  "â†‘",
+                                                                       "icon":  "Ã¢â€ â€˜",
                                                                        "entries":  [
                                                                                        {
                                                                                            "text":  "CreateNewRecipes actualizado a v1.0.2"
@@ -6272,7 +6272,7 @@
                                                                    {
                                                                        "type":  "changed",
                                                                        "title":  "Mejoras",
-                                                                       "icon":  "â†‘",
+                                                                       "icon":  "Ã¢â€ â€˜",
                                                                        "entries":  [
                                                                                        {
                                                                                            "text":  "No More Villagers actualizado a v1.3.6"
@@ -6282,7 +6282,7 @@
                                                                    {
                                                                        "type":  "fixed",
                                                                        "title":  "Correcciones",
-                                                                       "icon":  "âœ“",
+                                                                       "icon":  "Ã¢Å“â€œ",
                                                                        "entries":  [
                                                                                        {
                                                                                            "text":  "No More Villagers: fix aplicado en v1.3.6"
@@ -6298,23 +6298,23 @@
                                                                    {
                                                                        "type":  "fixed",
                                                                        "title":  "Correcciones",
-                                                                       "icon":  "âœ“",
+                                                                       "icon":  "Ã¢Å“â€œ",
                                                                        "entries":  [
                                                                                        {
                                                                                            "text":  "No More Villagers: fix aplicado para que el sistema de aldeanos funcione correctamente"
                                                                                        },
                                                                                        {
-                                                                                           "text":  "ServerPad: solucionados los errores de uso y visualizaciÃ³n de comandos del servidor"
+                                                                                           "text":  "ServerPad: solucionados los errores de uso y visualizaciÃƒÂ³n de comandos del servidor"
                                                                                        }
                                                                                    ]
                                                                    },
                                                                    {
                                                                        "type":  "changed",
                                                                        "title":  "Mejoras",
-                                                                       "icon":  "â†‘",
+                                                                       "icon":  "Ã¢â€ â€˜",
                                                                        "entries":  [
                                                                                        {
-                                                                                           "text":  "Calidad de vida: ajustes generales para que el servidor vaya mÃ¡s fluido y cÃ³modo para todos"
+                                                                                           "text":  "Calidad de vida: ajustes generales para que el servidor vaya mÃƒÂ¡s fluido y cÃƒÂ³modo para todos"
                                                                                        },
                                                                                        {
                                                                                            "text":  "No More Villagers actualizado a v1.3.5"
@@ -6333,7 +6333,7 @@
                                                                    {
                                                                        "type":  "fixed",
                                                                        "title":  "Correcciones",
-                                                                       "icon":  "âœ“",
+                                                                       "icon":  "Ã¢Å“â€œ",
                                                                        "entries":  [
                                                                                        {
                                                                                            "text":  "Corregida descarga de 4 mods con espacios en el nombre",
@@ -6353,8 +6353,8 @@
                                                                        "icon":  "+",
                                                                        "entries":  [
                                                                                        {
-                                                                                           "text":  "AÃ±adido mod CreateNewRecipes",
-                                                                                           "detail":  "Mod Fabric para Minecraft 1.20.1 que aÃ±ade un sistema completo de gestiÃ³n de recetas para Create. Incluye: GUI in-game (/cnr) con 9 paneles (bloqueo de recetas/Ã­tems/bloques/mods, creador de recetas, visor por mod, cadenas de proceso, Ã­tems dinÃ¡micos). Soporta 16 tipos de recetas Create (deploying, mixing, crushing, pressing, cutting, compacting, sequenced assembly, mechanical crafting, emptying, filling, etc.). AÃ±ade 49 Ã­tems custom (cretania:) organizados en 7 cadenas de fabricaciÃ³n (Forge Hammer, Prensa MecÃ¡nica, Taladro, LatÃ³n, Mezcladora, Sierra, LÃ¡minas de hierro/oro/cobre). Bloqueo en vivo de recetas con hot-reload (sin reiniciar servidor), persistencia SQLite para recetas custom, sincronizaciÃ³n automÃ¡tica con clientes (EMI/JEI), sistema de Ã­tems calientes que queman al jugador, bloqueo de uso de Ã­tems/bloques por click derecho, GUI Python standalone (tkinter), y bridge nativo C++ opcional. ~120 recetas/Ã­tems bloqueados por defecto de Create Connected, Waystones, Easy Mob Farm, Immersive Armors, Sophisticated Backpacks e Immersive Paintings."
+                                                                                           "text":  "AÃƒÂ±adido mod CreateNewRecipes",
+                                                                                           "detail":  "Mod Fabric para Minecraft 1.20.1 que aÃƒÂ±ade un sistema completo de gestiÃƒÂ³n de recetas para Create. Incluye: GUI in-game (/cnr) con 9 paneles (bloqueo de recetas/ÃƒÂ­tems/bloques/mods, creador de recetas, visor por mod, cadenas de proceso, ÃƒÂ­tems dinÃƒÂ¡micos). Soporta 16 tipos de recetas Create (deploying, mixing, crushing, pressing, cutting, compacting, sequenced assembly, mechanical crafting, emptying, filling, etc.). AÃƒÂ±ade 49 ÃƒÂ­tems custom (cretania:) organizados en 7 cadenas de fabricaciÃƒÂ³n (Forge Hammer, Prensa MecÃƒÂ¡nica, Taladro, LatÃƒÂ³n, Mezcladora, Sierra, LÃƒÂ¡minas de hierro/oro/cobre). Bloqueo en vivo de recetas con hot-reload (sin reiniciar servidor), persistencia SQLite para recetas custom, sincronizaciÃƒÂ³n automÃƒÂ¡tica con clientes (EMI/JEI), sistema de ÃƒÂ­tems calientes que queman al jugador, bloqueo de uso de ÃƒÂ­tems/bloques por click derecho, GUI Python standalone (tkinter), y bridge nativo C++ opcional. ~120 recetas/ÃƒÂ­tems bloqueados por defecto de Create Connected, Waystones, Easy Mob Farm, Immersive Armors, Sophisticated Backpacks e Immersive Paintings."
                                                                                        }
                                                                                    ]
                                                                    }
@@ -6367,11 +6367,11 @@
                                                                    {
                                                                        "type":  "fixed",
                                                                        "title":  "Correcciones",
-                                                                       "icon":  "âœ“",
+                                                                       "icon":  "Ã¢Å“â€œ",
                                                                        "entries":  [
                                                                                        {
-                                                                                           "text":  "ProtectorMod: corregido bug de dueÃ±o por defecto",
-                                                                                           "detail":  "Ya no asigna \u0027owner\u0027 como dueÃ±o por defecto al proteger zonas"
+                                                                                           "text":  "ProtectorMod: corregido bug de dueÃƒÂ±o por defecto",
+                                                                                           "detail":  "Ya no asigna \u0027owner\u0027 como dueÃƒÂ±o por defecto al proteger zonas"
                                                                                        }
                                                                                    ]
                                                                    }
@@ -6387,18 +6387,18 @@
                                                                        "icon":  "+",
                                                                        "entries":  [
                                                                                        {
-                                                                                           "text":  "23 mods nuevos aÃ±adidos al modpack",
-                                                                                           "detail":  "Xaero\u0027s Minimap, Bobby, C2ME, Dynamic FPS, Alternate Current y mÃ¡s"
+                                                                                           "text":  "23 mods nuevos aÃƒÂ±adidos al modpack",
+                                                                                           "detail":  "Xaero\u0027s Minimap, Bobby, C2ME, Dynamic FPS, Alternate Current y mÃƒÂ¡s"
                                                                                        },
                                                                                        {
-                                                                                           "text":  "Interfaz rediseÃ±ada con pestaÃ±as",
-                                                                                           "detail":  "Inicio, Ajustes y Consola separados para mejor navegaciÃ³n"
+                                                                                           "text":  "Interfaz rediseÃƒÂ±ada con pestaÃƒÂ±as",
+                                                                                           "detail":  "Inicio, Ajustes y Consola separados para mejor navegaciÃƒÂ³n"
                                                                                        },
                                                                                        {
                                                                                            "text":  "Badge de notas de parche"
                                                                                        },
                                                                                        {
-                                                                                           "text":  "NotificaciÃ³n en pestaÃ±a Consola",
+                                                                                           "text":  "NotificaciÃƒÂ³n en pestaÃƒÂ±a Consola",
                                                                                            "detail":  "Punto naranja cuando hay nuevos logs sin ver"
                                                                                        }
                                                                                    ]
@@ -6406,26 +6406,26 @@
                                                                    {
                                                                        "type":  "changed",
                                                                        "title":  "Mejoras",
-                                                                       "icon":  "â†‘",
+                                                                       "icon":  "Ã¢â€ â€˜",
                                                                        "entries":  [
                                                                                        {
-                                                                                           "text":  "Panel principal mÃ¡s ancho y scrollable"
+                                                                                           "text":  "Panel principal mÃƒÂ¡s ancho y scrollable"
                                                                                        },
                                                                                        {
-                                                                                           "text":  "BotÃ³n Jugar siempre visible en barra inferior"
+                                                                                           "text":  "BotÃƒÂ³n Jugar siempre visible en barra inferior"
                                                                                        },
                                                                                        {
-                                                                                           "text":  "Cuentas con mÃ¡s espacio para mÃºltiples cuentas"
+                                                                                           "text":  "Cuentas con mÃƒÂ¡s espacio para mÃƒÂºltiples cuentas"
                                                                                        },
                                                                                        {
-                                                                                           "text":  "Elementos mÃ¡s grandes y fÃ¡ciles de usar"
+                                                                                           "text":  "Elementos mÃƒÂ¡s grandes y fÃƒÂ¡ciles de usar"
                                                                                        }
                                                                                    ]
                                                                    },
                                                                    {
                                                                        "type":  "fixed",
                                                                        "title":  "Correcciones",
-                                                                       "icon":  "âœ“",
+                                                                       "icon":  "Ã¢Å“â€œ",
                                                                        "entries":  [
                                                                                        {
                                                                                            "text":  "Cache-busting en manifest",
@@ -6454,22 +6454,22 @@
                                                                                            "text":  "Launcher Cretania con tema steampunk"
                                                                                        },
                                                                                        {
-                                                                                           "text":  "AutenticaciÃ³n Microsoft con multicuenta"
+                                                                                           "text":  "AutenticaciÃƒÂ³n Microsoft con multicuenta"
                                                                                        },
                                                                                        {
                                                                                            "text":  "180 mods Fabric 1.20.1 con descarga remota"
                                                                                        },
                                                                                        {
-                                                                                           "text":  "InstalaciÃ³n automÃ¡tica de Java 21"
+                                                                                           "text":  "InstalaciÃƒÂ³n automÃƒÂ¡tica de Java 21"
                                                                                        },
                                                                                        {
-                                                                                           "text":  "SincronizaciÃ³n diferencial con SHA1"
+                                                                                           "text":  "SincronizaciÃƒÂ³n diferencial con SHA1"
                                                                                        },
                                                                                        {
                                                                                            "text":  "Consola de Minecraft integrada"
                                                                                        },
                                                                                        {
-                                                                                           "text":  "ConfiguraciÃ³n de RAM y carpeta personalizable"
+                                                                                           "text":  "ConfiguraciÃƒÂ³n de RAM y carpeta personalizable"
                                                                                        }
                                                                                    ]
                                                                    }
@@ -6477,7 +6477,7 @@
                                             }
                                         ],
                          "allowUserMods":  false,
-                         "description":  "Modpack de supervivencia tÃ©cnica con mÃ¡s de 200 mods orientados a ingenierÃ­a, automatizaciÃ³n y construcciÃ³n. Incluye Create, Applied Energistics 2, Botania y docenas de mods de optimizaciÃ³n y calidad de vida.",
+                         "description":  "Modpack de supervivencia tÃƒÂ©cnica con mÃƒÂ¡s de 200 mods orientados a ingenierÃƒÂ­a, automatizaciÃƒÂ³n y construcciÃƒÂ³n. Incluye Create, Applied Energistics 2, Botania y docenas de mods de optimizaciÃƒÂ³n y calidad de vida.",
                          "gallery":  [
 
                                      ]
@@ -6485,8 +6485,8 @@
                      {
                          "id":  "cretania-dev",
                          "name":  "Cretania Dev",
-                         "subtitle":  "Build privado â€” solo juliantamayo19",
-                         "description":  "VersiÃ³n de desarrollo privada del modpack Cretania. Acceso exclusivo para el administrador.",
+                         "subtitle":  "Build privado Ã¢â‚¬â€ solo juliantamayo19",
+                         "description":  "VersiÃƒÂ³n de desarrollo privada del modpack Cretania. Acceso exclusivo para el administrador.",
                          "gallery":  [
 
                                      ],
@@ -6509,8 +6509,8 @@
                      {
                          "id":  "cretania-custom",
                          "name":  "Cretania Custom",
-                         "subtitle":  "Modpack abierto â€” agregÃ¡ tus propios mods",
-                         "description":  "VersiÃ³n pÃºblica del modpack sin lista de mods forzada. PodÃ©s subir tus propios JARs y jugar con mods personalizados.",
+                         "subtitle":  "Modpack abierto Ã¢â‚¬â€ agregÃƒÂ¡ tus propios mods",
+                         "description":  "VersiÃƒÂ³n pÃƒÂºblica del modpack sin lista de mods forzada. PodÃƒÂ©s subir tus propios JARs y jugar con mods personalizados.",
                          "gallery":  [
 
                                      ],
