@@ -531,8 +531,8 @@ async function syncMods(gameDir, emitter = new EventEmitter(), options = {}) {
       const destPath = path.join(gameDir, entry.targetRelativePath);
       try {
         if (isRemote) {
-          // URL explícita en el manifest, o construida desde baseUrl (solo filename, sin subdirectorio)
-          const url = entry.url || `${baseUrl}/${path.basename(entry.file)}`;
+          // URL explícita en el manifest, o construida desde baseUrl
+          const url = entry.url || `${baseUrl}/${entry.file}`;
           console.log("[updater] Descargando:", entry.id, "→", url);
           await downloadWithRetry(url, destPath);
         } else {
