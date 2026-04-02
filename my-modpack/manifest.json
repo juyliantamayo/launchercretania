@@ -10,7 +10,9 @@
       "public": false,
       "allowedUuids": [
         "dfe1c19246c5463c8cfe9c3f77cfcd7b",
-        "8801fa18c40846d9937eac12ea0470c9"
+        "8801fa18c40846d9937eac12ea0470c9",
+        "5423216d48ae45709867389c8a810dd4",
+        "d4cdd03def0748e4bb852ff7db837f00"
       ],
       "allowUserMods": false,
       "baseUrl": "https://github.com/juyliantamayo/launchercretania/releases/download/cretaniaTF4-v1.0.0",
