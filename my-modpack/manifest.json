@@ -2346,6 +2346,20 @@
           "sha1": "18925d419fb6d272b67eb18cba039a55c59bc552",
           "target": "defaultconfigs",
           "replace": true
+        },
+        {
+          "id": "shaderpacks",
+          "url": "https://github.com/juyliantamayo/launchercretania/releases/download/cretaniaTF4-v1.0.0/shaderpacks.zip",
+          "sha1": "73678bfb17a6a8fde040ff41cf3bf09d872392ca",
+          "target": "shaderpacks",
+          "replace": true
+        },
+        {
+          "id": "resourcepacks",
+          "url": "https://github.com/juyliantamayo/launchercretania/releases/download/cretaniaTF4-v1.0.0/resourcepacks.zip",
+          "sha1": "7d6050b1a98c1350f13dd310dc9565e40ef7dcfa",
+          "target": "resourcepacks",
+          "replace": true
         }
       ],
       "resourcepacks": [],
