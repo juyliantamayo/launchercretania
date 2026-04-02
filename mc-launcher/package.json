@@ -18,13 +18,13 @@
     "validate:store": "powershell -ExecutionPolicy Bypass -File scripts/validate-store.ps1"
   },
   "dependencies": {
+    "adm-zip": "^0.5.10",
     "axios": "^1.6.0",
     "fs-extra": "^11.2.0",
     "minecraft-launcher-core": "^3.17.0",
     "msmc": "^5.0.5"
   },
   "devDependencies": {
-    "adm-zip": "^0.5.10",
     "cross-env": "^10.1.0",
     "electron": "^28.0.0",
     "electron-builder": "^24.9.0",
