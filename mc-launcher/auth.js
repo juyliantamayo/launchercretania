@@ -21,6 +21,16 @@ const path = require("path");
 // Detectar variante de build (si storeBuild:true fue inyectado via extraMetadata)
 const STORE_BUILD = !!(require("./package.json").storeBuild);
 
+/** Extrae un mensaje legible de cualquier tipo de error (Error, string, object) */
+function extractErrorMessage(err) {
+  if (err instanceof Error) return err.message;
+  if (typeof err === "string") return err;
+  if (err && typeof err === "object") {
+    return err.message || err.error || err.errorMessage || JSON.stringify(err);
+  }
+  return String(err);
+}
+
 // Archivo donde se guardan las cuentas (tokens)
 const ACCOUNTS_FILE = path.join(
   require("electron").app
@@ -178,7 +188,7 @@ async function loginMicrosoftStandalone() {
     try {
       xboxManager = await authManager.login(authCode);
     } catch (err) {
-      const msg = err instanceof Error ? err.message : String(err);
+      const msg = extractErrorMessage(err);
       console.error("[auth:standalone] Error en authManager.login():", msg);
       throw new Error("Error al validar con Xbox Live: " + msg);
     }
@@ -188,7 +198,7 @@ async function loginMicrosoftStandalone() {
     try {
       token = await xboxManager.getMinecraft();
     } catch (err) {
-      const msg = err instanceof Error ? err.message : String(err);
+      const msg = extractErrorMessage(err);
       console.error("[auth:standalone] Error en xboxManager.getMinecraft():", msg);
       throw new Error("Error al obtener perfil de Minecraft: " + msg);
     }
@@ -298,7 +308,28 @@ function getAccountList() {
  * Obtiene los datos mclc de una cuenta guardada para relanzar.
  * Intenta refrescar el token automáticamente si hay datos msmc guardados.
  */
+// Mutex simple para evitar race conditions al refrescar tokens concurrentemente
+const _authLocks = new Map();
+
 async function getAccountAuth(uuid) {
+  // Serializar accesos concurrentes al mismo uuid
+  while (_authLocks.has(uuid)) {
+    await _authLocks.get(uuid);
+  }
+
+  let resolve;
+  const lock = new Promise(r => { resolve = r; });
+  _authLocks.set(uuid, lock);
+
+  try {
+    return await _getAccountAuthInner(uuid);
+  } finally {
+    _authLocks.delete(uuid);
+    resolve();
+  }
+}
+
+async function _getAccountAuthInner(uuid) {
   const accounts = loadAccounts();
   const account = accounts.find((a) => a.uuid === uuid);
   if (!account) throw new Error("Cuenta no encontrada");
@@ -312,34 +343,61 @@ async function getAccountAuth(uuid) {
       const token = await xboxManager.getMinecraft();
       const freshMclc = token.mclc();
 
-      // Guardar datos actualizados
+      // Guardar datos actualizados — re-leer para no sobreescribir cambios de otro hilo
       let newMsmcData = null;
       try { newMsmcData = xboxManager.save(); } catch {}
 
-      account.mclc = freshMclc;
-      account.msmcData = newMsmcData || account.msmcData;
-      account.lastUsed = Date.now();
-      saveAccounts(accounts);
+      const latest = loadAccounts();
+      const idx = latest.findIndex(a => a.uuid === uuid);
+      if (idx >= 0) {
+        latest[idx].mclc = freshMclc;
+        latest[idx].msmcData = newMsmcData || latest[idx].msmcData;
+        latest[idx].lastUsed = Date.now();
+        saveAccounts(latest);
+      }
 
       console.log("[auth] Token refrescado OK para:", account.name);
       return { mclc: freshMclc, profile: { name: account.name, uuid: account.uuid } };
     } catch (err) {
-      console.warn("[auth] No se pudo refrescar token:", err.message);
-      // Token expirado y no se pudo refrescar — NO usar token viejo
-      // porque causará "AuthHybrid: Could not verify your Minecraft account"
-      throw new Error(
-        "Tu sesión de Microsoft ha expirado y no se pudo renovar. " +
-        "Elimina la cuenta y vuelve a iniciar sesión."
-      );
+      console.warn("[auth] No se pudo refrescar token:", extractErrorMessage(err));
     }
   }
 
-  // Sin datos msmc para refrescar — token probablemente expirado
-  console.warn("[auth] Sin datos msmc para refrescar, token puede estar expirado:", account.name);
-  throw new Error(
-    "No se puede verificar tu cuenta de Microsoft. " +
-    "Elimina la cuenta y vuelve a iniciar sesión."
+  // Refresh falló o no hay datos msmc — usar token mclc guardado si existe
+  if (account.mclc && account.mclc.access_token) {
+    console.log("[auth] Usando token mclc guardado para:", account.name);
+    const latest = loadAccounts();
+    const idx = latest.findIndex(a => a.uuid === uuid);
+    if (idx >= 0) { latest[idx].lastUsed = Date.now(); saveAccounts(latest); }
+    return { mclc: account.mclc, profile: { name: account.name, uuid: account.uuid } };
+  }
+
+  // Sin token válido guardado — abrir ventana de re-login (con timeout para no bloquear)
+  console.log("[auth] Sin token válido, abriendo re-login para:", account.name);
+  const reloginTimeout = new Promise((_, rej) =>
+    setTimeout(() => rej(new Error("Re-login cancelado: tiempo de espera agotado (120s).")), 120_000)
   );
+  try {
+    const result = await Promise.race([
+      STORE_BUILD ? loginMicrosoftStore() : loginMicrosoftStandalone(),
+      reloginTimeout
+    ]);
+    // Si el re-login fue exitoso, actualizar la cuenta existente en vez de crear duplicado
+    const freshAccounts = loadAccounts();
+    const idx = freshAccounts.findIndex(a => a.uuid === uuid);
+    if (idx >= 0) {
+      freshAccounts[idx].mclc = result.mclc;
+      freshAccounts[idx].lastUsed = Date.now();
+      saveAccounts(freshAccounts);
+    }
+    console.log("[auth] Re-login automático OK para:", account.name);
+    return result;
+  } catch (reloginErr) {
+    console.error("[auth] Re-login automático falló:", extractErrorMessage(reloginErr));
+    throw new Error(
+      "Tu sesión expiró y el re-login falló: " + extractErrorMessage(reloginErr)
+    );
+  }
 }
 
 module.exports = {

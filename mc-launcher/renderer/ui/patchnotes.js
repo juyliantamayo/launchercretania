@@ -34,7 +34,16 @@ export function renderPN() {
       (cat.entries || []).forEach(entry => {
         const e = document.createElement("div");
         e.className = "pn-entry";
-        e.innerHTML = `<div class="pn-entry-text">${entry.text || ""}</div>${entry.detail ? `<div class="pn-entry-detail">${entry.detail}</div>` : ""}`;
+        const textDiv = document.createElement("div");
+        textDiv.className = "pn-entry-text";
+        textDiv.textContent = entry.text || "";
+        e.appendChild(textDiv);
+        if (entry.detail) {
+          const detDiv = document.createElement("div");
+          detDiv.className = "pn-entry-detail";
+          detDiv.textContent = entry.detail;
+          e.appendChild(detDiv);
+        }
         sec.appendChild(e);
       });
     });

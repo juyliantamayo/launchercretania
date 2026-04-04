@@ -41,6 +41,8 @@ export function renderAccs() {
       renderAccs();
       const { refreshPacks } = await import("../data.js");
       await refreshPacks();
+      const { updateLaunch } = await import("./actionbar.js");
+      updateLaunch();
     });
 
     list.appendChild(el);

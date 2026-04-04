@@ -3,6 +3,7 @@ import { S, ini, getPack } from "../state.js";
 import { showBrowse } from "./explore.js";
 import { updateLaunch } from "./actionbar.js";
 import { renderSbPacks } from "./sidebar.js";
+import { placeholder } from "./placeholder.js";
 
 const $ = id => document.getElementById(id);
 
@@ -14,17 +15,19 @@ export function renderDetail() {
   // Banner
   const fb  = $("detBannerFb");
   const img = $("detBannerImg");
+  const phBanner = placeholder(p.name, 800, 260);
   fb.textContent = ini(p.name);
-  if (p.imageUrl) {
-    img.src = p.imageUrl; img.style.display = "block"; fb.style.display = "none";
-  } else {
-    img.style.display = "none"; fb.style.display = "flex";
-  }
+  img.src = p.imageUrl || phBanner;
+  img.style.display = "block";
+  fb.style.display = "none";
+  img.onerror = () => { img.onerror = null; img.src = phBanner; };
 
   // Icon
+  const phIco = placeholder(p.name, 48, 48);
   const iconEl = $("detIcon");
-  iconEl.innerHTML = p.imageUrl
-    ? `<img src="${p.imageUrl}" alt="" onerror="this.parentNode.textContent='${ini(p.name)}'">` : ini(p.name);
+  iconEl.innerHTML = `<img src="${p.imageUrl || phIco}" alt="">`;
+  const icoImg = iconEl.querySelector("img");
+  if (icoImg) icoImg.onerror = function() { this.onerror = null; this.src = phIco; };
 
   // Meta
   $("detEyebrow").textContent = p.public ? "Pack público" : "Pack privado";

@@ -1,6 +1,6 @@
 {
   "name": "lucerion-launcher",
-  "version": "1.0.1",
+  "version": "1.1.0",
   "description": "Launcher Minecraft privado para Lucerion",
   "author": "Lucerion Studios",
   "main": "main.js",
@@ -21,7 +21,7 @@
     "adm-zip": "^0.5.10",
     "axios": "^1.6.0",
     "fs-extra": "^11.2.0",
-    "minecraft-launcher-core": "^3.17.0",
+    "minecraft-launcher-core": "^3.18.2",
     "msmc": "^5.0.5"
   },
   "devDependencies": {

@@ -22,6 +22,7 @@ const axios = require("axios");
 const EventEmitter = require("events");
 const { execSync, execFile, spawn } = require("child_process");
 const { pathToFileURL } = require("url");
+const AdmZip = require("adm-zip");
 
 // ─── RUTAS DE PERSISTENCIA ───────────────────────────────────────────────────
 // Mapa de rutas usadas por el launcher.  Convención:
@@ -42,7 +43,7 @@ const { pathToFileURL } = require("url");
 //
 //  * USER_MODS_BASE existe pero nunca se lee/escribe en la variante Store.
 //  ** LAUNCHER_UPDATE_DIR no se usa en Store (self-update desactivado).
-const DEFAULT_GAME_DIR = path.join(app.getPath("appData"), ".lucerion-minecraft");
+const DEFAULT_GAME_DIR = path.join(app.getPath("appData"), ".minecraft");
 const SETTINGS_FILE = path.join(app.getPath("userData"), "settings.json");
 const OPTIONAL_MODS_FILE = path.join(app.getPath("userData"), "optional-mods.json");
 const USER_MODS_BASE = path.join(app.getPath("userData"), "user-mods");
@@ -107,16 +108,25 @@ function loadSettings() {
 }
 
 function saveSettings(settings) {
-  fsExtra.ensureDirSync(path.dirname(SETTINGS_FILE));
-  fs.writeFileSync(SETTINGS_FILE, JSON.stringify(settings, null, 2));
+  try {
+    fsExtra.ensureDirSync(path.dirname(SETTINGS_FILE));
+    fs.writeFileSync(SETTINGS_FILE, JSON.stringify(settings, null, 2));
+  } catch (e) {
+    console.error("[main] No se pudieron guardar los ajustes:", e.message);
+  }
 }
 
 /** Obtiene el directorio de juego efectivo */
 function getGameDir(modpackId = "") {
   const settings = loadSettings();
-  const baseDir = (settings.gameDir && settings.gameDir.trim()) ? settings.gameDir.trim() : DEFAULT_GAME_DIR;
-  if (!modpackId || modpackId === "cretania") return baseDir;
-  return path.join(baseDir, "instances", modpackId);
+  let baseDir = (settings.gameDir && settings.gameDir.trim()) ? settings.gameDir.trim() : DEFAULT_GAME_DIR;
+  // Si el usuario eligió una ruta custom, asegurar que siempre esté dentro de "Lucerion Launcher"
+  if (baseDir !== DEFAULT_GAME_DIR && !baseDir.endsWith("Lucerion Launcher")) {
+    baseDir = path.join(baseDir, "Lucerion Launcher");
+  }
+  if (!modpackId) return baseDir;
+  // Cada modpack va en su propia subcarpeta: Lucerion Launcher/<modpackId>/
+  return path.join(baseDir, modpackId);
 }
 
 function canAccessModpack(modpack, accountUuid) {
@@ -442,20 +452,26 @@ function detectJava() {
     }
   }
 
-  // Buscar también en el Minecraft runtime
-  const mcRuntimeDir = path.join(getGameDir(), "runtime");
-  if (fs.existsSync(mcRuntimeDir)) {
-    try {
-      const walkRuntime = (dir) => {
-        const items = fs.readdirSync(dir, { withFileTypes: true });
-        for (const item of items) {
-          const full = path.join(dir, item.name);
-          if (item.isFile() && (item.name === "javaw.exe" || item.name === "java.exe")) javaDirs.push(full);
-          else if (item.isDirectory()) walkRuntime(full);
-        }
-      };
-      walkRuntime(mcRuntimeDir);
-    } catch {}
+  // Buscar también en el Minecraft runtime (directorio base + por defecto)
+  const runtimeCandidates = [path.join(DEFAULT_GAME_DIR, "runtime")];
+  try {
+    const customDir = getGameDir();
+    if (customDir !== DEFAULT_GAME_DIR) runtimeCandidates.push(path.join(customDir, "runtime"));
+  } catch {}
+  for (const mcRuntimeDir of runtimeCandidates) {
+    if (fs.existsSync(mcRuntimeDir)) {
+      try {
+        const walkRuntime = (dir) => {
+          const items = fs.readdirSync(dir, { withFileTypes: true });
+          for (const item of items) {
+            const full = path.join(dir, item.name);
+            if (item.isFile() && (item.name === "javaw.exe" || item.name === "java.exe")) javaDirs.push(full);
+            else if (item.isDirectory()) walkRuntime(full);
+          }
+        };
+        walkRuntime(mcRuntimeDir);
+      } catch {}
+    }
   }
 
   // Preferir javaw.exe para evitar ventana de consola
@@ -476,11 +492,11 @@ function detectJava() {
  * Usa la API de Adoptium para obtener el .zip, lo extrae sin necesidad de permisos admin.
  *
  * @param {Function} onProgress — callback(percentage, message) para informar progreso
- * @returns {object} { found: true, version: 17, path: "...java.exe" }
+ * @returns {object} { found: true, version: 21, path: "...java.exe" }
  */
 async function installJava(onProgress = () => {}) {
   const javaBaseDir = path.join(app.getPath("userData"), JAVA_INSTALL_DIR_NAME);
-  const zipPath = path.join(app.getPath("temp"), "adoptium-jdk17.zip");
+  const zipPath = path.join(app.getPath("temp"), "adoptium-jdk21.zip");
 
   // Si ya hay una instalación local previa, verificar
   if (fs.existsSync(javaBaseDir)) {
@@ -546,7 +562,16 @@ async function installJava(onProgress = () => {}) {
       { timeout: 120_000, windowsHide: true }
     );
   } catch (err) {
-    throw new Error("Error al extraer Java: " + err.message);
+    const isPermission = /access|denied|permission/i.test(err.message);
+    const isAntivirus = /block|virus|quarantine|defender/i.test(err.message);
+    let hint = "";
+    if (isPermission) hint = " Tu antivirus o permisos del sistema pueden estar bloqueando la extracción.";
+    else if (isAntivirus) hint = " Tu antivirus puede estar bloqueando la extracción. Añade una excepción para la carpeta del launcher.";
+    throw new Error(
+      "Error al extraer Java." + hint + "\n" +
+      "Si el problema persiste, instálalo manualmente desde https://adoptium.net/\n" +
+      "Detalle: " + err.message
+    );
   }
 
   onProgress(90, "Verificando instalación de Java…");
@@ -613,20 +638,204 @@ function detectJavaAt(javaPath) {
   return null;
 }
 
+// ─── DIAGNÓSTICO DE ERRORES DE RED ────────────────────────────────────────────
+/**
+ * Traduce errores de red (axios/Node) a mensajes legibles para el usuario.
+ */
+function diagnoseNetworkError(err) {
+  const code = err.code || "";
+  const msg = err.message || "";
+  if (code === "ENOTFOUND")
+    return "Sin conexión a Internet o el servidor no responde (DNS no encontrado).";
+  if (code === "ECONNREFUSED")
+    return "El servidor rechazó la conexión. Puede estar en mantenimiento.";
+  if (code === "ECONNRESET" || code === "ECONNABORTED")
+    return "La conexión se interrumpió. Verifica tu conexión a Internet e inténtalo de nuevo.";
+  if (code === "ETIMEDOUT" || code === "ESOCKETTIMEDOUT" || msg.includes("timeout"))
+    return "Tiempo de espera agotado. Tu conexión podría ser lenta o el servidor no responde.";
+  if (code === "UNABLE_TO_VERIFY_LEAF_SIGNATURE" || code === "CERT_HAS_EXPIRED" ||
+      msg.includes("certificate") || msg.includes("SSL"))
+    return "Error de certificado SSL. Si usas una red corporativa o VPN, puede estar interfiriendo.";
+  if (code === "ENOSPC")
+    return "No hay espacio suficiente en disco para completar la descarga.";
+  if (code === "EACCES" || code === "EPERM")
+    return "Permisos insuficientes. Intenta ejecutar como administrador o elige otra carpeta.";
+  if (err.response && err.response.status === 401)
+    return "Sesión expirada o credenciales inválidas. Vuelve a iniciar sesión.";
+  if (err.response && err.response.status === 403)
+    return "Acceso denegado por el servidor. Verifica tu cuenta o permisos.";
+  if (err.response && err.response.status === 404)
+    return "El recurso solicitado no fue encontrado en el servidor (404).";
+  if (err.response && err.response.status === 429)
+    return "Demasiadas solicitudes. Espera unos minutos e inténtalo de nuevo.";
+  if (err.response && err.response.status >= 500)
+    return `Error del servidor (${err.response.status}). Inténtalo de nuevo más tarde.`;
+  return msg;
+}
+
+// ─── VALIDACIÓN PRE-LANZAMIENTO ──────────────────────────────────────────────
+/**
+ * Verifica condiciones básicas antes de lanzar el juego:
+ *  - Ruta no excede MAX_PATH de Windows (260 chars)
+ *  - El directorio de juego es escribible
+ *  - Hay espacio libre mínimo en disco (1 GB)
+ */
+async function validatePreLaunch(gameDir) {
+  // Validar longitud de ruta en Windows
+  if (process.platform === "win32" && gameDir.length > 240) {
+    throw new Error(
+      `La ruta del juego es demasiado larga (${gameDir.length} caracteres). ` +
+      "Windows tiene un límite de 260 caracteres. Elige una ruta más corta en Configuración."
+    );
+  }
+
+  // Validar que el directorio sea escribible
+  await fsExtra.ensureDir(gameDir);
+  const testFile = path.join(gameDir, ".launcher-write-test");
+  try {
+    fs.writeFileSync(testFile, "test");
+    fs.unlinkSync(testFile);
+  } catch (e) {
+    throw new Error(
+      "No se puede escribir en la carpeta del juego. " +
+      "Verifica los permisos o elige otra carpeta en Configuración.\n" +
+      "Ruta: " + gameDir
+    );
+  }
+
+  // Validar espacio libre (>1 GB)
+  try {
+    const stats = fs.statfsSync(gameDir);
+    const freeBytes = stats.bavail * stats.bsize;
+    const freeGB = freeBytes / (1024 * 1024 * 1024);
+    if (freeGB < 1) {
+      throw new Error(
+        `Espacio en disco insuficiente (${freeGB.toFixed(1)} GB libre). ` +
+        "Se necesita al menos 1 GB libre para descargar y ejecutar el juego."
+      );
+    }
+  } catch (e) {
+    // statfsSync puede no estar disponible en Node < 18.15; ignorar si falla
+    if (e.message.includes("Espacio en disco")) throw e;
+  }
+}
+
+// ─── NATIVE DLL EXTRACTION (MC >= 1.19) ──────────────────────────────────────
+/**
+ * Pre-extrae DLLs nativas de LWJGL desde los JARs en libraries/.
+ * Para MC >= 1.19, minecraft-launcher-core no extrae natives y solo apunta
+ * -Djava.library.path al directorio raíz del juego (donde no hay DLLs).
+ * LWJGL intenta auto-extraer desde classpath a un dir temporal, pero esto
+ * falla en muchos sistemas (permisos, rutas largas, antivirus) causando
+ * exit code 0xC0000135 (STATUS_DLL_NOT_FOUND).
+ *
+ * Esta función extrae proactivamente las DLLs a natives/<version>/ para
+ * que -Djava.library.path y -Dorg.lwjgl.librarypath apunten correctamente.
+ */
+function extractNativesIfNeeded(gameDir, mcVersion) {
+  const minor = parseInt(mcVersion.split(".")[1]);
+  if (isNaN(minor) || minor < 19) return null;
+
+  const nativesDir = path.join(gameDir, "natives", mcVersion);
+  const librariesDir = path.join(gameDir, "libraries");
+
+  if (!fs.existsSync(librariesDir)) return nativesDir; // Se creará tras la descarga de MCLC
+
+  const nativeJars = [];
+  const walk = (dir) => {
+    try {
+      const entries = fs.readdirSync(dir, { withFileTypes: true });
+      for (const entry of entries) {
+        const full = path.join(dir, entry.name);
+        if (entry.isDirectory()) walk(full);
+        else if (entry.name.includes("natives-windows") && entry.name.endsWith(".jar")) {
+          nativeJars.push(full);
+        }
+      }
+    } catch {}
+  };
+  walk(librariesDir);
+
+  if (nativeJars.length === 0) return nativesDir;
+
+  fsExtra.ensureDirSync(nativesDir);
+  let extracted = 0;
+
+  for (const jarPath of nativeJars) {
+    try {
+      const zip = new AdmZip(jarPath);
+      for (const entry of zip.getEntries()) {
+        if (!entry.isDirectory && entry.entryName.endsWith(".dll")) {
+          const dllName = path.basename(entry.entryName);
+          const destPath = path.join(nativesDir, dllName);
+          if (!fs.existsSync(destPath)) {
+            fs.writeFileSync(destPath, entry.getData());
+            extracted++;
+          }
+        }
+      }
+    } catch (e) {
+      console.warn("[natives] Error extrayendo:", path.basename(jarPath), e.message);
+    }
+  }
+
+  if (extracted > 0) {
+    console.log(`[natives] ${extracted} DLLs extraídas a: ${nativesDir}`);
+  }
+  return nativesDir;
+}
+
 // ─── LOADER INSTALLERS ───────────────────────────────────────────────────────
+
+/** Descarga las librerías de un perfil Fabric/Quilt al directorio libraries/ */
+async function downloadProfileLibraries(gameDir, profileJson) {
+  let profile;
+  try {
+    profile = JSON.parse(fs.readFileSync(profileJson, "utf8"));
+  } catch { return; }
+  const libs = profile.libraries;
+  if (!Array.isArray(libs)) return;
+
+  for (const lib of libs) {
+    if (!lib.name || !lib.url) continue;                // solo librerías con URL custom
+    const parts = lib.name.split(":");                   // group:artifact:version
+    if (parts.length < 3) continue;
+    const [group, artifact, version] = parts;
+    const groupPath = group.replace(/\./g, "/");
+    const jarName   = `${artifact}-${version}.jar`;
+    const relPath   = path.join(groupPath, artifact, version, jarName);
+    const destPath  = path.join(gameDir, "libraries", relPath);
+    if (fs.existsSync(destPath)) continue;               // ya existe
+
+    const jarUrl = lib.url.replace(/\/$/, "") + "/" + relPath.replace(/\\/g, "/");
+    console.log(`[libs] Descargando ${lib.name} → ${destPath}`);
+    try {
+      const resp = await axios.get(jarUrl, { responseType: "arraybuffer", timeout: 30_000 });
+      await fsExtra.ensureDir(path.dirname(destPath));
+      fs.writeFileSync(destPath, Buffer.from(resp.data));
+    } catch (err) {
+      console.warn(`[libs] Error descargando ${lib.name}: ${err.message}`);
+    }
+  }
+}
 
 /** Instala Fabric desde meta.fabricmc.net */
 async function installFabric(gameDir, mcVersion, loaderVersion) {
   const profileName = `fabric-loader-${loaderVersion}-${mcVersion}`;
   const versionsDir = path.join(gameDir, "versions", profileName);
   const profileJson = path.join(versionsDir, `${profileName}.json`);
-  if (fs.existsSync(profileJson)) return profileName;
+  if (fs.existsSync(profileJson)) {
+    // Perfil ya existe — asegurar que las libs estén descargadas
+    await downloadProfileLibraries(gameDir, profileJson);
+    return profileName;
+  }
   console.log(`[fabric] Descargando perfil: ${profileName}`);
   const url = `https://meta.fabricmc.net/v2/versions/loader/${mcVersion}/${loaderVersion}/profile/json`;
   try {
     const { data } = await axios.get(url, { timeout: 30_000 });
     await fsExtra.ensureDir(versionsDir);
     fs.writeFileSync(profileJson, JSON.stringify(data, null, 2));
+    await downloadProfileLibraries(gameDir, profileJson);
     return profileName;
   } catch (err) {
     throw new Error(`No se pudo instalar Fabric Loader ${loaderVersion}: ${err.message}`);
@@ -638,13 +847,17 @@ async function installQuilt(gameDir, mcVersion, loaderVersion) {
   const profileName = `quilt-loader-${loaderVersion}-${mcVersion}`;
   const versionsDir = path.join(gameDir, "versions", profileName);
   const profileJson = path.join(versionsDir, `${profileName}.json`);
-  if (fs.existsSync(profileJson)) return profileName;
+  if (fs.existsSync(profileJson)) {
+    await downloadProfileLibraries(gameDir, profileJson);
+    return profileName;
+  }
   console.log(`[quilt] Descargando perfil: ${profileName}`);
   const url = `https://meta.quiltmc.org/v3/versions/loader/${mcVersion}/${loaderVersion}/profile/json`;
   try {
     const { data } = await axios.get(url, { timeout: 30_000 });
     await fsExtra.ensureDir(versionsDir);
     fs.writeFileSync(profileJson, JSON.stringify(data, null, 2));
+    await downloadProfileLibraries(gameDir, profileJson);
     return profileName;
   } catch (err) {
     throw new Error(`No se pudo instalar Quilt Loader ${loaderVersion}: ${err.message}`);
@@ -1078,8 +1291,18 @@ ipcMain.handle("kill-instance", (_e, modpackId) => {
   const inst = runningInstances.get(modpackId);
   if (!inst) return { ok: false, error: "Instancia no encontrada" };
   try {
-    if (inst.process && !inst.process.killed) {
-      inst.process.kill();
+    const proc = inst.process;
+    if (proc && !proc.killed) {
+      if (process.platform === "win32" && proc.pid) {
+        // taskkill /F /T mata el árbol completo de procesos (Java + hijos)
+        try {
+          execSync(`taskkill /F /T /PID ${proc.pid}`, { windowsHide: true });
+        } catch {
+          proc.kill();
+        }
+      } else {
+        proc.kill("SIGKILL");
+      }
     }
     runningInstances.delete(modpackId);
     if (win && !win.isDestroyed()) {
@@ -1131,6 +1354,32 @@ ipcMain.handle("download-modpack", async (_e, { modpackId, enabledOptionalMods }
   return { cancelled: false, folder: destFolder };
 });
 
+// ─── IPC: SYNC MODS ONLY (sin login, sin lanzar) ───────────────────────────
+ipcMain.handle("sync-mods-only", async (_e, { modpackId, enabledOptionalMods } = {}) => {
+  const { canceled, filePaths } = await dialog.showOpenDialog(win, {
+    title: "Selecciona la carpeta de instalación del modpack",
+    properties: ["openDirectory"],
+    buttonLabel: "Seleccionar carpeta"
+  });
+
+  if (canceled || !filePaths.length) return { ok: false, cancelled: true };
+
+  const GAME_DIR = path.join(filePaths[0], modpackId || "modpack");
+  await fsExtra.ensureDir(GAME_DIR);
+
+  const emitter = new EventEmitter();
+  emitter.on("progress", (data) => {
+    if (win && !win.isDestroyed()) win.webContents.send("progress", { ...data, modpackId });
+  });
+
+  const manifest = await syncMods(GAME_DIR, emitter, {
+    modpackId,
+    enabledOptionalMods: enabledOptionalMods || []
+  });
+
+  return { ok: true, folder: GAME_DIR, modCount: (manifest.mods || []).length };
+});
+
 // ─── IPC: LANZAR JUEGO ──────────────────────────────────────────────────────
 ipcMain.handle("launch", async (_event, { authData, accountUuid, modpackId, enabledOptionalMods }) => {
   const requestedInstanceKey = modpackId || "default";
@@ -1142,6 +1391,11 @@ ipcMain.handle("launch", async (_event, { authData, accountUuid, modpackId, enab
 
   try {
     const GAME_DIR = getGameDir(modpackId);
+
+    // ── Validación pre-lanzamiento (ruta, permisos, disco) ──
+    setStatus(win, "Verificando sistema…");
+    await validatePreLaunch(GAME_DIR);
+
     const { manifest: manifestData } = await fetchManifest(GAME_DIR);
     const requestedModpack = manifestData
       ? (manifestData.modpacks.find((entry) => entry.id === modpackId) || manifestData.modpacks[0])
@@ -1156,8 +1410,15 @@ ipcMain.handle("launch", async (_event, { authData, accountUuid, modpackId, enab
       auth = authData;
     } else if (accountUuid) {
       setStatus(win, "Refrescando sesión…");
-      const account = await getAccountAuth(accountUuid);
-      auth = account.mclc;
+      try {
+        const account = await getAccountAuth(accountUuid);
+        auth = account.mclc;
+      } catch (authErr) {
+        throw new Error(
+          "Error al validar tu sesión: " + diagnoseNetworkError(authErr) +
+          "\nIntenta cerrar sesión y volver a iniciarla."
+        );
+      }
     } else {
       throw new Error("Se requiere una cuenta Microsoft para jugar.");
     }
@@ -1202,16 +1463,27 @@ ipcMain.handle("launch", async (_event, { authData, accountUuid, modpackId, enab
 
     let manifest;
     try {
-      manifest = await syncMods(GAME_DIR, emitter, {
-        modpackId,
-        enabledOptionalMods: manifestOptIds,
-        userModFiles
-      });
+      // Timeout global de 10 minutos para evitar que syncMods cuelgue la app
+      const SYNC_TIMEOUT = 10 * 60 * 1000;
+      manifest = await Promise.race([
+        syncMods(GAME_DIR, emitter, {
+          modpackId,
+          enabledOptionalMods: manifestOptIds,
+          userModFiles
+        }),
+        new Promise((_, reject) =>
+          setTimeout(() => reject(new Error(
+            "La sincronización de mods tardó demasiado (más de 10 minutos). " +
+            "Verifica tu conexión a Internet e inténtalo de nuevo."
+          )), SYNC_TIMEOUT)
+        )
+      ]);
     } catch (err) {
+      const userMsg = diagnoseNetworkError(err);
       console.warn("[main] Error al actualizar mods:", err.message);
       if (win && !win.isDestroyed()) {
         win.webContents.send("progress", { phase: "done", current: 0, total: 0 });
-        win.webContents.send("log", "[UPDATER] Error sincronizando mods: " + err.message);
+        win.webContents.send("log", "[UPDATER] Error sincronizando mods: " + userMsg);
       }
       manifest = { minecraft: "1.20.1", loader: "fabric", loaderVersion: "0.18.4", mods: [] };
     }
@@ -1284,18 +1556,161 @@ ipcMain.handle("launch", async (_event, { authData, accountUuid, modpackId, enab
 
     const launcher = new Client();
 
+    // Patrones de spam conocidos — se loguean en consola interna pero no se muestran al usuario
+    const LOG_SPAM_PATTERNS = [
+      /Attempted to access MapManager before it was setup/,
+    ];
+    const isSpam = (msg) => LOG_SPAM_PATTERNS.some(p => p.test(msg));
+
     launcher.on("debug", (msg) => {
       console.log("[MC debug]", msg);
-      if (win && !win.isDestroyed()) win.webContents.send("log", msg);
+      if (win && !win.isDestroyed() && !isSpam(msg)) win.webContents.send("log", msg);
     });
     launcher.on("data", (msg) => {
       console.log("[MC data]", msg);
-      if (win && !win.isDestroyed()) win.webContents.send("log", msg);
+      if (win && !win.isDestroyed() && !isSpam(msg)) win.webContents.send("log", msg);
     });
     launcher.on("close", (code) => {
       console.log(`[MC:${instanceKey}] Cerrado con código:`, code);
       runningInstances.delete(instanceKey);
-      if (win && !win.isDestroyed()) win.webContents.send("mc-closed", { code, modpackId: instanceKey });
+
+      let diagnostic = null;
+
+      // 3221225781 = 0xC0000135 = STATUS_DLL_NOT_FOUND
+      if (code === 3221225781 || code === -1073741515) {
+        diagnostic = {
+          id: "dll-not-found",
+          title: "DLL no encontrada (0xC0000135)",
+          message: "Una librería nativa no pudo cargarse. Posibles soluciones:\n" +
+                   "1. Instala Visual C++ Redistributable x64 desde el enlace de abajo.\n" +
+                   "2. Si ya lo tienes, elimina la carpeta 'natives' dentro del directorio de juego y vuelve a lanzar.\n" +
+                   "3. Verifica que tu antivirus no esté bloqueando archivos DLL del launcher.",
+          url: "https://aka.ms/vs/17/release/vc_redist.x64.exe"
+        };
+        console.warn(`[MC:${instanceKey}] Código 0xC0000135 — DLL no encontrada`);
+      }
+
+      // -805306369 = 0xCFFFFFFF — GPU driver timeout (TDR)
+      if (!diagnostic && (code === -805306369 || code === 3489660927)) {
+        diagnostic = {
+          id: "gpu-tdr",
+          title: "Timeout del driver gráfico (TDR)",
+          message: "El driver de tu tarjeta gráfica dejó de responder. Soluciones:\n" +
+                   "1. Actualiza los drivers de tu GPU (NVIDIA/AMD/Intel).\n" +
+                   "2. Reduce la distancia de renderizado y gráficos en las opciones de Minecraft.\n" +
+                   "3. Si usas shaders, desactívalos temporalmente.\n" +
+                   "4. Cierra otras aplicaciones que usen la GPU (navegador, streaming, etc)."
+        };
+        console.warn(`[MC:${instanceKey}] GPU TDR timeout — código ${code}`);
+      }
+
+      // -1073740791 = 0xC0000409 — Stack buffer overrun (corrupción de memoria)
+      if (!diagnostic && (code === -1073740791 || code === 3221226505)) {
+        diagnostic = {
+          id: "stack-overrun",
+          title: "Error de memoria (0xC0000409)",
+          message: "Minecraft cerró por un error de memoria. Posibles soluciones:\n" +
+                   "1. Asigna más RAM al juego en Configuración (recomendado: 4-6 GB).\n" +
+                   "2. Actualiza los drivers de tu tarjeta gráfica.\n" +
+                   "3. Cierra programas pesados antes de jugar."
+        };
+        console.warn(`[MC:${instanceKey}] Stack buffer overrun — código ${code}`);
+      }
+
+      // -1073741819 = 0xC0000005 — Access violation
+      if (!diagnostic && (code === -1073741819 || code === 3221225477)) {
+        diagnostic = {
+          id: "access-violation",
+          title: "Violación de acceso (0xC0000005)",
+          message: "Minecraft cerró por un error de acceso a memoria. Soluciones:\n" +
+                   "1. Actualiza los drivers de tu tarjeta gráfica.\n" +
+                   "2. Verifica que tu antivirus no esté interfiriendo con Minecraft.\n" +
+                   "3. Intenta borrar la carpeta 'natives' del directorio del juego y vuelve a lanzar."
+        };
+        console.warn(`[MC:${instanceKey}] Access violation — código ${code}`);
+      }
+
+      // Exit code 1 con crash en código nativo — buscar hs_err_pid*.log
+      if (code === 1 && !diagnostic) {
+        try {
+          const crashDir = GAME_DIR;
+          const crashFiles = fs.readdirSync(crashDir)
+            .filter(f => f.startsWith("hs_err_pid") && f.endsWith(".log"))
+            .map(f => ({ name: f, time: fs.statSync(path.join(crashDir, f)).mtimeMs }))
+            .sort((a, b) => b.time - a.time);
+          if (crashFiles.length > 0) {
+            const latestCrash = path.join(crashDir, crashFiles[0].name);
+            const crashContent = fs.readFileSync(latestCrash, "utf8").substring(0, 4000);
+            const isNativeCrash = crashContent.includes("outside the Java Virtual Machine in native code");
+            const problematicFrame = crashContent.match(/# Problematic frame:\n# (.+)/);
+            const frameName = problematicFrame ? problematicFrame[1].trim() : "";
+            const isGpuCrash = /ig\d+icd|nvoglv|atio|amdxx|opengl|lwjgl.*opengl|gl\.dll/i.test(frameName + crashContent.substring(0, 2000));
+
+            if (isNativeCrash || isGpuCrash) {
+              diagnostic = {
+                id: "jvm-native-crash",
+                title: "Crash en código nativo (drivers gráficos)",
+                message: "La JVM crasheó en una librería nativa" +
+                         (frameName ? ` (${frameName})` : "") + ".\n" +
+                         "Esto suele ser un problema de drivers de GPU. Soluciones:\n" +
+                         "1. Actualiza los drivers de tu tarjeta gráfica (NVIDIA/AMD/Intel).\n" +
+                         "2. Si usas un portátil con GPU integrada, asegúrate de que Minecraft use la GPU dedicada.\n" +
+                         "3. Prueba añadir el argumento JVM: -Dorg.lwjgl.opengl.explicitInit=true",
+                crashLog: latestCrash
+              };
+              console.warn(`[MC:${instanceKey}] JVM native crash — ${frameName || "ver " + crashFiles[0].name}`);
+            }
+          }
+        } catch (e) {
+          console.warn("[main] Error buscando crash logs:", e.message);
+        }
+      }
+
+      // Exit code -1 suele ser OutOfMemoryError
+      if (code === -1 && !diagnostic) {
+        diagnostic = {
+          id: "oom-likely",
+          title: "Posible falta de memoria (OutOfMemory)",
+          message: "Minecraft cerró inesperadamente (código -1). Esto suele indicar falta de RAM.\n" +
+                   "Soluciones:\n" +
+                   "1. Aumenta la RAM asignada en Configuración (recomendado: 4-6 GB).\n" +
+                   "2. Cierra navegadores y otras aplicaciones pesadas antes de jugar.\n" +
+                   "3. Si el problema persiste, revisa los logs en la carpeta del juego."
+        };
+        console.warn(`[MC:${instanceKey}] Exit code -1 — posible OOM`);
+      }
+
+      // Crash genérico con código no-cero y sin diagnóstico específico + crash-reports/
+      if (code !== 0 && code !== null && !diagnostic) {
+        try {
+          const crashReportsDir = path.join(GAME_DIR, "crash-reports");
+          if (fs.existsSync(crashReportsDir)) {
+            const reports = fs.readdirSync(crashReportsDir)
+              .filter(f => f.endsWith(".txt"))
+              .map(f => ({ name: f, time: fs.statSync(path.join(crashReportsDir, f)).mtimeMs }))
+              .sort((a, b) => b.time - a.time);
+            // Solo considerar reportes recientes (últimos 60 segundos)
+            if (reports.length > 0 && (Date.now() - reports[0].time) < 60_000) {
+              const reportPath = path.join(crashReportsDir, reports[0].name);
+              const reportContent = fs.readFileSync(reportPath, "utf8").substring(0, 2000);
+              const descMatch = reportContent.match(/Description: (.+)/);
+              const desc = descMatch ? descMatch[1].trim() : "";
+              diagnostic = {
+                id: "mc-crash-report",
+                title: "Minecraft generó un crash report",
+                message: (desc ? `Causa: ${desc}\n` : "") +
+                         "Revisa el archivo de crash para más detalles.",
+                crashLog: reportPath
+              };
+              console.warn(`[MC:${instanceKey}] Crash report encontrado: ${reports[0].name}`);
+            }
+          }
+        } catch (e) {
+          console.warn("[main] Error buscando crash-reports:", e.message);
+        }
+      }
+
+      if (win && !win.isDestroyed()) win.webContents.send("mc-closed", { code, modpackId: instanceKey, diagnostic });
     });
 
     // Asegurar que siempre usamos javaw (sin consola) si está disponible
@@ -1329,6 +1744,18 @@ ipcMain.handle("launch", async (_event, { authData, accountUuid, modpackId, enab
       console.log("[main] jvmArgs del modpack aplicados:", String(requestedModpack.jvmArgs).substring(0, 80));
     }
 
+    // ── Pre-extraer natives para MC >= 1.19 ──
+    // MCLC no extrae natives para >= 1.19 y apunta -Djava.library.path al root del juego.
+    // Esto causa 0xC0000135 cuando LWJGL no logra auto-extraer DLLs al dir temporal.
+    const nativesDir = extractNativesIfNeeded(GAME_DIR, mcVersion);
+    if (nativesDir) {
+      launchOpts.customArgs = (launchOpts.customArgs || []).concat([
+        `-Dorg.lwjgl.librarypath=${nativesDir}`,
+        `-Djava.library.path=${nativesDir}`
+      ]);
+      console.log("[main] Natives path configurado:", nativesDir);
+    }
+
     if (loaderResult.customProfile) {
       launchOpts.version.custom = loaderResult.customProfile;
     } else if (loaderResult.forgeVersion) {
@@ -1345,7 +1772,7 @@ ipcMain.handle("launch", async (_event, { authData, accountUuid, modpackId, enab
       ram: `${settings.ramMin}-${settings.ramMax}G`
     }));
 
-    const mcProcess = launcher.launch(launchOpts);
+    const mcProcess = await launcher.launch(launchOpts);
     runningInstances.set(instanceKey, { launcher, process: mcProcess, startTime: Date.now() });
     return { ok: true, modpackId: instanceKey };
   } finally {

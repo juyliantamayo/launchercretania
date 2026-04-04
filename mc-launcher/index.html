@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https: file:; connect-src https:;" />
   <title>Lucerion Launcher</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -138,14 +139,14 @@
                   <button class="btn-kill-instance" id="btnKillInstance" style="display:none" title="Detener instancia">
                     &#9632; Detener
                   </button>
-                  <div class="det-hero-body">
-                    <div class="det-icon" id="detIcon"></div>
-                    <div class="det-meta">
-                      <div class="det-eyebrow" id="detEyebrow">Pack público</div>
-                      <div class="det-name" id="detName">Modpack</div>
-                      <div class="det-sub" id="detSub">Sin subtítulo</div>
-                      <div class="det-tag-row" id="detTags"></div>
-                    </div>
+                </div>
+                <div class="det-hero-body">
+                  <div class="det-icon" id="detIcon"></div>
+                  <div class="det-meta">
+                    <div class="det-eyebrow" id="detEyebrow">Pack público</div>
+                    <div class="det-name" id="detName">Modpack</div>
+                    <div class="det-sub" id="detSub">Sin subtítulo</div>
+                    <div class="det-tag-row" id="detTags"></div>
                   </div>
                 </div>
               </div>
@@ -256,7 +257,7 @@
           <!-- Path -->
           <div class="set-card">
             <h3>Ruta de instalación</h3>
-            <div class="path-disp" id="pathDisp">Por defecto (%APPDATA%/.cretania-minecraft)</div>
+            <div class="path-disp" id="pathDisp">Por defecto (%APPDATA%/.minecraft)</div>
             <div class="path-acts">
               <button class="btn btn-solid btn-sm" id="btnChPath">Cambiar</button>
               <button class="btn btn-solid btn-sm" id="btnOpBase">Abrir base</button>
@@ -300,9 +301,10 @@
         <div class="pbar-wrap"><div class="pbar-fill" id="abFill"></div></div>
       </div>
       <div class="ab-bottom">
-        <span class="ab-status" id="abStatus">Listo.</span>
+        <span class="ab-status" id="abStatus"><span class="ab-dot" id="abDot"></span><span id="abStatusTxt">Listo.</span></span>
         <button class="btn btn-solid" id="btnDownload">&#8659; Descargar</button>
         <button class="btn btn-solid" id="btnRefresh">&#8635; Actualizar</button>
+        <button class="btn btn-solid" id="btnSyncMods" disabled title="Descarga los mods de la instancia sin necesitar cuenta">&#8681; Sincronizar mods</button>
         <button class="btn btn-primary" id="btnLaunch" disabled>&#9658; Jugar</button>
       </div>
     </div>

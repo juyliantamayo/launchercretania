@@ -4,8 +4,8 @@ import { S, getPack } from "../state.js";
 const $ = id => document.getElementById(id);
 
 export function setStatus(msg) {
-  const el = $("abStatus");
-  el.innerHTML = `<span class="ab-dot"></span>${msg}`;
+  const el = $("abStatusTxt");
+  if (el) el.textContent = msg;
 }
 
 export function showProg(pct) {
@@ -43,5 +43,10 @@ export function updateLaunch() {
       dlBtn.style.display = '';
       dlBtn.disabled = !p;
     }
+  }
+
+  const syncBtn = $('btnSyncMods');
+  if (syncBtn) {
+    syncBtn.disabled = !p || S.launchBusy;
   }
 }
