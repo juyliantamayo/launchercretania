@@ -787,6 +787,30 @@ function extractNativesIfNeeded(gameDir, mcVersion) {
 
 // ─── LOADER INSTALLERS ───────────────────────────────────────────────────────
 
+/**
+ * axios.get con reintentos y backoff exponencial.
+ * @param {string} url
+ * @param {object} opts  opciones axios (timeout, etc.)
+ * @param {number} retries  número de reintentos adicionales (default 2 → 3 intentos total)
+ */
+async function axiosGetWithRetry(url, opts = {}, retries = 2) {
+  let lastErr;
+  for (let attempt = 0; attempt <= retries; attempt++) {
+    try {
+      return await axios.get(url, opts);
+    } catch (err) {
+      lastErr = err;
+      const isNetwork = ["ETIMEDOUT", "ESOCKETTIMEDOUT", "ECONNRESET", "ECONNABORTED", "ECONNREFUSED"].includes(err.code || "")
+        || (err.response && err.response.status >= 500);
+      if (!isNetwork || attempt === retries) break;
+      const delay = 3000 * (attempt + 1);
+      console.warn(`[net] Intento ${attempt + 1} fallido (${err.code || err.message}). Reintentando en ${delay / 1000}s…`);
+      await new Promise(r => setTimeout(r, delay));
+    }
+  }
+  throw lastErr;
+}
+
 /** Descarga las librerías de un perfil Fabric/Quilt al directorio libraries/ */
 async function downloadProfileLibraries(gameDir, profileJson) {
   let profile;
@@ -832,13 +856,16 @@ async function installFabric(gameDir, mcVersion, loaderVersion) {
   console.log(`[fabric] Descargando perfil: ${profileName}`);
   const url = `https://meta.fabricmc.net/v2/versions/loader/${mcVersion}/${loaderVersion}/profile/json`;
   try {
-    const { data } = await axios.get(url, { timeout: 30_000 });
+    const { data } = await axiosGetWithRetry(url, { timeout: 30_000 });
     await fsExtra.ensureDir(versionsDir);
     fs.writeFileSync(profileJson, JSON.stringify(data, null, 2));
     await downloadProfileLibraries(gameDir, profileJson);
     return profileName;
   } catch (err) {
-    throw new Error(`No se pudo instalar Fabric Loader ${loaderVersion}: ${err.message}`);
+    const hint = (err.code === "ETIMEDOUT" || err.code === "ESOCKETTIMEDOUT")
+      ? " El servidor de Fabric (meta.fabricmc.net) no responde. Verifica tu conexión, desactiva el firewall/antivirus temporalmente o usa una VPN."
+      : "";
+    throw new Error(`No se pudo instalar Fabric Loader ${loaderVersion}: ${err.message}.${hint}`);
   }
 }
 
@@ -854,13 +881,16 @@ async function installQuilt(gameDir, mcVersion, loaderVersion) {
   console.log(`[quilt] Descargando perfil: ${profileName}`);
   const url = `https://meta.quiltmc.org/v3/versions/loader/${mcVersion}/${loaderVersion}/profile/json`;
   try {
-    const { data } = await axios.get(url, { timeout: 30_000 });
+    const { data } = await axiosGetWithRetry(url, { timeout: 30_000 });
     await fsExtra.ensureDir(versionsDir);
     fs.writeFileSync(profileJson, JSON.stringify(data, null, 2));
     await downloadProfileLibraries(gameDir, profileJson);
     return profileName;
   } catch (err) {
-    throw new Error(`No se pudo instalar Quilt Loader ${loaderVersion}: ${err.message}`);
+    const hint = (err.code === "ETIMEDOUT" || err.code === "ESOCKETTIMEDOUT")
+      ? " El servidor de Quilt (meta.quiltmc.org) no responde. Verifica tu conexión, desactiva el firewall/antivirus temporalmente o usa una VPN."
+      : "";
+    throw new Error(`No se pudo instalar Quilt Loader ${loaderVersion}: ${err.message}.${hint}`);
   }
 }
 

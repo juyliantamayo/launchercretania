@@ -36,9 +36,8 @@ $RepoName  = "launchercretania"
 $ReleaseId = "303984033"   # ID de la release cretaniaTF4-v1.0.0
 
 # ── Token (desde git credential helper) ───────────────────────────────────────
-$credLines  = "protocol=https`nhost=github.com`n" | git credential fill
-$credData   = $credLines | ConvertFrom-StringData
-$token      = $credData.password
+$credLines  = @("protocol=https","host=github.com","") | git credential fill
+$token      = ($credLines | Where-Object { $_ -match '^password=' }) -replace '^password=',''
 
 if (-not $token) {
     Write-Error "No se encontró token de GitHub en git credential helper. Asegúrate de estar logueada en git."

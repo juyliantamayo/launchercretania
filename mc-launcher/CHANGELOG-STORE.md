@@ -2,6 +2,22 @@
 
 ---
 
+## v1.2.0 (2026-04-09)
+
+### Mejora — Interfaz adaptable a cualquier tamaño de ventana
+El launcher ahora se adapta correctamente a pantallas pequeñas y ventanas redimensionadas. La barra lateral, la vista de detalle y los botones se reajustan automáticamente sin que se corten o se superpongan elementos.
+
+### Fix — Nombres de modpacks con caracteres raros
+Se corrigió un problema donde los nombres y descripciones de algunos modpacks aparecían con caracteres extraños (por ejemplo, `Ã©` en lugar de `é`). Ahora se muestran correctamente en español y otros idiomas.
+
+### Fix — Estrellas fugaces infinitas al minimizar
+Al minimizar el launcher y volver a abrirlo, las estrellas fugaces del fondo se acumulaban sin control, causando ralentización. Ahora se limitan a un máximo y se limpian al restaurar la ventana.
+
+### Mejora — Iconos del launcher en la Microsoft Store
+El icono de Lucerion Launcher ahora aparece correctamente en el menú Inicio, la barra de tareas y la Microsoft Store, en lugar del icono genérico de Electron.
+
+---
+
 ## v1.1.0 (2026-03-21) — English
 
 ### New — Download modpack button

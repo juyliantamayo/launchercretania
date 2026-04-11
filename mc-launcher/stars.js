@@ -13,6 +13,10 @@
   let shooters = [];   // shooting stars
   let novas    = [];   // flash explosions
   let t = 0;
+  let hidden   = false; // tab/window visibility
+
+  const MAX_SHOOTERS = 6;
+  const MAX_NOVAS    = 3;
 
   /* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
      RESIZE
@@ -281,13 +285,17 @@
      SCHEDULERS
   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
   function scheduleShooter() {
-    const big = Math.random() < 0.42;
-    addShooter(big);
+    if (!hidden && shooters.length < MAX_SHOOTERS) {
+      const big = Math.random() < 0.42;
+      addShooter(big);
+    }
     setTimeout(scheduleShooter, Math.random() * 2000 + 600);
   }
 
   function scheduleNova() {
-    addNova();
+    if (!hidden && novas.length < MAX_NOVAS) {
+      addNova();
+    }
     setTimeout(scheduleNova, Math.random() * 8000 + 4000);
   }
 
@@ -311,5 +319,14 @@
   setTimeout(scheduleNova, 5500);
 
   window.addEventListener('resize', () => { resize(); initNebulae(); initLayers(); });
+
+  document.addEventListener('visibilitychange', () => {
+    hidden = document.hidden;
+    if (!hidden) {
+      // Al restaurar, descartar estrellas/novas acumuladas
+      shooters = [];
+      novas    = [];
+    }
+  });
 })();
 
