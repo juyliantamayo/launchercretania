@@ -981,7 +981,7 @@ async function installNeoForge(gameDir, mcVersion, loaderVersion) {
  * loaderType puede ser: "fabric" | "quilt" | "neoforge" | "forge" | "vanilla" | "custom"
  * Si loaderType es "custom", se usa directamente loaderVersion como nombre de perfil.
  */
-async function resolveLoader(gameDir, modpack, statusCb = () => {}) {
+async function resolveLoader(gameDir, modpack, javaPath, statusCb = () => {}) {
   const loaderType = (modpack.loaderType || modpack.loader || "fabric").toLowerCase();
   const loaderVersion = modpack.loaderVersion || "";
   const mcVersion = modpack.minecraft || "1.20.1";
@@ -1011,7 +1011,7 @@ async function resolveLoader(gameDir, modpack, statusCb = () => {}) {
         console.log(`[forge] Perfil ya instalado: ${forgeProfileName}`);
         return { customProfile: forgeProfileName, forgeVersion: null };
       }
-      // Download forge installer jar so MCLC can install it
+      // Download forge installer jar
       const forgeInstallerUrl = `https://maven.minecraftforge.net/net/minecraftforge/forge/${mcVersion}-${loaderVersion}/forge-${mcVersion}-${loaderVersion}-installer.jar`;
       const installersDir = path.join(app.getPath("userData"), "forge-installers");
       await fsExtra.ensureDir(installersDir);
@@ -1022,7 +1022,29 @@ async function resolveLoader(gameDir, modpack, statusCb = () => {}) {
         const resp = await axios.get(forgeInstallerUrl, { responseType: "arraybuffer", timeout: 120000 });
         fs.writeFileSync(installerPath, Buffer.from(resp.data));
       }
-      return { customProfile: null, forgeVersion: installerPath };
+      // Run the installer directly (headless) instead of relying on ForgeWrapper via MCLC
+      statusCb(`Instalando Forge ${loaderVersion}… (esto puede tardar un momento)`);
+      console.log(`[forge] Ejecutando instalador headless: ${installerPath} → ${gameDir}`);
+      // Use java.exe (not javaw.exe) for the console installer process
+      const javaExe = (javaPath || "java").replace(/javaw\.exe$/i, "java.exe");
+      await new Promise((resolve, reject) => {
+        const proc = spawn(javaExe, ["-jar", installerPath, "--installClient", gameDir], {
+          cwd: gameDir,
+          stdio: "pipe"
+        });
+        proc.stdout.on("data", (d) => console.log("[forge-install]", d.toString().trim()));
+        proc.stderr.on("data", (d) => console.log("[forge-install-err]", d.toString().trim()));
+        proc.on("close", (code) => {
+          if (code === 0) resolve();
+          else reject(new Error(`Forge installer terminó con código ${code}`));
+        });
+        proc.on("error", reject);
+      });
+      if (!fs.existsSync(forgeProfileJson)) {
+        throw new Error(`Forge instaló pero el perfil no aparece en ${forgeProfileJson}`);
+      }
+      console.log(`[forge] ${forgeProfileName} instalado correctamente`);
+      return { customProfile: forgeProfileName, forgeVersion: null };
     }
     case "custom": {
       // loaderVersion IS the full custom profile name already installed in versions/
@@ -1640,7 +1662,7 @@ ipcMain.handle("launch", async (_event, { authData, accountUuid, modpackId, enab
 
     let loaderResult = { customProfile: null, forgeVersion: null };
     try {
-      loaderResult = await resolveLoader(GAME_DIR, manifest, (msg) => setStatus(win, msg));
+      loaderResult = await resolveLoader(GAME_DIR, manifest, javaInfo.path, (msg) => setStatus(win, msg));
     } catch (err) {
       console.error("[main] Error resolviendo loader:", err.message);
       throw new Error("No se pudo instalar el loader: " + err.message);
