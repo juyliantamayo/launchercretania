@@ -1,0 +1,9 @@
+compactFastMap = true
+cacheMultipartPredicates = true
+multipartDeduplication = true
+blockstateCacheDeduplication = true
+modelResourceLocations = true
+modelSides = true
+replaceNeighborLookup = true
+replacePropertyMap = true
+bakedQuadDeduplication = true

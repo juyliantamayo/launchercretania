@@ -720,6 +720,66 @@ async function validatePreLaunch(gameDir) {
   }
 }
 
+// ─── VC++ REDISTRIBUTABLE AUTO-INSTALL ───────────────────────────────────────
+/**
+ * Verifica si Visual C++ Redistributable 2015-2022 x64 está instalado.
+ * Si no, lo descarga en un directorio temporal y lo instala en silencio.
+ * Se llama una vez por sesión antes de lanzar el juego.
+ */
+let _vcRedistChecked = false;
+async function ensureVcRedist(sendStatus) {
+  if (_vcRedistChecked) return;
+  _vcRedistChecked = true;
+
+  const isInstalled = () => {
+    const keys = [
+      "HKLM\\SOFTWARE\\Microsoft\\VisualStudio\\14.0\\VC\\Runtimes\\X64",
+      "HKLM\\SOFTWARE\\WOW6432Node\\Microsoft\\VisualStudio\\14.0\\VC\\Runtimes\\X64"
+    ];
+    for (const key of keys) {
+      try {
+        const out = execSync(`reg query "${key}" /v Installed`, { stdio: "pipe" }).toString();
+        if (/0x1/i.test(out)) return true;
+      } catch { /* key no existe */ }
+    }
+    return false;
+  };
+
+  if (isInstalled()) return;
+
+  sendStatus("Instalando Visual C++ Redistributable (requerido por Minecraft)…");
+  console.log("[vcredist] No detectado — descargando e instalando…");
+
+  const tmpDir = path.join(app.getPath("temp"), "lucerion-launcher");
+  fsExtra.ensureDirSync(tmpDir);
+  const installerPath = path.join(tmpDir, "vc_redist.x64.exe");
+
+  try {
+    const url = "https://aka.ms/vs/17/release/vc_redist.x64.exe";
+    const response = await axios.get(url, { responseType: "stream", timeout: 120000 });
+    await new Promise((resolve, reject) => {
+      const out = require("fs").createWriteStream(installerPath);
+      response.data.pipe(out);
+      out.on("finish", resolve);
+      out.on("error", reject);
+    });
+
+    await new Promise((resolve, reject) => {
+      execFile(installerPath, ["/install", "/quiet", "/norestart"], { timeout: 120000 }, (err, stdout, stderr) => {
+        // Código 0 = éxito, 1638 = ya instalado, 3010 = requiere reinicio (igual válido)
+        if (!err || [0, 1638, 3010].includes(err.code)) resolve();
+        else reject(err);
+      });
+    });
+
+    console.log("[vcredist] Instalación completada.");
+    sendStatus("Visual C++ Redistributable instalado correctamente.");
+  } catch (err) {
+    console.warn("[vcredist] No se pudo instalar automáticamente:", err.message);
+    sendStatus("⚠ No se pudo instalar Visual C++ Redistributable. Puede que Minecraft no inicie.");
+  }
+}
+
 // ─── NATIVE DLL EXTRACTION (MC >= 1.19) ──────────────────────────────────────
 /**
  * Pre-extrae DLLs nativas de LWJGL desde los JARs en libraries/.

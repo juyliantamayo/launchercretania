@@ -1,0 +1,9 @@
+{
+  "configVersion": 7,
+  "tracingDistance": 64,
+  "hitboxLimit": 30,
+  "captureRate": 8,
+  "tickCulling": true,
+  "blockEntityFrustumCulling": true,
+  "forceDisplayCulling": true
+}

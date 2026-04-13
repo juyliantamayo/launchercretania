@@ -1,0 +1,7 @@
+{
+  "configVersion": 7,
+  "tracingDistance": 96,
+  "hitboxLimit": 40,
+  "tickCulling": true,
+  "blockEntityFrustumCulling": true
+}
