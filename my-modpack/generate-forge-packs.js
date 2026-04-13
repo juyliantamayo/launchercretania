@@ -33,12 +33,8 @@ const LITE_EXCLUSIONS = new Set([
   "BetterF3-7.0.2-Forge-1.20.1.jar",
   "BetterThirdPerson-Forge-1.20-1.9.0.jar",
   "cleanswing-1.20-1.8.jar",
-  "coroutil-forge-1.20.1-1.3.7.jar",
-  "TFCWeather-1.20.1-1.6.12.jar",   // requiere coroutil + weather2
   "DarkModeEverywhere-1.20.1-1.2.4.jar",
   "EnhancedVisuals_FORGE_v1.8.2_mc1.20.1.jar",
-  "exposure-1.20.1-1.7.16-forge.jar",
-  "hardrock-tfc-samples-forge-1.20.1-1.0.jar",
   "ItemPhysic_FORGE_v1.8.9_mc1.20.1.jar",
   "NoF3.jar",
   "oculus-mc1.20.1-1.8.0.jar",
@@ -48,7 +44,7 @@ const LITE_EXCLUSIONS = new Set([
   "sodiumdynamiclights-forge-1.0.10-1.20.1.jar",
   "StylishEffects-v8.0.2-1.20.1-Forge.jar",
   "TravelersTitles-1.20-Forge-4.0.2.jar",
-  "weather2-1.20.1-2.8.3.jar",
+  // exposure, weather2, coroutil, TFCWeather y hardrock-tfc-samples son requeridos por el servidor
 ]);
 
 // Mods cuya versión en workspace tiene prioridad sobre CurseForge
