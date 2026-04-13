@@ -43,7 +43,7 @@ const AdmZip = require("adm-zip");
 //
 //  * USER_MODS_BASE existe pero nunca se lee/escribe en la variante Store.
 //  ** LAUNCHER_UPDATE_DIR no se usa en Store (self-update desactivado).
-const DEFAULT_GAME_DIR = path.join(app.getPath("appData"), ".minecraft");
+const DEFAULT_GAME_DIR = path.join(app.getPath("appData"), ".lucerion-minecraft");
 const SETTINGS_FILE = path.join(app.getPath("userData"), "settings.json");
 const OPTIONAL_MODS_FILE = path.join(app.getPath("userData"), "optional-mods.json");
 const USER_MODS_BASE = path.join(app.getPath("userData"), "user-mods");
@@ -1861,6 +1861,10 @@ ipcMain.handle("launch", async (_event, { authData, accountUuid, modpackId, enab
       profile: loaderResult.customProfile || "(vanilla/forge)",
       ram: `${settings.ramMin}-${settings.ramMax}G`
     }));
+
+    await ensureVcRedist((msg) => {
+      if (win && !win.isDestroyed()) win.webContents.send("progress", { phase: "status", message: msg });
+    });
 
     const mcProcess = await launcher.launch(launchOpts);
     runningInstances.set(instanceKey, { launcher, process: mcProcess, startTime: Date.now() });
