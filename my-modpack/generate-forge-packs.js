@@ -34,6 +34,7 @@ const LITE_EXCLUSIONS = new Set([
   "BetterThirdPerson-Forge-1.20-1.9.0.jar",
   "cleanswing-1.20-1.8.jar",
   "coroutil-forge-1.20.1-1.3.7.jar",
+  "TFCWeather-1.20.1-1.6.12.jar",   // requiere coroutil + weather2
   "DarkModeEverywhere-1.20.1-1.2.4.jar",
   "EnhancedVisuals_FORGE_v1.8.2_mc1.20.1.jar",
   "exposure-1.20.1-1.7.16-forge.jar",

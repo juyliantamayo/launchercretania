@@ -3042,13 +3042,6 @@
           "size": 1750888
         },
         {
-          "id": "mods-tfcweather-1-20-1-1-6-12",
-          "file": "mods/TFCWeather-1.20.1-1.6.12.jar",
-          "url": "https://github.com/juyliantamayo/launchercretania/releases/download/cretaniaTF4-v1.0.0/mods.TFCWeather-1.20.1-1.6.12.jar",
-          "sha1": "86ee015623327661a525b26c6a42e8d29f0376ab",
-          "size": 2130924
-        },
-        {
           "id": "mods-tfc_spindles-1-20-1-forge-1-0-1",
           "file": "mods/TFC_Spindles-1.20.1-forge-1.0.1.jar",
           "url": "https://github.com/juyliantamayo/launchercretania/releases/download/cretaniaTF4-v1.0.0/mods.TFC_Spindles-1.20.1-forge-1.0.1.jar",

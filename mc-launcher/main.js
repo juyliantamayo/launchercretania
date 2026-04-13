@@ -44,6 +44,8 @@ const AdmZip = require("adm-zip");
 //  * USER_MODS_BASE existe pero nunca se lee/escribe en la variante Store.
 //  ** LAUNCHER_UPDATE_DIR no se usa en Store (self-update desactivado).
 const DEFAULT_GAME_DIR = path.join(app.getPath("appData"), ".lucerion-minecraft");
+// Assets compartidos entre todos los modpacks — se descargan una sola vez
+const SHARED_ASSETS_DIR = path.join(app.getPath("userData"), "shared-assets");
 const SETTINGS_FILE = path.join(app.getPath("userData"), "settings.json");
 const OPTIONAL_MODS_FILE = path.join(app.getPath("userData"), "optional-mods.json");
 const USER_MODS_BASE = path.join(app.getPath("userData"), "user-mods");
@@ -1823,7 +1825,9 @@ ipcMain.handle("launch", async (_event, { authData, accountUuid, modpackId, enab
         height: settings.height || 720
       },
       overrides: {
-        gameDirectory: GAME_DIR
+        gameDirectory: GAME_DIR,
+        assetRoot: SHARED_ASSETS_DIR,
+        maxSockets: 32
       }
     };
 
