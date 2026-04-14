@@ -25,12 +25,18 @@
         "2294f2acc5de4aae8a23c8510f92745b"
       ],
       "baseUrl": "https://github.com/juyliantamayo/launchercretania/releases/download/cretaniaTF4-v1.0.0",
-      "version": "1.0.0",
+      "version": "1.0.1",
       "minecraft": "1.20.1",
       "loader": "forge",
       "loaderType": "forge",
       "loaderVersion": "47.4.13",
       "mods": [
+        {
+          "id": "mods-adchimneys-1-20-1-10-1-28-0-build-1944",
+          "file": "mods/AdChimneys-1.20.1-10.1.28.0-build.1944.jar",
+          "sha1": "47d9a0d1e246dfc8fdd65a7f695807e92e86644b",
+          "size": 333502
+        },
         {
           "id": "mods-advancementplaques-1-20-1-fabric-1-6-7",
           "file": "mods/AdvancementPlaques-1.20.1-fabric-1.6.7.jar",
@@ -78,6 +84,12 @@
           "file": "mods/CustomNPCs-Unofficial-Fabric-1.20.1.20251214.jar",
           "sha1": "a402669028e240e663c2c65d1c6cc3eb36f03c96",
           "size": 12981960
+        },
+        {
+          "id": "mods-dynamictrees-1-20-1-1-4-10",
+          "file": "mods/DynamicTrees-1.20.1-1.4.10.jar",
+          "sha1": "cc41dc64ba985e26e197f84e985859c45fe64b77",
+          "size": 3728155
         },
         {
           "id": "mods-emi-create-schematics-1-0-1-fabric-1-20-1",
@@ -1202,6 +1214,12 @@
           "size": 1057614
         },
         {
+          "id": "mods-untamedwilds-1-20-1-4-0-4",
+          "file": "mods/untamedwilds-1.20.1-4.0.4.jar",
+          "sha1": "127695634bf0fbb7e0adcc29dc1da51cf71ad0a4",
+          "size": 2870466
+        },
+        {
           "id": "mods-visuality-0-7-1-1-20",
           "file": "mods/visuality-0.7.1+1.20.jar",
           "sha1": "a4a5fc1edae49126432fc903dd6fdbb88b7251ed",
@@ -1269,6 +1287,28 @@
       "folders": [],
       "patchNotes": [
         {
+          "version": "1.0.1",
+          "date": "14 de Abril, 2026",
+          "categories": [
+            {
+              "type": "changed",
+              "title": "Mejoras",
+              "icon": "↑",
+              "entries": [
+                {
+                  "text": "AdChimneys, DynamicTrees y UntamedWilds actualizados con traducciones al español"
+                },
+                {
+                  "text": "KubeJS actualizado con traducciones incluidas"
+                },
+                {
+                  "text": "Nuevo resourcepack: Cretania TFC 4 Español"
+                }
+              ]
+            }
+          ]
+        },
+        {
           "version": "1.0.0",
           "date": "13 de Abril, 2026",
           "categories": [
@@ -1313,7 +1353,7 @@
         {
           "id": "kubejs",
           "url": "https://github.com/juyliantamayo/launchercretania/releases/download/cretaniaTF4-v1.0.0/kubejs.zip",
-          "sha1": "0a540f657a1be8153fef29d77d932f76f001ff7d",
+          "sha1": "fe2f9bcd529d274b077679c26a738cc56a9db978",
           "target": "kubejs",
           "replace": true
         },
@@ -1391,7 +1431,7 @@
       ],
       "allowUserMods": false,
       "baseUrl": "https://github.com/juyliantamayo/launchercretania/releases/download/cretaniaTF4-v1.0.0",
-      "version": "1.0.0",
+      "version": "1.0.1",
       "minecraft": "1.20.1",
       "loader": "forge",
       "loaderType": "forge",
@@ -1408,8 +1448,8 @@
           "id": "mods-adchimneys-1-20-1-10-1-28-0-build-1944",
           "file": "mods/AdChimneys-1.20.1-10.1.28.0-build.1944.jar",
           "url": "https://github.com/juyliantamayo/launchercretania/releases/download/cretaniaTF4-v1.0.0/mods.AdChimneys-1.20.1-10.1.28.0-build.1944.jar",
-          "sha1": "1f3c4e60180ef53a9b260aa430dc53442d6cfbd6",
-          "size": 338965
+          "sha1": "47d9a0d1e246dfc8fdd65a7f695807e92e86644b",
+          "size": 333502
         },
         {
           "id": "mods-adpoles-1-20-1-9-1-1-1-build-0980",
@@ -1625,8 +1665,8 @@
           "id": "mods-dynamictrees-1-20-1-1-4-10",
           "file": "mods/DynamicTrees-1.20.1-1.4.10.jar",
           "url": "https://github.com/juyliantamayo/launchercretania/releases/download/cretaniaTF4-v1.0.0/mods.DynamicTrees-1.20.1-1.4.10.jar",
-          "sha1": "6fdd23dfdbdf0fa88c468b1cae6a2dbefa019923",
-          "size": 3754640
+          "sha1": "cc41dc64ba985e26e197f84e985859c45fe64b77",
+          "size": 3728155
         },
         {
           "id": "mods-dynamictreesplus-1-20-1-1-2-2",
@@ -3508,8 +3548,8 @@
           "id": "mods-untamedwilds-1-20-1-4-0-4",
           "file": "mods/untamedwilds-1.20.1-4.0.4.jar",
           "url": "https://github.com/juyliantamayo/launchercretania/releases/download/cretaniaTF4-v1.0.0/mods.untamedwilds-1.20.1-4.0.4.jar",
-          "sha1": "c156f9e8730c39650fe13c8f612de87529d4abcf",
-          "size": 2894716
+          "sha1": "127695634bf0fbb7e0adcc29dc1da51cf71ad0a4",
+          "size": 2870466
         },
         {
           "id": "mods-vintageimprovements-1-20-1-0-3-7-1",
@@ -3788,7 +3828,7 @@
         {
           "id": "kubejs",
           "url": "https://github.com/juyliantamayo/launchercretania/releases/download/cretaniaTF4-v1.0.0/kubejs.zip",
-          "sha1": "0a540f657a1be8153fef29d77d932f76f001ff7d",
+          "sha1": "fe2f9bcd529d274b077679c26a738cc56a9db978",
           "target": "kubejs",
           "replace": true
         },
@@ -3821,6 +3861,13 @@
           "url": "https://github.com/juyliantamayo/launchercretania/releases/download/cretaniaTF4-v1.0.0/hardrock-lite.resourcepacks.HardRock-TFC4-Espanol.zip",
           "sha1": "f0d9768117717d11d7ab2c9e306b50bf7a670100",
           "size": 13376
+        },
+        {
+          "id": "cretania-tfc4-espanol",
+          "file": "resourcepacks/Cretania TFC 4 Español.zip",
+          "sha1": "6fd1dfa82b5872ce4f0ae1d728bd030415f57cb9",
+          "size": 1771856,
+          "url": "https://github.com/juyliantamayo/launchercretania/releases/download/cretaniaTF4-v1.0.0/Cretania.TFC.4.Espanol.zip"
         }
       ],
       "shaderpacks": [],
@@ -3858,6 +3905,28 @@
       "datapacks": [],
       "folders": [],
       "patchNotes": [
+        {
+          "version": "1.0.1",
+          "date": "14 de Abril, 2026",
+          "categories": [
+            {
+              "type": "changed",
+              "title": "Mejoras",
+              "icon": "↑",
+              "entries": [
+                {
+                  "text": "AdChimneys, DynamicTrees y UntamedWilds actualizados con traducciones al español"
+                },
+                {
+                  "text": "KubeJS actualizado con traducciones incluidas"
+                },
+                {
+                  "text": "Nuevo resourcepack: Cretania TFC 4 Español"
+                }
+              ]
+            }
+          ]
+        },
         {
           "version": "1.0.0",
           "date": "13 de Abril, 2026",
