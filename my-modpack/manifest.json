@@ -2357,7 +2357,15 @@
         }
       ],
       "optionalMods": [],
-      "resourcepacks": [],
+      "resourcepacks": [
+        {
+          "id": "cretania-tfc4-espanol",
+          "file": "resourcepacks/Cretania TFC 4 Español.zip",
+          "sha1": "6fd1dfa82b5872ce4f0ae1d728bd030415f57cb9",
+          "size": 1771856,
+          "url": "https://github.com/juyliantamayo/launchercretania/releases/download/cretaniaTF4-v1.0.0/Cretania.TFC.4.Espanol.zip"
+        }
+      ],
       "datasources": [],
       "datapacks": [],
       "folders": [],
