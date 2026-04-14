@@ -1879,6 +1879,35 @@ ipcMain.handle("launch", async (_event, { authData, accountUuid, modpackId, enab
 
     if (loaderResult.customProfile) {
       launchOpts.version.custom = loaderResult.customProfile;
+
+      // ── Inyectar JVM args del version.json del perfil custom (Forge) ──
+      // MCLC ignora arguments.jvm del version.json cuando se usa customProfile.
+      // Forge 47.x necesita -p <module-path> y --add-modules ALL-MODULE-PATH
+      // para que cpw.mods.bootstraplauncher resuelva securejarhandler, etc.
+      try {
+        const customVersionJsonPath = path.join(GAME_DIR, "versions", loaderResult.customProfile, `${loaderResult.customProfile}.json`);
+        if (fs.existsSync(customVersionJsonPath)) {
+          const customVersionJson = JSON.parse(fs.readFileSync(customVersionJsonPath, "utf-8"));
+          const jvmArgs = customVersionJson.arguments && customVersionJson.arguments.jvm;
+          if (Array.isArray(jvmArgs)) {
+            const libraryDir = path.join(GAME_DIR, "libraries");
+            const sep = process.platform === "win32" ? ";" : ":";
+            const resolvedArgs = [];
+            for (const arg of jvmArgs) {
+              if (typeof arg !== "string") continue;
+              const resolved = arg
+                .replace(/\$\{library_directory\}/g, libraryDir)
+                .replace(/\$\{classpath_separator\}/g, sep)
+                .replace(/\$\{version_name\}/g, loaderResult.customProfile);
+              resolvedArgs.push(resolved);
+            }
+            launchOpts.customArgs = (launchOpts.customArgs || []).concat(resolvedArgs);
+            console.log(`[main] Inyectados ${resolvedArgs.length} JVM args del perfil Forge`);
+          }
+        }
+      } catch (e) {
+        console.warn("[main] No se pudieron leer los JVM args del perfil custom:", e.message);
+      }
     } else if (loaderResult.forgeVersion) {
       // forgeVersion is a path to the installer JAR; pass it directly to MCLC
       launchOpts.forge = loaderResult.forgeVersion;
