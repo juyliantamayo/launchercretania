@@ -6,7 +6,11 @@ dist/
 .minecraft/
 *.log
 
-# Mod JAR files (distributed via GitHub Releases, not in repo)
+# Mod JAR files y archivos grandes (distribuidos por GitHub Releases, no en repo)
+modpacks/*.jar
+modpacks/*.tar.gz
+modpacks/*.zip
+adm-zip-debug.txt
 
 
 # OS files
