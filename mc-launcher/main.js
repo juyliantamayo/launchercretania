@@ -1022,6 +1022,11 @@ async function resolveLoader(gameDir, modpack, javaPath, statusCb = () => {}) {
         const resp = await axios.get(forgeInstallerUrl, { responseType: "arraybuffer", timeout: 120000 });
         fs.writeFileSync(installerPath, Buffer.from(resp.data));
       }
+      // The Forge installer requires a launcher_profiles.json to exist in the target dir
+      const launcherProfilesPath = path.join(gameDir, "launcher_profiles.json");
+      if (!fs.existsSync(launcherProfilesPath)) {
+        fs.writeFileSync(launcherProfilesPath, JSON.stringify({ profiles: {} }, null, 2));
+      }
       // Run the installer directly (headless) instead of relying on ForgeWrapper via MCLC
       statusCb(`Instalando Forge ${loaderVersion}… (esto puede tardar un momento)`);
       console.log(`[forge] Ejecutando instalador headless: ${installerPath} → ${gameDir}`);
