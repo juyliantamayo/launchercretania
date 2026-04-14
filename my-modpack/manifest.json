@@ -2357,15 +2357,7 @@
         }
       ],
       "optionalMods": [],
-      "resourcepacks": [
-        {
-          "id": "cretania-tfc4-espanol",
-          "file": "resourcepacks/Cretania TFC 4 Español.zip",
-          "sha1": "6fd1dfa82b5872ce4f0ae1d728bd030415f57cb9",
-          "size": 1771856,
-          "url": "https://github.com/juyliantamayo/launchercretania/releases/download/cretaniaTF4-v1.0.0/Cretania.TFC.4.Espanol.zip"
-        }
-      ],
+      "resourcepacks": [],
       "datasources": [],
       "datapacks": [],
       "folders": [],
@@ -2465,9 +2457,10 @@
         {
           "id": "resourcepacks",
           "url": "https://github.com/juyliantamayo/launchercretania/releases/download/cretaniaTF4-v1.0.0/resourcepacks.zip",
-          "sha1": "7d6050b1a98c1350f13dd310dc9565e40ef7dcfa",
+          "sha1": "266302bbd377d1bd8a903bcd297e8756f8033874",
           "target": "resourcepacks",
-          "replace": true
+          "replace": true,
+          "size": 2824598
         }
       ],
       "shaderpacks": [],
@@ -4933,9 +4926,10 @@
         {
           "id": "resourcepacks",
           "url": "https://github.com/juyliantamayo/launchercretania/releases/download/cretaniaTF4-v1.0.0/resourcepacks.zip",
-          "sha1": "7d6050b1a98c1350f13dd310dc9565e40ef7dcfa",
+          "sha1": "266302bbd377d1bd8a903bcd297e8756f8033874",
           "target": "resourcepacks",
-          "replace": true
+          "replace": true,
+          "size": 2824598
         }
       ],
       "resourcepacks": [
@@ -4945,13 +4939,6 @@
           "url": "https://github.com/juyliantamayo/launchercretania/releases/download/cretaniaTF4-v1.0.0/hardrock-lite.resourcepacks.HardRock-TFC4-Espanol.zip",
           "sha1": "f0d9768117717d11d7ab2c9e306b50bf7a670100",
           "size": 13376
-        },
-        {
-          "id": "cretania-tfc4-espanol",
-          "file": "resourcepacks/Cretania TFC 4 Español.zip",
-          "sha1": "6fd1dfa82b5872ce4f0ae1d728bd030415f57cb9",
-          "size": 1771856,
-          "url": "https://github.com/juyliantamayo/launchercretania/releases/download/cretaniaTF4-v1.0.0/Cretania.TFC.4.Espanol.zip"
         }
       ],
       "shaderpacks": [],
